@@ -69,10 +69,7 @@ plus1 = (\y -> y + 1)
 counter5 x = plus1 . plus1 $ x
 
 
-counter6 = (\y -> y + 1) $(\y -> y + 1)
+counter6 = (\y -> y + 1) . (\y -> y + 1)
 -- >>>  counter6 3
--- <interactive>:147:3-10: error:
---     • Variable not in scope: counter6 :: Integer -> t
---     • Perhaps you meant one of these:
---         ‘counter’ (line 25), ‘counter2’ (line 33), ‘counter3’ (line 40)
+-- 5
 --
