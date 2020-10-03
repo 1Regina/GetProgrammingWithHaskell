@@ -56,7 +56,7 @@ instance Semigroup Events
     
 instance Monoid Events 
     where  mappend = (<>)  
-    mempty = Events []
+           mempty = Events []
 
 combineProbs :: Probs -> Probs -> Probs
 combineProbs (Probs p1) (Probs p2) = Probs (cartCombine (*) p1 p2)
@@ -66,4 +66,4 @@ instance Semigroup Probs
     
 instance Monoid Probs
     where  mappend = (<>)  
-    mempty = Probs []
+           mempty = Probs []
