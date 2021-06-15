@@ -86,6 +86,13 @@ doubleDouble1 x = (\dubs -> dubs*2) (x*2)
 --8
 --
 --lexicality means always looks for the nearest numbers for x and y
+
+add2 :: Num a => a -> a
+add2 y = (\x -> y + x) 3
+-- >>> add2 5
+-- 8
+
+add3 :: Num a => p -> a
 add3 y = (\y ->
             (\x -> y + x) 1 ) 3
 -- >>> add3 1
@@ -122,3 +129,7 @@ doubleCube1 x = (\cube -> cube ** 3) (4)
 
 -- >>> doubleCube1 20
 -- 64.0
+
+
+
+

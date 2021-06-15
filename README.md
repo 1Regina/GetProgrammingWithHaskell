@@ -8,16 +8,16 @@ Unit 1
                          sumSquareOrSquareSum x y = if sumSquare > squareSum
                                                       then sumSquare
                                                       else squareSum
-                                                where sumSquare = x^2 + y^2
-                                                      squareSum = (x+y)^2
+                                       where sumSquare = x^2 + y^2
+                                             squareSum = (x+y)^2
    2. with let - in : sumSquareOrSquareSum5 :: (Ord p, Num p) => p -> p -> p
                       sumSquareOrSquareSum5 x y = let sumSquare = (x^2 + y^2)
                                                       squareSum = ((x+y)^2)
                                                    in
-                                                   if sumSquare > squareSum
-                                                      then sumSquare
-                                                   else squareSum
-   3. lexicality: nearest is kin:
+                                                      if sumSquare > squareSum
+                                                         then sumSquare
+                                                      else squareSum
+   3. lexical scope: nearest is kin:
       1. add3 is always 8 regardless of y: add3 y = (\y ->
                                                       (\x -> y + x) 1 ) 3
       2. doubleCube1 is always 64 : doubleCube1 x = (\cube -> cube ** 3) (4)
