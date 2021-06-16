@@ -22,3 +22,6 @@ Unit 1
                                                       (\x -> y + x) 1 ) 3
       2. doubleCube1 is always 64 : doubleCube1 x = (\cube -> cube ** 3) (4)
       3. BUT doubleCube will change according to different x: doubleCube x = (\cube -> cube ** 3) (x * 2)
+3. Ch04: First class functions are functions that can
+   1. take functions as input arguments or
+   2. return function as its value output
