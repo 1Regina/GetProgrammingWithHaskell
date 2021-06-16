@@ -22,7 +22,8 @@ compareLastName name1 name2 = if result == EQ
 -- >>> compare "aN" "BY"
 -- GT
 --
-
+-- >>> compareLastName  ("Ian", "Curtis") ("Bernard","Curtis")
+-- GT
 
 
 
@@ -30,7 +31,7 @@ compareLastName name1 name2 = if result == EQ
 sfOffice :: ([Char], [Char]) -> [Char]
 sfOffice name = if lastName < "L"
                 then nameText ++ " - PO Box 1234 - San Francisco, CA, 94111"
-                else nameText ++ " - PO Box 1010 - San Francisco, CA, 94109"  
+                else nameText ++ " - PO Box 1010 - San Francisco, CA, 94109"
         where lastName = snd name
               nameText = (fst name) ++ " " ++ lastName
 nyOffice :: ([Char], [Char]) -> [Char]
@@ -42,14 +43,14 @@ wdcOffice name = nameText ++ " Esq" ++ " - PO Box 123 - Washington DC, DC 12345"
 getLocationFunction :: [Char] -> ([Char], [Char]) -> [Char]
 getLocationFunction location = case location of
     "ny" -> nyOffice
-    "sf" -> sfOffice   
-    "reno" -> renoOffice  
+    "sf" -> sfOffice
+    "reno" -> renoOffice
     "wdc" -> wdcOffice
     _ -> (\name -> (fst name) ++ " " ++ (snd name))
 
 
 addressLetter :: ([Char], [Char]) -> [Char] -> [Char]
-addressLetter name location = locationFunction name  
+addressLetter name location = locationFunction name
     where locationFunction = getLocationFunction location
 
 -- >>> addressLetter ("Bob","Smith") "wdc"
