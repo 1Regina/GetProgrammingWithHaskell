@@ -2,8 +2,8 @@
 
 ifEven :: Integral p => (p -> p) -> p -> p
 ifEven function x = if even x
-                    then function x 
-                    else x 
+                    then function x
+                    else x
 
 inc :: Num a => a -> a
 inc n = n + 1
@@ -19,6 +19,21 @@ ifEvenDouble :: Integer -> Integer
 ifEvenDouble = ifEven double
 ifEvenSquare :: Integer -> Integer
 ifEvenSquare = ifEven square
+
+-- >>> ifEvenInc 3
+-- >>> ifEvenDouble 3
+-- >>> ifEvenSquare 3
+-- 3
+-- 3
+-- 3
+
+-- >>> ifEvenInc 4
+-- >>> ifEvenDouble 4
+-- >>> ifEvenSquare 4
+-- 5
+-- 8
+-- 16
+
 
 -- Q5.2
 binaryPartialApplication :: (t1 -> t2 -> t3) -> t1 -> t2 -> t3

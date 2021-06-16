@@ -5,3 +5,8 @@ ifEven f x = if even x
 
 genIfXEven :: Integral p => p -> (p -> p) -> p
 genIfXEven x = (\f -> ifEven f x)
+
+
+-- >>> ifEven (+1) 1
+-- 1
+
