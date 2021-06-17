@@ -13,7 +13,7 @@ subseq start end list = drop start (take end list)
 inFirstHalf :: Eq a => a -> [a] -> Bool
 inFirstHalf x list = elem x (take ((length list) `div` 2) list)
 
--- >>>  ( length "happy1" ) `div` 2 
+-- >>>  ( length "happy1" ) `div` 2
 -- 3
 -- >>> inFirstHalf 's' "Cheese"
 -- False
@@ -26,20 +26,22 @@ inFirstHalf x list = elem x (take ((length list) `div` 2) list)
 -- True
 --
 inFirstHalf1 :: Eq a => a -> [a] -> Bool
-inFirstHalf1 x list = elem x firstHalf 
-  where midpoint = (length list) `div` 2
-        firstHalf = take midpoint list
-
+inFirstHalf1 x list = elem x firstHalf
+  where firstHalf = take midpoint list
+        midpoint = (length list) `div` 2
 
 -- >>> inFirstHalf1 's' "Cheese"
 -- False
---
+
+-- >>> inFirstHalf1 's' "Cheese"
+-- False
+
 -- >>> inFirstHalf1 'h' "three"
 -- True
---
+
 -- >>> inFirstHalf1 'r' "three"
 -- False
---
+
 -- >>> inFirstHalf1 13 [0,13 .. 100]
 -- True
---
+

@@ -39,7 +39,17 @@
 --
 
 -- binary function in ` ` if used as infix operator
+-- 6.3
 respond :: Foldable t => t Char -> [Char]
 respond phrase = if '!' `elem` phrase
-                 then "wow!"                
+                 then "wow!"
                  else "uh.. okay"
+
+-- 6.6: zip and cycle. cycle takes a list
+assignToGroups :: [a] -> [b] -> [(a, b)]
+assignToGroups n aList = zip groups aList
+                            where groups = cycle [1..n]
+
+-- >>> assignToGroups 2 ["Bob","Kathy","Sue","Joan","Jim","Mike"]
+-- [(1,"Bob"),(2,"Kathy"),(1,"Sue"),(2,"Joan"),(1,"Jim"),(2,"Mike")]
+
