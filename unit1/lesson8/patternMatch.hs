@@ -2,16 +2,20 @@ myLength :: Num p => [a] -> p
 myLength [] = 0
 myLength xs = 1 + myLength (tail xs)
 
+--Quickcheck 8.1
 myLength1 :: Num a1 => [a2] -> a1
 myLength1 [] = 0
 myLength1 (_:xs) = 1 + myLength1 xs
 -- >>> myLength1 [1,2,3,4]
 -- 4
---
+-- >>> myLength1 "hello"
+-- 5
+
+-- Listing 8.2
 myTake :: (Eq a1, Num a1) => a1 -> [a2] -> [a2]
 myTake _ [] = []
 myTake 0 _ = []
-myTake n (x:xs) = x:rest  
+myTake n (x:xs) = x:rest
     where rest = myTake (n - 1) xs
 
 -- >>> myTake 3 [1..10]

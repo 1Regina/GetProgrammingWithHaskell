@@ -1,7 +1,7 @@
 -- Q8.1
 myReverse :: [a] -> [a]
 myReverse (x:xs) = (myReverse xs) ++ [x]
-myReverse [ ] = [ ] 
+myReverse [ ] = [ ]
 -- myReverse (x:[]) = [x]
 
 -- >>> myReverse [1..5]
@@ -31,7 +31,26 @@ fastFib n1 n2 counter = fastFib (n1 + n2) n1 (counter -1)
 -- 1
 -- >>> fastFib 9 10 3
 -- 19
+-- >>> fastFib 9 10 4
+-- 28
+-- >>> fastFib 9 10 5
+-- 47
+-- >>> fastFib 9 10 6
+-- 75
 -- >>> fastFib 9 10 7
 -- 122
 -- >>> fastFib 19 9 6
 -- 122
+
+
+-- >>> fastFib  3 3 0
+-- 0
+
+-- >>> fastFib  3 3 1
+-- 1
+
+-- >>> fastFib  3 3 2
+-- 1
+
+-- >>> fastFib  3 3 3
+-- 6

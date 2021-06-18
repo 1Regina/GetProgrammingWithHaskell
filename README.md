@@ -241,3 +241,20 @@ Unit 1
       ```
       myHead (x:xs) = xmyHead [] = error "No head for empty list"
       ```
+7. Ch08:
+   1. `:set +s` to time your function calls in prelude
+   2. Sometimes the 5 recursion rules dont apply. e.g cycle has no goat state.
+   3. Ackermann function
+      ```
+      ackermann 0 n = n + 1
+      ackermann m 0 = ackermann (m-1) 1
+      ackermann m n = ackermann (m-1) (ackermann m (n-1))
+      ```
+   4. collatz. The basis is number by applying collatz can get to 1.
+      ```
+      collatz 1 = 1
+      collatz n = if even n
+                  then 1 + collatz (n `div` 2)
+                  else 1 + collatz (n*3 + 1)
+      ```
+   5. Fibonacci with Q8.2
