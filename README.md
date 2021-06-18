@@ -179,6 +179,7 @@ Unit 1
       > combine take and reverse to take last n elements from a list
       ```
       takeLast n aList = reverse (take n (reverse aList))
+
       GHCi> takeLast 10 [1..100]
       [91,92,93,94,95,96,97,98,99,100]
       ```
@@ -186,32 +187,57 @@ Unit 1
       ```
       GHCi> drop 2 [1,2,3,4,5]
       [3,4,5]
+
       GHCi> drop 5 "very awesome"
       "awesome"
       ```
    10. `zip` to combine two lists into tuple pairs. Inputs are 2 lists. Output is a list [].
-      ```
-      GHCi> zip [1,2,3] [2,4,6]
-      [(1,2),(2,4),(3,6)]
-      GHCi> zip "dog" "rabbit"
-      [('d','r'),('o','a'),('g','b')]
-      GHCi> zip ['a' .. 'f'] [1 .. ]
-      [('a',1),('b',2),('c',3),('d',4),('e',5),('f',6)]
-      ```
+         ```
+         GHCi> zip [1,2,3] [2,4,6]
+         [(1,2),(2,4),(3,6)]
+
+         GHCi> zip "dog" "rabbit"
+         [('d','r'),('o','a'),('g','b')]
+
+         GHCi> zip ['a' .. 'f'] [1 .. ]
+         [('a',1),('b',2),('c',3),('d',4),('e',5),('f',6)]
+         ```
    11. `cycle` repeats a list endlessly
+         ```
+         ones n = take n (cycle [1])
+
+         GHCi> ones 4
+         [1,1,1,1]
+         ```
+   12. **Useful** assigning people to teams
+         ```
+         assignToGroups n aList = zip groups aList
+                  where groups = cycle [1..n]
+
+         GHCi> assignToGroups 3 ["file1.txt","file2.txt","file3.txt" ,"file4.txt","file5.txt","file6.txt","file7.txt","file8.txt"]
+         [(1,"file1.txt"),(2,"file2.txt"),(3,"file3.txt"),(1,"file4.txt"),(2,"file5.txt"),(3,"file6.txt"),(1,"file7.txt"),(2,"file8.txt")]
+
+         GHCi> assignToGroups 2 ["Bob","Kathy","Sue","Joan","Jim","Mike"]
+         [(1,"Bob"),(2,"Kathy"),(1,"Sue"),(2,"Joan"),(1,"Jim"),(2,"Mike")]
+         ```
+6. Ch07:
+   1. No *for*, *while* and *until* loops in functional language because dont have state changes. Solution is recursion using pattern matching. Recursive -> defined in terms of itself.
+   2. Recursion is merely a list of goals and alternative cases. Think in patterns.
+   3. Recursive functions rules:
+      1. Identify the end goal(s). e.g. empty sink in dishwashing; may have 2 ends e.g make 100 calls or 5 sales for each day.
+      2. Determine what happens when a goal is reached. ie "What happens if the function is called on the goal state value?"
+      3. List all alternate possibilities one at a time.  most of the time you have only one or two alternatives to being in the goal state. If you don’t have an empty list, you have a list with something in it.
+      4. Determine your “rinse and repeat” process. e.g For a list, you might take the element and look at the tail.
+      5. Ensure that each alternative moves you toward your goal.
+   4. Write recursive functions
+      1. `if then else` expressions or
+      2. `case` expressions with pattern matching.
+         1. **Order of case is important** bcos results will output the first match.
+         2. _ as a wildcard for catch all other cases. `_` means for anything (else) as in `myTail (_:xs) = xs`
+   5. Convention for list
+      1. `x` for element
+      2. `xs` for list of values
+   6. `error` function to throw an error
       ```
-      ones n = take n (cycle [1])
-      GHCi> ones 4
-      [1,1,1,1]
+      myHead (x:xs) = xmyHead [] = error "No head for empty list"
       ```
-   12. **Useful**
-      ```
-      assignToGroups n aList = zip groups aList
-               where groups = cycle [1..n]
-      GHCi> assignToGroups 3 ["file1.txt","file2.txt","file3.txt" ,"file4.txt","file5.txt","file6.txt","file7.txt","file8.txt"]
-      [(1,"file1.txt"),(2,"file2.txt"),(3,"file3.txt"),(1,"file4.txt"),(2,"file5.txt"),(3,"file6.txt"),(1,"file7.txt"),(2,"file8.txt")]
-      GHCi> assignToGroups 2 ["Bob","Kathy","Sue","Joan","Jim","Mike"]
-      [(1,"Bob"),(2,"Kathy"),(1,"Sue"),(2,"Joan"),(1,"Jim"),(2,"Mike")]
-      ```
-6. Ch06:
-   1.
