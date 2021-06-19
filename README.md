@@ -331,7 +331,7 @@ Unit 1
       1. Initial value for `foldl (+)` = 0 => mySum xs = foldl (+) 0 xs
       2. Initial value for `foldl (*)` = 1 => myProduct xs = foldl (*) 1 xs
       3. Initial value for concat with `foldl (++)` = blank => concatAll xs = foldl (++) "" xs
-      4. Initial value for list work like reverse list `foldl rcons [] xs where rcons x y = y : x` = empty list [].
+      4. Initial value for list work like reverse list `foldl rcons [] xs where rcons x y = y : x` is an empty list [].
       5. Common foldl and map combo:  e.g `sumOfSquares` is squares every value in a list and then takes the sum of it:
       ```
       sumOfSquares xs = foldl (+) 0 (map (^2) xs)
