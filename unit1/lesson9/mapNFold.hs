@@ -77,6 +77,10 @@ concatAll xs = foldl (++) "" xs
 -- >>> foldl rcons [1] [2,3]
 -- >>> foldl rcons [2,1] [3]
 -- >>> foldl rcons [3,2,1] []
+-- [3,2,1]
+-- [3,2,1]
+-- [3,2,1]
+-- [3,2,1]
 
 
 rcons x y = y:x
