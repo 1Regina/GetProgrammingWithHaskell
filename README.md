@@ -331,11 +331,12 @@ Unit 1
       1. Initial value for `foldl (+)` = 0 => mySum xs = foldl (+) 0 xs
       2. Initial value for `foldl (*)` = 1 => myProduct xs = foldl (*) 1 xs
       3. Initial value for concat with `foldl (++)` = blank => concatAll xs = foldl (++) "" xs
-      4. Common foldl and map combo:  e.g `sumOfSquares` is squares every value in a list and then takes the sum of it:
+      4. Initial value for list work like reverse list `foldl rcons [] xs where rcons x y = y : x` = empty list [].
+      5. Common foldl and map combo:  e.g `sumOfSquares` is squares every value in a list and then takes the sum of it:
       ```
       sumOfSquares xs = foldl (+) 0 (map (^2) xs)
       ```
-      5. Reverse a list with foldl. Use a helper function `rcons` for consing elements in the reverse order.
+      1. Reverse a list with foldl. Use a helper function `rcons` for consing elements in the reverse order.
       ```
       rcons x y = y:x
       myReverse xs = foldl rcons [] xs
@@ -353,8 +354,8 @@ Unit 1
 
       foldl rcons [3,2,1] [] = [3,2,1]
       ```
-      6. foldl end goal state is still the empty list []. Because the initial value will get updated after each call to the binary function, it’ll contain the final value in your computation.
-      7. When you reach the end of the list, you return the **current** , **NOT original init** value for init:
+      1. foldl end goal state is still the empty list []. Because the initial value will get updated after each call to the binary function, it’ll contain the final value in your computation.
+      2. When you reach the end of the list, you return the **current** , **NOT original init** value for init:
       ```
       myFoldl f init [] = init
       ```
