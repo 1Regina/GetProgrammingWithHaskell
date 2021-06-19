@@ -111,7 +111,7 @@ Unit 1
 
       GHCi> "h":"ello"
       GHCi> ['h']:['e','l','l','o']
-      GHCi>  'h':[]:'e':'l':'l':'o':[]  -- so impossible
+      GHCi>  'h':[]:'e':'l':'l':'o':[]  -- it's impossible
       ```
       > to join two lists , use ++
       ```
@@ -171,8 +171,10 @@ Unit 1
       ```
       GHCi> take 5 [2,4..100]
       [2,4,6,8,10]
+
       GHCi> take 3 "wonderful"
       "won"
+
       GHCi> take 1000000 [1]
       [1]
       ```
@@ -258,3 +260,121 @@ Unit 1
                   else 1 + collatz (n*3 + 1)
       ```
    5. Fibonacci with Q8.2
+8. Ch09:
+   1. Higher-order function is technically any function that takes another function as an argument.
+   2. The map function takes another function and a list as arguments and applies that function to each element in the list.
+      1. Map examples
+      ```
+      GHCi> map reverse ["dog","cat", "moose"]
+      ["god","tac","esoom"]
+
+      GHCi> map head ["dog","cat", "moose"]
+      "dcm"
+
+      GHCi> map (take 4) ["pumpkin","pie","peanut butter"]
+      ["pump","pie","pean"]
+
+      GHCi> map ("a "++) ["train","plane","boat"]
+      ["a train","a plane","a boat"]
+
+      GHCi> map (^2) [1,2,3]
+      [1,4,9]
+      ```
+      2. Result is a new list back that’s exactly the same size as the one you put in.
+      3. Removing the concatenating and squaring function, replacing them with an f for any function, you end up with the definition of map.
+      > end state
+      ```
+      addAnA [] = []
+      ```
+      > alternative of non-empty list
+      ```
+      addAnA (x:xs) = ("a " ++ x):addAnA xs
+      ```
+      > Replacing the concatenation and squaring function with an `f` for any function, you will get the definition of `map`
+      ```
+      squareAll [] = []
+      squareAll (x:xs) = x^2:squareAll xs
+
+
+      myMap f [] = []
+      myMap f (x:xs) = (f x):myMap f xs
+      ```
+
+   3. Filter : similar to `map` : taking a function and a list as arguments and returning a list. The difference is that the function passed to filter must be passed a function that returns True or False. The filter function works by keeping only the elements of the list that pass the test. As with map, the goal of filter is an empty list. What makes filter different is that there are two possible alternatives:
+      1. a nonempty list in which the first element passes, and
+      2. a nonempty list in which the first element doesn’t pass. The only difference is that when the test fails, the element isn’t recursively consed to the list.
+
+      ```
+      GHCi> filter even [1,2,3,4]
+      [2,4]
+
+      GHCi> filter (\(x:xs) -> x == 'a') ["apple","banana","avocado"]
+      ["apple","avocado"]
+      ```
+   4. Foldl :  takes three arguments: a binary function, an initial value, and a list. foldl works is to apply the binary argument to the initial value and the **head** of the list.
+      > Vizualizing foldl (+)
+      ```
+      foldl (+) 0 [1,2,3,4]
+                0 + 1 = 1  -- applying function to the head of list
+
+      foldl (+) 1 [2,3,4]
+                1 + 2 = 3  -- applying function to the head of list
+
+      foldl (+) 3 [3,4]
+                3 + 3 = 6  -- applying function to the head of list
+
+      foldl (+) 6 [4]
+                6 + 4 = 10 -- applying function to the head of list
+
+      foldl (+) 10 [] = 10
+      ```
+      1. Initial value for `foldl (+)` = 0 => mySum xs = foldl (+) 0 xs
+      2. Initial value for `foldl (*)` = 1 => myProduct xs = foldl (*) 1 xs
+      3. Initial value for concat with `foldl (++)` = blank => concatAll xs = foldl (++) "" xs
+      4. Common foldl and map combo:  e.g `sumOfSquares` is squares every value in a list and then takes the sum of it:
+      ```
+      sumOfSquares xs = foldl (+) 0 (map (^2) xs)
+      ```
+      5. Reverse a list with foldl. Use a helper function `rcons` for consing elements in the reverse order.
+      ```
+      rcons x y = y:x
+      myReverse xs = foldl rcons [] xs
+      ```
+      > visualizing
+      ```
+      foldl rcons [] [1,2,3]
+                1:[]
+
+      foldl rcons [1] [2,3]
+                2:[1]
+
+      foldl rcons [2,1] [3]
+                3:[2,1]
+
+      foldl rcons [3,2,1] [] = [3,2,1]
+      ```
+      6. foldl end goal state is still the empty list []. Because the initial value will get updated after each call to the binary function, it’ll contain the final value in your computation.
+      7. When you reach the end of the list, you return the **current** , **NOT original init** value for init:
+      ```
+      myFoldl f init [] = init
+      ```
+      You have only one other alternative: a nonempty list. For this, you pass your initial value and the head of your list to the binary function. This creates your new init value. Then you call myFoldl on the rest of the list by using this new value as your init:
+      ```
+      myFoldl f init [] = init
+      myFoldl f init (x:xs) = myFoldl f newInit xs
+         where newInit = f init x
+      ```
+
+   5. Foldr: two arguments in a binary function: a left argument and a right argument. The left fold compacts the list into the left argument, and the right fold into the right argument
+      ```
+      myFoldr f init [] = init
+      myFoldr f init (x:xs) = f x rightResult
+         where rightResult = myFoldr f init xs
+
+
+      foldr (-) 0 [1,2,3,4] -- = (1 - (2 - (3 - (4 - 0))))
+      ```
+   6. Folds summary:
+      1. foldl is the most intuitive behaving of the folds, but it usually has terrible perfor-mance and can’t be used on infinite lists.
+      2. foldl' is a nonlazy version of foldl that’s often much more efficient.
+      3. foldr is often more efficient than foldl and is the only fold that works on infinite lists

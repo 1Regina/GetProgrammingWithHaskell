@@ -1,3 +1,4 @@
+-- 9.2
 myMap :: (t -> a) -> [t] -> [a]
 myMap f [] = []
 myMap f (x:xs) = (f x):myMap f xs
@@ -7,7 +8,7 @@ myMap f (x:xs) = (f x):myMap f xs
 --
 
 
-
+-- Quick check 9.1
 myRemove :: (a -> Bool) -> [a] -> [a]
 myRemove test [] = []
 myRemove test (x : xs) = if test x
@@ -61,17 +62,30 @@ concatAll xs = foldl (++) "" xs
 -- >>> foldr (-) 0 [1,2,3,4] -- = (1 - (2 - (3 - (4 - 0))))
 -- >>> foldr (-) 4 [1,2,3]   -- = (1 - (2 - (3 - 4 )))
 -- >>> foldr (-) (-1) [1,2]  -- = (1 - (2 - (-1) )
--- >>> foldr (-) (3) [1]     -- = (1 -3) 
--- >>> foldr (-) (-2) []     -- = [] - (-2) -- agar pattern
+-- >>> foldr (-) (3) [1]     -- = (1 -3)
+-- >>> foldr (-) (-2) []     -- = (-2 - 0) -- agar pattern
 -- -2
 -- -2
 -- -2
 -- -2
 -- -2
---
 
+
+-- 9.4 Using foldl for reverse
 -- myReverse xs = foldl rcons [] xs
 -- >>> foldl rcons [] [1,2,3]
 -- >>> foldl rcons [1] [2,3]
 -- >>> foldl rcons [2,1] [3]
--- >>> foldl rcons [3,2,1] [] 
+-- >>> foldl rcons [3,2,1] []
+
+
+rcons x y = y:x
+myReverse xs = foldl rcons [] xs
+-- >>> myReverse "Happy"
+-- "yppaH"
+
+-- >>> myReverse ["First", "of", "all"]
+-- ["all","of","First"]
+
+-- >>> myReverse [1,2,3]
+-- [3,2,1]
