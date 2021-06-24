@@ -35,7 +35,7 @@ Unit 1
    2. return function as its value output.
 4. Ch05:
    1. When you capture a value inside a lambda function, this is referred to as a closure.
-   2. Anytime you might want to use a closure (which in Haskell is pretty much anytime), you want to order your arguments from most to least general. Closures combine lambda functions and first-class functions to give you amazing power but partial application makes life even easier.
+   2. Anytime you might want to use a closure (which in Haskell is pretty much anytime), you want to order your arguments from most to least general. e.g. `getRequestURL host apiKey resource id ` GHCi> getRequestURL "http://example.com" "1337hAsk3ll" "book" "1234" outputs "http://example.com/book/1234?token=1337hAsk3ll" .  Closures combine lambda functions and first-class functions to give you amazing power but partial application makes life even easier.
    3. `add4 a b c d = a + b + c + d`;  `addXto3 x = (\b c d ->add4 x b c d)` makes `addXto3` a closure awaiting 3 remaining arguments.
    4. Partial application: When you call any function with fewer than the required number of parameters in Haskell, you get a new function that’s waiting for the remaining parameters. This language feature is called **partial application**. eg `mystery = add4 3` so 3 becomes the standard staple that will always be included such that `mystery 2 3 4 = 12`
    5. In case where most to least general arguments order was not followed and need correction, instead of rewriting, try a way to **flip** them round. Given previously which shd have location first then name:
@@ -379,3 +379,118 @@ Unit 1
       1. foldl is the most intuitive behaving of the folds, but it usually has terrible perfor-mance and can’t be used on infinite lists.
       2. foldl' is a nonlazy version of foldl that’s often much more efficient.
       3. foldr is often more efficient than foldl and is the only fold that works on infinite lists
+9. Ch11:
+   1. Type Int and Integer are different in Haskell
+      1. Type Int is bound
+      ```
+      x :: Int
+      x = 2
+      GHCi> x*2000
+      4000
+      GHCi> x^2000
+      0
+      ```
+      2. Type Integer is not bounded by memory limitations framed in terms of bytes. Like any whole number.
+      ```
+      y :: Integer
+      y = 2
+      GHCi> y*2000
+      4000
+      GHCi> y^2000
+      114813069527425452423283320117768198402231770208869520047764273682576626139237031385665948631650626991844596463898746277344711896086305533142593135616665318539129989145312280000688779148240044871428926990063486244781615463646388363947317026040466353970904996558162398808944629605623311649536164221970332681344168908984458505602379484807914058900934776500429002716706625830522008132236281291761267883317206598995396418127021779858404042159853183251540889433902091920554957783589672039160081957216630582755380425583726015528348786419432054508915275783882625175435528800822842770817965453762184851149029376
+      ```
+   2. List Types
+      ```
+      values :: [Int]
+      values = [1,2,3]
+
+      testScores :: [Double]
+      testScores = [0.99,0.7,0.8]
+
+      letters :: [Char]
+      letters = ['a','b','c']
+      ```
+
+   3. A list of characters `[Char]` is the same as a string `String` :
+      ```
+      GHCi> letters == "abc"
+      True
+      ```
+   4. Tuples can contain mulitple types. A list of type [Char] is a string of any size, whereas a tuple of type (Char) is a tuple of exactly one character.
+      ```
+      manyItems :: (Int, Double, String, Char) -- or (Int, Double, [Char], Char)
+      manyItems = (24,  0.99, "Haskell", 'H')
+      ```
+   5.  Half-ing correctly. Casting forces a value to be represented as a different type. Haskell has no con-vention for casting types and instead relies on functions that properly transform values from one type to another -- `fromIntegral`
+      ```
+      half :: Int -> Double
+      half n = n/2   <--- Incorrect code!
+
+      half n = (fromIntegral n) / 2   <--- Correct code!
+      ```
+   6. Convert values to and from strings with `show` and `read`.
+      1. > show to make into a string.
+      ```
+      GHCi> show 6
+      "6"
+      GHCi> show 'c'
+      "'c'"
+      GHCi>show 6.0
+      "6.0"
+      ```
+      2. > read to convert a string to another type
+      ```
+      z = read "6"
+      q = z / 2  --- and Haskell will know to treat z as a `Double` .
+      ```F
+      3. 2 ways to write return type.
+         1. As a type signature
+         ```
+         anotherNumber :: Int
+         anotherNumber = read "6"
+         ```
+         2. Append the expected return type to the end of a function call, most frequently in GHCi.
+         ```
+         GHCi> read "6" :: Int
+         6
+         GHCi> read "6" :: Double
+         6.0
+         ```
+   7. Order from most to least general
+   8. Multi-argument functionas a sequence of nested lambda function
+      1. > makeAddress number street town = (number, street, town)
+      ```
+      makeAddressLambda = (\number ->
+                              (\street ->
+                                 (\town -> (number, street, town)))
+
+      GHCi> (((makeAddressLambda 123) "Happy St") "Haskell Town")
+      (123,"Happy St","Haskell Town")
+
+      GHCi> (((makeAddress 123) "Happy St") "Haskell Town")
+      (123,"Happy St","Haskell Town")
+
+      GHCi> makeAddressLambda 123 "Happy St" "Haskell Town"
+      (123,"Happy St","Haskell Town")
+      ```
+   9. Types for first class functions aka functions that take functions as arguments and return functions as values. These sub functions arguments types are written in ( ) e.g. (Int -> Int)
+      ```
+      ifEven :: (Int -> Int) -> Int -> Int
+      ifEven f n = if even n
+                  then f n
+                  else n
+      ```
+   10. `simple` function always return itself there its type signature has input argument type gives output return type. Haskell has type variables. **Any lower-case letter in a type signature indicates that any type can be used in that place.** Type variables are literally variables for types. Type variables work exactly like regular variables, but instead of representing a value, they represent a type.
+      ```
+      simple :: a -> a
+      simple x = x
+      ```
+   11. **All types of the same variable name must be the same ie consistency.**
+   12. **Using different names for type variables doesn’t imply that the values represented by the variables must be different, only that they can be.**
+      ```
+      f1 :: a -> a
+      f2 :: a -> b
+      ```
+      > f2 is a function that can produce a much wider range of possible values. The f1 function could behave only by changing a value and keeping it as the same type: Int -> Int, Char -> Char, and so forth. In contrast, f2 can represent a much broader range of possible behaviors: Int -> Char, Int -> Int, Int -> Bool, Char -> Int, Char -> Bool, and so forth.
+      ```
+   13. 
