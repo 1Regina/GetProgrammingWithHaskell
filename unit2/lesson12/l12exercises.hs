@@ -1,14 +1,14 @@
 -- patientInfo :: String -> String -> Int -> Int -> String
--- patientInfo fname lname age height = name ++ " " ++ ageHeight 
---     where name = lname ++ ", " ++ fname       
+-- patientInfo fname lname age height = name ++ " " ++ ageHeight
+--     where name = lname ++ ", " ++ fname
 --           ageHeight = "(" ++ show age ++ "yrs. " ++ show height ++ "in.)"
 
 -- type PatientName = (String,String)
 
 -- -- patientInfo1 :: (Show a1, Show a2) => [Char] -> a1 -> a2 -> [Char]
 -- patientInfo1 :: PatientName -> Int -> Int -> String
--- patientInfo1 (lname, fname) age height = name ++ " " ++ ageHeight 
---     where name = lname ++ ", " ++ fname       
+-- patientInfo1 (lname, fname) age height = name ++ " " ++ ageHeight
+--     where name = lname ++ ", " ++ fname
 --           ageHeight = "(" ++ show age ++ "yrs. " ++ show height ++ "in.)"
 
 
@@ -44,12 +44,12 @@ canDonateTo _ _ = False --otherwise
 type FirstName = String
 type LastName = String
 type MiddleName = String
-data Name = Name FirstName LastName           
+data Name = Name FirstName LastName
           | NameWithMiddle FirstName MiddleName LastName
 
 showName :: Name -> String
 showName (Name f l) = f ++ " " ++ l
-showName (NameWithMiddle f m l) = f ++ " " ++ m ++ " " ++ l 
+showName (NameWithMiddle f m l) = f ++ " " ++ m ++ " " ++ l
 
 data Patient = Patient Name Sex Int Int Int BloodType
 -- Name: Name
@@ -66,7 +66,7 @@ janeESmith = Patient (NameWithMiddle "Jane" "Elizabeh" "Smith") Female 39 70 150
 
 
 getName :: Patient -> Name
-getName (Patient n _ _ _ _ _) = n 
+getName (Patient n _ _ _ _ _) = n
 getAge :: Patient -> Int
 getAge (Patient  _ _ a _ _ _) = a
 getBloodType :: Patient -> BloodType
@@ -80,8 +80,8 @@ getBloodType (Patient _ _ _ _ _ bt) = bt
 --4. Bye to getters for each value permutation
 --5. Easier to update
 
-data Patient' = Patient' {    name :: Name 
-                            , sex :: Sex   
+data Patient' = Patient' {    name :: Name
+                            , sex :: Sex
                             , age :: Int
                             , height :: Int
                             , weight :: Int
@@ -99,7 +99,7 @@ jackieSmith = Patient' {name = Name "Jackie" "Smith"
 -- 62
 -- >>> showBloodType (bloodType jackieSmith)
 -- "O-"
--- >>> bloodType jackieSmith  -- fail bcos need the function showBloodType otherwise bloodType (=BloodType O Neg) are just arguments and not function output. 
+-- >>> bloodType jackieSmith  -- fail bcos need the function showBloodType otherwise bloodType (=BloodType O Neg) are just arguments and not function output.
 -- <interactive>:2097:2-22: error:
 --     • No instance for (Show BloodType) arising from a use of ‘print’
 --     • In a stmt of an interactive GHCi command: print it
@@ -112,7 +112,7 @@ jackieSmith = Patient' {name = Name "Jackie" "Smith"
 -- "Jackie Smith"
 --
 
--- update fields easily 
+-- update fields easily
 jackieSmithUpdated :: Patient'
 jackieSmithUpdated = jackieSmith { age = 44 }
 
@@ -127,6 +127,17 @@ jackieSmithUpdated = jackieSmith { age = 44 }
 canDonate :: Patient' -> Patient' -> Bool
 canDonate patient1 patient2 = canDonateTo (bloodType patient1) (bloodType patient2)
 
+johnDoe' :: Patient'
+johnDoe' = Patient' (Name "John" "Doe") Male 30 74 200 (BloodType AB Pos)
+-- >>> canDonate jackieSmith jackieSmithUpdated
+-- True
+
+-- >>> canDonate jackieSmith  johnDoe'
+-- True
+
+-- >>> canDonate johnDoe' jackieSmith
+-- False
+
 --Q12.2
 
 sexType :: Sex -> String
@@ -134,14 +145,17 @@ sexType Male = "Male"
 sexType Female = "Female"
 
 patientSummary :: Patient' -> String
-patientSummary patient = "**************\n" 
+patientSummary patient = "**************\n"
                       ++ "Patient Name: " ++ showName (name patient) ++ "\n"
                       ++ "Sex: " ++ sexType (sex patient) ++ "\n"
                       ++ "Age: " ++ show (age patient) ++ "\n"
                       ++ "Height: " ++ show (height patient) ++ " in. \n"
-                      ++ "Weight: " ++ show (weight patient) ++ " lbs.\n" 
-                      ++ "Blood Type: " ++ showBloodType (bloodType patient) ++ "\n"       
-                      ++ "**************\n"               
+                      ++ "Weight: " ++ show (weight patient) ++ " lbs.\n"
+                      ++ "Blood Type: " ++ showBloodType (bloodType patient) ++ "\n"
+                      ++ "**************\n"
 -- >>> patientSummary jackieSmith
 -- "**************\nPatient Name: Jackie Smith\nSex: Female\nAge: 43\nHeight: 62 in. \nWeight: 115 lbs.\nBlood Type: O-\n**************\n"
 --
+
+-- >>> patientSummary johnDoe'
+-- "**************\nPatient Name: John Doe\nSex: Male\nAge: 30\nHeight: 74 in. \nWeight: 200 lbs.\nBlood Type: AB+\n**************\n"

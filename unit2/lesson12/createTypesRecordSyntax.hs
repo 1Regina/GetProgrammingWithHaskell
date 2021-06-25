@@ -1,14 +1,14 @@
 patientInfo :: String -> String -> Int -> Int -> String
-patientInfo fname lname age height = name ++ " " ++ ageHeight 
-    where name = lname ++ ", " ++ fname       
+patientInfo fname lname age height = name ++ " " ++ ageHeight
+    where name = lname ++ ", " ++ fname
           ageHeight = "(" ++ show age ++ "yrs. " ++ show height ++ "in.)"
 
 type PatientName = (String,String)
 
 -- patientInfo1 :: (Show a1, Show a2) => [Char] -> a1 -> a2 -> [Char]
 patientInfo1 :: PatientName -> Int -> Int -> String
-patientInfo1 (lname, fname) age height = name ++ " " ++ ageHeight 
-    where name = lname ++ ", " ++ fname       
+patientInfo1 (lname, fname) age height = name ++ " " ++ ageHeight
+    where name = lname ++ ", " ++ fname
           ageHeight = "(" ++ show age ++ "yrs. " ++ show height ++ "in.)"
 
 
@@ -34,8 +34,8 @@ showBloodType (BloodType abo rh)  = showABO abo ++ showRh rh
 
 
 canDonateTo :: BloodType -> BloodType -> Bool
-canDonateTo (BloodType O _) _ = True
-canDonateTo _ (BloodType AB _) = True
+canDonateTo (BloodType O _) _ = True  -- universal donor
+canDonateTo _ (BloodType AB _) = True -- universal receiver
 canDonateTo (BloodType A _) (BloodType A _) = True
 canDonateTo (BloodType B _) (BloodType B _) = True
 canDonateTo _ _ = False --otherwise
@@ -44,15 +44,16 @@ canDonateTo _ _ = False --otherwise
 type FirstName = String
 type LastName = String
 type MiddleName = String
-data Name = Name FirstName LastName           
-          | NameWithMiddle FirstName MiddleName LastName
+--  Name is either a first and last name, or a name with a middle name included. You can use pattern matching to create a showNamefunction that works with either constructor
+data Name = Name FirstName LastName  -- RHS Name is a data constructor
+          | NameWithMiddle FirstName MiddleName LastName   -- NameWithMiddle is a data constructor
 
 showName :: Name -> String
 showName (Name f l) = f ++ " " ++ l
-showName (NameWithMiddle f m l) = f ++ " " ++ m ++ " " ++ l 
+showName (NameWithMiddle f m l) = f ++ " " ++ m ++ " " ++ l
 
 data Patient = Patient Name Sex Int Int Int BloodType
--- Name: Name
+-- Name: Name  -- either Name FirstName LastName  |  NameWithMiddle FirstName MiddleName LastName
 -- Sex: Sex
 -- Age (years): Int
 -- Height (inches): Int
@@ -66,7 +67,7 @@ janeESmith = Patient (NameWithMiddle "Jane" "Elizabeh" "Smith") Female 39 70 150
 
 
 getName :: Patient -> Name
-getName (Patient n _ _ _ _ _) = n 
+getName (Patient n _ _ _ _ _) = n
 getAge :: Patient -> Int
 getAge (Patient  _ _ a _ _ _) = a
 getBloodType :: Patient -> BloodType
@@ -80,8 +81,8 @@ getBloodType (Patient _ _ _ _ _ bt) = bt
 --4. Bye to getters for each value permutation
 --5. Easier to update
 
-data Patient' = Patient' {    name :: Name 
-                            , sex :: Sex   
+data Patient' = Patient' {    name :: Name
+                            , sex :: Sex
                             , age :: Int
                             , height :: Int
                             , weight :: Int
@@ -99,7 +100,7 @@ jackieSmith = Patient' {name = Name "Jackie" "Smith"
 -- 62
 -- >>> showBloodType (bloodType jackieSmith)
 -- "O-"
--- >>> bloodType jackieSmith  -- fail bcos need the function showBloodType otherwise bloodType (=BloodType O Neg) are just arguments and not function output. 
+-- >>> bloodType jackieSmith  -- fail bcos need the function showBloodType otherwise bloodType (=BloodType O Neg) are just arguments and not function output.
 -- <interactive>:2097:2-22: error:
 --     • No instance for (Show BloodType) arising from a use of ‘print’
 --     • In a stmt of an interactive GHCi command: print it
@@ -108,11 +109,18 @@ jackieSmith = Patient' {name = Name "Jackie" "Smith"
 -- <interactive>:3634:2-17: error:
 --     • No instance for (Show Name) arising from a use of ‘print’
 --     • In a stmt of an interactive GHCi command: print it
+
+-- >>> sex jackieSmith  -- also need a function to display sex hence fail.
+-- No instance for (Show Sex) arising from a use of ‘evalPrint’
+
+-- >>> sexInitial (sex jackieSmith)
+-- 'F'
+
 -- >>> showName (name jackieSmith)
 -- "Jackie Smith"
 --
 
--- update fields easily 
+-- update fields easily
 jackieSmithUpdated :: Patient'
 jackieSmithUpdated = jackieSmith { age = 44 }
 

@@ -493,4 +493,123 @@ Unit 1
       ```
       > f2 is a function that can produce a much wider range of possible values. The f1 function could behave only by changing a value and keeping it as the same type: Int -> Int, Char -> Char, and so forth. In contrast, f2 can represent a much broader range of possible behaviors: Int -> Char, Int -> Int, Int -> Bool, Char -> Int, Char -> Bool, and so forth.
       ```
-   13. 
+   13. See exercises for 11.3
+10. Ch12.0
+    1.  [Char] = `String` --> Type synonym
+    2.  Type synonyms:
+         1. 1:1 replacement
+         ```
+         type FirstName = String
+         type LastName = String
+         type Age = Int
+         type Height = Int
+
+
+         patientInfo :: String -> String -> Int -> Int -> String
+         patientInfo fname lname age height = name ++ " " ++ ageHeight
+               where name = lname ++ ", " ++ fname
+                     ageHeight = "(" ++ show age ++ "yrs. " ++ show height ++ "in.)"
+
+         GHCi> patientInfo "Jane" "Smith" 25 62
+         "Smith, Jane (25yrs. 62in.)"
+
+         ```
+         > rewriting type signature for type synonym
+         ```
+         patientInfo :: FirstName -> LastName -> Age -> Height -> String
+         ```
+         2. Not 1:1 - Combine type synonym then use helper function
+         ```
+         type PatientName = (String,String)
+
+         firstName :: PatientName -> String
+         firstName patient = fst patient
+
+         lastName :: PatientName -> String
+         lastName patient = snd patient
+         ```
+   3. Type definition with `data`
+      ```
+      data Sex = Male | Female
+
+      `Sex` : type constuctor
+      `Male | Female` : - data constructors RHS ie values ~ True and False
+                        - The Sex type is an instance of either of these data constructors.
+      ```
+      1. `data` : to initiate a new type
+      2. Specify the type constructor e.g `Sex` capitalise 1st letter. Type constructor = name of the type.
+      3. Write all the data constructors e.g. both `Male` and `Female`. A data constructor is used to create a concrete instance of the type.
+      4. Separate the data constructors with `|` to create the various instances. The Sex type can be either Male or an instance of Female.
+      5. Ready to create a function with the `Sex` type as one of the argument type.
+      ```
+      sexInitial :: Sex -> Char
+      sexInitial Male = 'M'
+      sexInitial Female = 'F'
+
+      -- Another example
+      data Patient = Patient Name Sex Int Int Int BloodType
+      ```
+
+
+   4. Readability is impt instead of Male :: Sex -> Bool, opt for "M" or "F"
+      ```
+      sexInitial :: Sex -> Char
+      sexInitial Male = 'M'
+      sexInitial Female = 'F'
+      ```
+      1. Blood type ABO (A, B, AB, O) + - would create 8 data constructors. Instead go for Rh and ABO types as distinct.
+      ```
+      data RhType = Pos | Neg
+
+      data ABOType = A | B | AB | O
+
+      ```
+      > so that BloodType is a combo of both
+      ```
+      data BloodType = BloodType ABOType RhType
+      ```
+      > RHS BloodType is a data constructor, making it the same name as type constructor.
+      > Its job is combine `ABOType` and `RhType`
+      > This means a BloodType is an ABOType with an RhType.
+      2. Read more in unit2/lesson12/createTypesRecordSyntax.hs
+      ```
+      data Name = Name FirstName LastName  -- RHS Name is a data constructor
+                | NameWithMiddle FirstName MiddleName LastName   -- NameWithMiddle is a data constructor
+      ```
+   5. *Record syntax* Go thru the process. Step 1 could get painful if `Patient` uses 12 values to define the type
+      1. To get each value of the individual patient, use functions to get each value using pattern matching.
+      ```
+      -- Recall:
+      data Patient = Patient Name Sex Int Int Int BloodType
+
+      getName :: Patient -> Name
+      getName (Patient n _ _ _ _ _) = n
+
+      getAge :: Patient -> Int
+      getAge (Patient  _ _ a _ _ _) = a
+
+      getBloodType :: Patient -> BloodType
+      getBloodType (Patient _ _ _ _ _ bt) = bt
+      ```
+      2. Allow easy data creation bcos each field can be set by name and order is irrelevant. See unit2/lesson12/createTypesRecordSyntax.hs here
+      ```
+      jackieSmith :: Patient'
+      jackieSmith = Patient' {name = Name "Jackie" "Smith"
+                      , age = 43
+                      , sex = Female
+                      , height = 62
+                      , weight = 115
+                      , bloodType = BloodType O Neg }
+      ```
+      3. Access a field value from the record
+      ```
+      GHCi> height jackieSmith
+      62
+      GHCi> showBloodType (bloodType jackieSmith)
+      "O-"
+      ```
+      4. Allow update fields easily
+      ```
+      jackieSmithUpdated :: Patient'
+      jackieSmithUpdated = jackieSmith { age = 44 }
+      ```
