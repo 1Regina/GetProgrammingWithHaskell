@@ -442,7 +442,7 @@ Unit 1
       ```
       z = read "6"
       q = z / 2  --- and Haskell will know to treat z as a `Double` .
-      ```F
+      ```
       3. 2 ways to write return type.
          1. As a type signature
          ```
@@ -481,6 +481,7 @@ Unit 1
                   else n
       ```
    10. `simple` function always return itself there its type signature has input argument type gives output return type. Haskell has type variables. **Any lower-case letter in a type signature indicates that any type can be used in that place.** Type variables are literally variables for types. Type variables work exactly like regular variables, but instead of representing a value, they represent a type.
+
       ```
       simple :: a -> a
       simple x = x
@@ -492,12 +493,12 @@ Unit 1
       f2 :: a -> b
       ```
       > f2 is a function that can produce a much wider range of possible values. The f1 function could behave only by changing a value and keeping it as the same type: Int -> Int, Char -> Char, and so forth. In contrast, f2 can represent a much broader range of possible behaviors: Int -> Char, Int -> Int, Int -> Bool, Char -> Int, Char -> Bool, and so forth.
-      ```
+
    13. See exercises for 11.3
 10. Ch12.0
     1.  [Char] = `String` --> Type synonym
-    2.  Type synonyms:
-         1. 1:1 replacement
+    2.  Type synonyms: 2 types
+        1.   1:1 replacement
          ```
          type FirstName = String
          type LastName = String
@@ -512,13 +513,16 @@ Unit 1
 
          GHCi> patientInfo "Jane" "Smith" 25 62
          "Smith, Jane (25yrs. 62in.)"
-
          ```
+
          > rewriting type signature for type synonym
+
          ```
          patientInfo :: FirstName -> LastName -> Age -> Height -> String
          ```
-         2. Not 1:1 - Combine type synonym then use helper function
+
+        2. Not 1:1 - Combine type synonym then use helper function
+
          ```
          type PatientName = (String,String)
 
@@ -528,88 +532,195 @@ Unit 1
          lastName :: PatientName -> String
          lastName patient = snd patient
          ```
-   3. Type definition with `data`
-      ```
-      data Sex = Male | Female
 
-      `Sex` : type constuctor
-      `Male | Female` : - data constructors RHS ie values ~ True and False
-                        - The Sex type is an instance of either of these data constructors.
-      ```
-      1. `data` : to initiate a new type
-      2. Specify the type constructor e.g `Sex` capitalise 1st letter. Type constructor = name of the type.
-      3. Write all the data constructors e.g. both `Male` and `Female`. A data constructor is used to create a concrete instance of the type.
-      4. Separate the data constructors with `|` to create the various instances. The Sex type can be either Male or an instance of Female.
-      5. Ready to create a function with the `Sex` type as one of the argument type.
-      ```
-      sexInitial :: Sex -> Char
-      sexInitial Male = 'M'
-      sexInitial Female = 'F'
+    3. Type definition with `data`
+         ```
+         data Sex = Male | Female
 
-      -- Another example
-      data Patient = Patient Name Sex Int Int Int BloodType
-      ```
+         `Sex` : type constuctor
+         `Male | Female` : - data constructors RHS ie values ~ True and False
+                           - The Sex type is an instance of either of these data constructors.
+         ```
+         The steps are:
+         1. `data` : to initiate a new type
+         2. Specify the type constructor e.g `Sex` capitalise 1st letter. Type constructor = name of the type.
+         3. Write all the data constructors e.g. both `Male` and `Female`. A data constructor is used to create a concrete instance of the type.
+         4. Separate the data constructors with `|` to create the various instances. The Sex type can be either Male or an instance of Female.
+         5. Ready to create a function with the `Sex` type as one of the argument type.
+            ```
+            sexInitial :: Sex -> Char
+            sexInitial Male = 'M'
+            sexInitial Female = 'F'
+
+            -- Another example
+            data Patient = Patient Name Sex Int Int Int BloodType
+            ```
 
 
-   4. Readability is impt instead of Male :: Sex -> Bool, opt for "M" or "F"
-      ```
-      sexInitial :: Sex -> Char
-      sexInitial Male = 'M'
-      sexInitial Female = 'F'
-      ```
-      1. Blood type ABO (A, B, AB, O) + - would create 8 data constructors. Instead go for Rh and ABO types as distinct.
-      ```
-      data RhType = Pos | Neg
+    4. Readability is impt instead of Male :: Sex -> Bool, opt for "M" or "F"
+         ```
+         sexInitial :: Sex -> Char
+         sexInitial Male = 'M'
+         sexInitial Female = 'F'
+         ```
+       1. Blood type ABO (A, B, AB, O) + - would create 8 data constructors. Instead go for Rh and ABO types as distinct.
+         ```
+         data RhType = Pos | Neg
 
-      data ABOType = A | B | AB | O
+         data ABOType = A | B | AB | O
+         ```
+       2.  With Rh and ABO types as distinct, BloodType is a combo of both
+         ```
+         data BloodType = BloodType ABOType RhType
 
-      ```
-      > so that BloodType is a combo of both
-      ```
-      data BloodType = BloodType ABOType RhType
-      ```
-      > RHS BloodType is a data constructor, making it the same name as type constructor.
-      > Its job is combine `ABOType` and `RhType`
-      > This means a BloodType is an ABOType with an RhType.
-      2. Read more in unit2/lesson12/createTypesRecordSyntax.hs
-      ```
-      data Name = Name FirstName LastName  -- RHS Name is a data constructor
-                | NameWithMiddle FirstName MiddleName LastName   -- NameWithMiddle is a data constructor
-      ```
-   5. *Record syntax* Go thru the process. Step 1 could get painful if `Patient` uses 12 values to define the type
-      1. To get each value of the individual patient, use functions to get each value using pattern matching.
-      ```
-      -- Recall:
-      data Patient = Patient Name Sex Int Int Int BloodType
+         -- RHS BloodType is a data constructor, making it the same name as type constructor.
+         -- Its job is combine `ABOType` and `RhType`
+         -- This means a BloodType is an ABOType with an RhType.
+         -- Read more in unit2/lesson12/createTypesRecordSyntax.hs
 
-      getName :: Patient -> Name
-      getName (Patient n _ _ _ _ _) = n
+         data Name = Name FirstName LastName  -- RHS Name is a data constructor
+                   | NameWithMiddle FirstName MiddleName LastName   -- NameWithMiddle is a data constructor
+         ```
 
-      getAge :: Patient -> Int
-      getAge (Patient  _ _ a _ _ _) = a
+    5. *Record syntax* Go thru the process. Step 1 could get painful if `Patient` uses 12 values to define the type
+       1. To get each value of the individual patient, use functions to get each value using pattern matching.
+        ```
+         -- Recall:
+         data Patient = Patient Name Sex Int Int Int BloodType
 
-      getBloodType :: Patient -> BloodType
-      getBloodType (Patient _ _ _ _ _ bt) = bt
+         getName :: Patient -> Name
+         getName (Patient n _ _ _ _ _) = n
+
+         getAge :: Patient -> Int
+         getAge (Patient  _ _ a _ _ _) = a
+
+         getBloodType :: Patient -> BloodType
+         getBloodType (Patient _ _ _ _ _ bt) = bt
+        ```
+       2. Allow easy data creation bcos each field can be set by name and order is irrelevant. See unit2/lesson12/createTypesRecordSyntax.hs here
+        ```
+         jackieSmith :: Patient'
+         jackieSmith = Patient' {name = Name "Jackie" "Smith"
+                        , age = 43
+                        , sex = Female
+                        , height = 62
+                        , weight = 115
+                        , bloodType = BloodType O Neg }
+         ```
+       3. Access a field value from the record
+         ```
+         GHCi> height jackieSmith
+         62
+         GHCi> showBloodType (bloodType jackieSmith)
+         "O-"
+         ```
+       4. Allow update fields easily
+         ```
+         jackieSmithUpdated :: Patient'
+         jackieSmithUpdated = jackieSmith { age = 44 }
+         ```
+1.  Ch13.0
+    1.  Type classes allow you to group types based on shared behavior. A type class states which functions a type must support and is a way of describing groups of types that all behave in the same way
+    2. `Num a` means some type `a` of class `Num`. Use `:info` to get definition. All members of cthe class must implement these functions, where output type and argument types are the same such that you cannot add two `Int`s  nand get a `Double`.
       ```
-      2. Allow easy data creation bcos each field can be set by name and order is irrelevant. See unit2/lesson12/createTypesRecordSyntax.hs here
+      GHCi> :info Num
+      class Num a where
+         (+) :: a -> a -> a
+         (-) :: a -> a -> a
+         (*) :: a -> a -> a
+         negate :: a -> a
+         abs :: a -> a
+         signum :: a -> a  -- ie gives the sign of a number
       ```
-      jackieSmith :: Patient'
-      jackieSmith = Patient' {name = Name "Jackie" "Smith"
-                      , age = 43
-                      , sex = Female
-                      , height = 62
-                      , weight = 115
-                      , bloodType = BloodType O Neg }
+    3.  Nearly all functions required in any type class definition will be expressed in terms of type variables, because otherwise the functions will be tied to a single type.
+    4.  Type class definition structure:
       ```
-      3. Access a field value from the record
+      class TypeName a where
+         fun1 :: a -> a
+         fun2 :: a -> String
+         fun3 :: a -> a -> Bool
+
+      TypeName: Name of the type class
+      fun1, fun2, fun3: Names of all the required functions
+      a -> a / a -> String / a -> a -> Bool:  Type signatures of the required functions
+      a in class TypeName a where ...: Type variable as a placeholder for the specific type that willimplement this class
       ```
-      GHCi> height jackieSmith
-      62
-      GHCi> showBloodType (bloodType jackieSmith)
-      "O-"
+    5.  Example: A class `Describable` with an instance that always return a string for whatever type the argument. Write the function `describe`to call on an instance that will return a string. For whatever type you have, if it’s `Describable`, calling `describe` on an instance of the type will tell you all about it.
       ```
-      4. Allow update fields easily
+      GHCi> describe False
+      "A member of the Bool class, False is the opposite of True"
+
+      Answer:
+      class Describable a where
+         describe :: a -> String
       ```
-      jackieSmithUpdated :: Patient'
-      jackieSmithUpdated = jackieSmith { age = 44 }
+    6.  `Ord` for things that can be compared and ordered.
+      >  Take any two of the same types that implement Ord, and return a Boolean
+      ```
+      GHCi> :t (>)
+      (>) :: Ord a => a -> a -> Bool
+      ```
+    7.  `Ord` class needs `Eq` class which only needs 2 functions. Ord type class includes the Eq type class in its definition. but not everything can be ranked e.g vanilla vs choco ice cream which can do `Eq` but not `Ord`.
+      ```
+      class Eq a where
+         (==) :: a -> a -> Bool
+         (/=) :: a -> a -> Bool
+
+      class Eq a => Ord a where
+         compare :: a -> a -> Ordering
+         (<) :: a -> a -> Bool
+         (<=) :: a -> a -> Bool
+         (>) :: a -> a -> Bool
+         (>=) :: a -> a -> Bool
+         max :: a -> a -> a
+         min :: a -> a -> a
+      ```
+    8.  Use `:info` to check the  type classess membership. e.g `:info Int` to know Int belongs to Bounded, Enum, Eq, Integral, Num, Ord, Read, Real, Show.
+    9.  `Bounded`. minBound and maxBound are values, not functions. `Char` and `Int` are members of the `Bounded` type class.
+      ```
+      class Bounded a where
+         minBound :: a
+         maxBound :: a
+
+      GHCi> minBound :: Int
+      -9223372036854775808
+
+      GHCi> maxBound :: Int
+      9223372036854775807
+
+      GHCi> minBound :: Char
+      '\NUL'
+      ```
+    10.  Add `deriving (Show)` at the end after data constructors to get data constructors values to show , similarly to Bool which is a member of the `Show` type class (Check with :info Bool).
+      ```
+      data Icecream = Chocolate | Vanilla
+
+      Bool are member of `Show`
+      GHCi> True
+      True
+      GHCi> False
+      False
+
+      GHCi> Chocolate --error
+      <interactive>:404:1:No instance for (Show Icecream) arising from a use of ‘print’
+
+      Rectify with
+      data Icecream = Chocolate | Vanilla deriving (Show)
+
+      GHCi> Chocolate
+      Chocolate
+      ```
+    11.  Common to add other type class `deriving (Show, Eq, Ord)` also. Haskell defaults to the order of the data constructors for determining Ord. So Vanilla will be greater than Chocolate.
+      ```
+      data Icecream = Chocolate | Vanilla deriving (Show, Eq, Ord)
+
+      GHCi> Vanilla == Vanilla
+      True
+      GHCi> Chocolate == Vanilla
+      False
+      GHCi> Chocolate /= Vanilla
+      True
+
+      GHCi> Chocolate > Vanilla
+      False
       ```

@@ -94,8 +94,18 @@ inc x = x + 1
 -- GHCi> succ maxBound :: Int*** Exception: Prelude.Enum.succ{Int}: tried to take ‘succ' of maxBound
 -- Because there’s no true successor to a Bounded type, succ throws an error. The inc function just rotates you back to the beginning.
 
--- Q13.3 to keep recycling 
+-- Q13.3 to keep recycling
 cycleSucc :: (Bounded a, Enum a, Eq a) => a -> a
-cycleSucc n = if n == maxBound 
+cycleSucc n = if n == maxBound
               then minBound
-              else succ n 
+              else succ n
+
+-- >>> maxBound :: Int
+-- 9223372036854775807
+
+-- >>> cycleSucc '1'
+-- '2'
+
+-- >>> cycleSucc 'p'
+-- 'q'
+
