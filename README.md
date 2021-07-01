@@ -421,7 +421,7 @@ Unit 1
       manyItems :: (Int, Double, String, Char) -- or (Int, Double, [Char], Char)
       manyItems = (24,  0.99, "Haskell", 'H')
       ```
-   5.  Half-ing correctly. Casting forces a value to be represented as a different type. Haskell has no con-vention for casting types and instead relies on functions that properly transform values from one type to another -- `fromIntegral`
+   5.  Half-ing correctly. Casting forces a value to be represented as a different type. Haskell has no convention for casting types and instead relies on functions that properly transform values from one type to another -- `fromIntegral`.
       ```
       half :: Int -> Double
       half n = n/2   <--- Incorrect code!
@@ -542,7 +542,7 @@ Unit 1
                            - The Sex type is an instance of either of these data constructors.
          ```
          The steps are:
-         1. `data` : to initiate a new type
+         1. `data` : to initiate a new (data) type
          2. Specify the type constructor e.g `Sex` capitalise 1st letter. Type constructor = name of the type.
          3. Write all the data constructors e.g. both `Male` and `Female`. A data constructor is used to create a concrete instance of the type.
          4. Separate the data constructors with `|` to create the various instances. The Sex type can be either Male or an instance of Female.
@@ -619,108 +619,231 @@ Unit 1
          jackieSmithUpdated :: Patient'
          jackieSmithUpdated = jackieSmith { age = 44 }
          ```
-1.  Ch13.0
+11. Ch13.0
     1.  Type classes allow you to group types based on shared behavior. A type class states which functions a type must support and is a way of describing groups of types that all behave in the same way
     2. `Num a` means some type `a` of class `Num`. Use `:info` to get definition. All members of cthe class must implement these functions, where output type and argument types are the same such that you cannot add two `Int`s  nand get a `Double`.
-      ```
-      GHCi> :info Num
-      class Num a where
-         (+) :: a -> a -> a
-         (-) :: a -> a -> a
-         (*) :: a -> a -> a
-         negate :: a -> a
-         abs :: a -> a
-         signum :: a -> a  -- ie gives the sign of a number
-      ```
+         ```
+         GHCi> :info Num
+         class Num a where
+            (+) :: a -> a -> a
+            (-) :: a -> a -> a
+            (*) :: a -> a -> a
+            negate :: a -> a
+            abs :: a -> a
+            signum :: a -> a  -- ie gives the sign of a number
+         ```
     3.  Nearly all functions required in any type class definition will be expressed in terms of type variables, because otherwise the functions will be tied to a single type.
     4.  Type class definition structure:
-      ```
-      class TypeName a where
-         fun1 :: a -> a
-         fun2 :: a -> String
-         fun3 :: a -> a -> Bool
+         ```
+         class TypeName a where
+            fun1 :: a -> a
+            fun2 :: a -> String
+            fun3 :: a -> a -> Bool
 
-      TypeName: Name of the type class
-      fun1, fun2, fun3: Names of all the required functions
-      a -> a / a -> String / a -> a -> Bool:  Type signatures of the required functions
-      a in class TypeName a where ...: Type variable as a placeholder for the specific type that willimplement this class
-      ```
+         TypeName: Name of the type class
+         fun1, fun2, fun3: Names of all the required functions
+         a -> a / a -> String / a -> a -> Bool:  Type signatures of the required functions
+         a in class TypeName a where ...: Type variable as a placeholder for the specific type that willimplement this class
+         ```
     5.  Example: A class `Describable` with an instance that always return a string for whatever type the argument. Write the function `describe`to call on an instance that will return a string. For whatever type you have, if it’s `Describable`, calling `describe` on an instance of the type will tell you all about it.
-      ```
-      GHCi> describe False
-      "A member of the Bool class, False is the opposite of True"
+         ```
+         GHCi> describe False
+         "A member of the Bool class, False is the opposite of True"
 
-      Answer:
-      class Describable a where
-         describe :: a -> String
-      ```
+         Answer:
+         class Describable a where
+            describe :: a -> String
+         ```
     6.  `Ord` for things that can be compared and ordered.
       >  Take any two of the same types that implement Ord, and return a Boolean
-      ```
-      GHCi> :t (>)
-      (>) :: Ord a => a -> a -> Bool
-      ```
+         ```
+         GHCi> :t (>)
+         (>) :: Ord a => a -> a -> Bool
+         ```
     7.  `Ord` class needs `Eq` class which only needs 2 functions. Ord type class includes the Eq type class in its definition. but not everything can be ranked e.g vanilla vs choco ice cream which can do `Eq` but not `Ord`.
-      ```
-      class Eq a where
-         (==) :: a -> a -> Bool
-         (/=) :: a -> a -> Bool
+         ```
+         class Eq a where
+            (==) :: a -> a -> Bool
+            (/=) :: a -> a -> Bool
 
-      class Eq a => Ord a where
-         compare :: a -> a -> Ordering
-         (<) :: a -> a -> Bool
-         (<=) :: a -> a -> Bool
-         (>) :: a -> a -> Bool
-         (>=) :: a -> a -> Bool
-         max :: a -> a -> a
-         min :: a -> a -> a
-      ```
+         class Eq a => Ord a where
+            compare :: a -> a -> Ordering
+            (<) :: a -> a -> Bool
+            (<=) :: a -> a -> Bool
+            (>) :: a -> a -> Bool
+            (>=) :: a -> a -> Bool
+            max :: a -> a -> a
+            min :: a -> a -> a
+         ```
     8.  Use `:info` to check the  type classess membership. e.g `:info Int` to know Int belongs to Bounded, Enum, Eq, Integral, Num, Ord, Read, Real, Show.
-    9.  `Bounded`. minBound and maxBound are values, not functions. `Char` and `Int` are members of the `Bounded` type class.
-      ```
-      class Bounded a where
-         minBound :: a
-         maxBound :: a
+    9. `Bounded`. minBound and maxBound are values, not functions. `Char` and `Int` are members of the `Bounded` type class.
+         ```
+         class Bounded a where
+            minBound :: a
+            maxBound :: a
 
-      GHCi> minBound :: Int
-      -9223372036854775808
+         GHCi> minBound :: Int
+         -9223372036854775808
 
-      GHCi> maxBound :: Int
-      9223372036854775807
+         GHCi> maxBound :: Int
+         9223372036854775807
 
-      GHCi> minBound :: Char
-      '\NUL'
-      ```
+         GHCi> minBound :: Char
+         '\NUL'
+         ```
     10.  Add `deriving (Show)` at the end after data constructors to get data constructors values to show , similarly to Bool which is a member of the `Show` type class (Check with :info Bool).
-      ```
-      data Icecream = Chocolate | Vanilla
+         ```
+         data Icecream = Chocolate | Vanilla
 
-      Bool are member of `Show`
-      GHCi> True
-      True
-      GHCi> False
-      False
+         Bool are member of `Show`
+         GHCi> True
+         True
+         GHCi> False
+         False
 
-      GHCi> Chocolate --error
-      <interactive>:404:1:No instance for (Show Icecream) arising from a use of ‘print’
+         GHCi> Chocolate --error
+         <interactive>:404:1:No instance for (Show Icecream) arising from a use of ‘print’
 
-      Rectify with
-      data Icecream = Chocolate | Vanilla deriving (Show)
+         Rectify with
+         data Icecream = Chocolate | Vanilla deriving (Show)
 
-      GHCi> Chocolate
-      Chocolate
-      ```
+         GHCi> Chocolate
+         Chocolate
+         ```
     11.  Common to add other type class `deriving (Show, Eq, Ord)` also. Haskell defaults to the order of the data constructors for determining Ord. So Vanilla will be greater than Chocolate.
-      ```
-      data Icecream = Chocolate | Vanilla deriving (Show, Eq, Ord)
+         ```
+         data Icecream = Chocolate | Vanilla deriving (Show, Eq, Ord)
 
-      GHCi> Vanilla == Vanilla
-      True
-      GHCi> Chocolate == Vanilla
-      False
-      GHCi> Chocolate /= Vanilla
-      True
+         GHCi> Vanilla == Vanilla
+         True
+         GHCi> Chocolate == Vanilla
+         False
+         GHCi> Chocolate /= Vanilla
+         True
 
-      GHCi> Chocolate > Vanilla
-      False
-      ```
+         GHCi> Chocolate > Vanilla
+         False
+         ```
+12. Ch14.0
+    1.  Functions in type classes are called *methods*.
+    2.  Unless it is a type definition with show, add `deriving (Show)`.
+    3.  But to intro other ( corresponding string) output beyond data constructors, specify `data` constructor to define type definition and `instance Show type where show data-constructor-value = "I" ` etc. See SixSidedDie in /Users/regina/Code/Haskell/GetProgrammingWithHaskell/unit2/lesson14/typeClassCreation.hs
+    4.  **Polymorphism** means that the same function behaves differently depending on the type of data it’s working with. e.g `read`
+         ```
+         read "10"
+
+         For read :: Int
+         read "10" returns 10
+
+         For read :: Double
+         read "10" returns 10.0
+         ```
+    5. **Superclass** : `Eq` is a superclass of `Ord` means that every instance of `Ord` must also be an instance of `Eq`. e.g  to compare SixSided-Die data constructors, which means implementing Ord, so first you need to implement Eq
+         ```
+         class Eq a where
+            (==) :: a -> a -> Bool
+            (/=) :: a -> a -> Bool
+         ```
+    6. Type classes can have default implementations of methods. If you define (==), Haskell can figure out what (/=) means without any help. e.g
+         ```
+         instance Eq SixSidedDie where
+            (==) S6 S6 = True
+            (==) S5 S5 = True
+            (==) S4 S4 = True
+            (==) S3 S3 = True
+            (==) S2 S2 = True
+            (==) S1 S1 = True
+            (==) _ _ = False
+         ```
+    7. Use `:info` for info but it is incomplete. For minimal requirement for implementation look at *Hackage* -> Type Class (e.g Eq (https://hackage.haskell .org/package/base/docs/Data-Eq.html) -> "**Minimum complete definition**" e.g Eq (==) | (/=). To implement the Eq type class, all you have to define is either (==) or (/=). With either one of these options, Haskell can work out the rest for you. Hoogle is the interface for Hackage. Hoogle can be found at www.haskell.org/hoogle.
+    8. About `Ord`. Suffice to just implement `compare`. Functions for `Ord` :
+         ```
+         class Eq a => Ord a where
+            compare :: a -> a -> Ordering  -- ** only need to implement compare
+            (<) :: a -> a -> Bool
+            (<=) :: a -> a -> Bool
+            (>) :: a -> a -> Bool
+            (>=) :: a -> a -> Bool
+            max :: a -> a -> a
+            min :: a -> a -> a
+
+         -- Recall that ordering is used in `sort` in lesson 4
+         data Ordering = LT | EQ | GT
+         ```
+    9. To shortcut listing all the combi for `Ord` in `Ord SixSidedDieEq` in typeClassCreation.hs, use `deriving (Ord)` since order of data constructors will determine their priority.
+         ```
+         data Test1 = AA | ZZ deriving (Show, Eq, Ord)
+         data Test2 = ZZZ | AAA deriving (Show, Eq, Ord)
+
+         GHCi> AA < ZZ
+         True
+         GHCi> AA > ZZ
+         False
+         GHCi> AAA > ZZZ
+         True
+         GHCi> AAA < ZZZ
+         False
+         ```
+    10. About `Enum`. `Enum` type allows you to represent your dice sides as an enumerated list of constants. See Enum class but actually just `fromEnum` and `toEnum` will do so that now SixSidedDie can now be treated as `Int` and `C  NB: to start with 0.
+         ```
+         class Enum a where
+            succ :: a -> a
+            pred :: a -> a
+            toEnum :: Int -> a
+            fromEnum :: a -> Int
+            enumFrom :: a -> [a]
+            enumFromThen :: a -> a -> [a]
+            enumFromTo :: a -> a -> [a]
+            enumFromThenTo :: a -> a -> a -> [a]
+
+            instance Enum SixSidedDie where
+               toEnum 0 = S1
+               toEnum 1 = S2
+               toEnum 2 = S3
+               toEnum 3 = S4
+               toEnum 4 = S5
+               toEnum 5 = S6
+               toEnum _ = error "No such value"
+
+               fromEnum S1 = 0
+               fromEnum S2 = 1
+               fromEnum S3 = 2
+               fromEnum S4 = 3
+               fromEnum S5 = 4
+               fromEnum S6 = 5
+
+            -- Test to see that now the data constructors of SixSidedDie is now number
+            GHCi> [S1 .. S6]
+            [one,two,three,four,five,six]
+            GHCi> [S2,S4 .. S6]
+            [two,four,six]
+            GHCi> [S4 .. S6]
+            [four,five,six]
+            GHCi> [S1 .. ]
+            [one,two,three,four,five,six,*** Exception: No such value  -- didnt handle the case of missing value.
+            -- Put an end to the list by defining the type constructors with deriving (Enum):
+
+            data SixSidedDie = S1 | S2 | S3 | S4 | S5 | S6 deriving (Enum)
+            GHCi> [S1 .. ]
+            [one,two,three,four,five,six]
+         ```
+    11. Rem the sort names sort by first name and was overcome by sortBy with a first class function to sort by second name. `type Name = (String, String) names :: [Name]`, we have to implement my own custom `Ord` for Name by (re)defining `compare` AND refine Name to include deriving (Show, Eq) to show "This tuple is special from others."
+         ```
+         data Name = Name (String, String) deriving (Show, Eq) vs the typical type Name = (String, String)
+
+         instance Ord Name where
+            compare (Name (f1,l1)) (Name (f2,l2)) = compare (l1,f1) (l2,f2)
+
+         names :: [Name]
+         names = [Name ("Emil","Cioran")
+                  , Name ("Eugene","Thacker")
+                  , Name ("Friedrich","Nietzsche")]
+
+         -- Now your names are sorted as expected:
+         GHCi> import Data.List
+         GHCi> sort names
+         [Name ("Emil","Cioran"),Name ("Friedrich","Nietzsche"),➥Name ("Eugene","Thacker")]
+         ```
+    12. **newtype** can replace `data` but not vice versa. `newtype` can have only one type constructor and one type (in the case of Name above,it’s Tuple -- Name(String, String)). **For simplicity, we’ll stick to creating types with data throughout this book.**
+    13.  Arrows from one class to another indicate a superclass relationship. Type class road map ![Alt text](unit2/lesson14/TypeclassRoadMap.png?raw=true "Type Class Road Map")
+    14.  Note minimum complete definition for creating `instance typeclass Type where...`. See unit2/lesson14/l14exercises.hs
