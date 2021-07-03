@@ -2,39 +2,39 @@
 type FirstName = String
 type LastName = String
 type MiddleName = String
-data Name = Name FirstName LastName   
+data Name = Name FirstName LastName
           | NameWithMiddle FirstName MiddleName LastName
           | TwoInitialsWithLast Char Char LastName --for edge case e.g H.P. Lovecraft
           | FirstNameWithTwoInits FirstName Char Char -- more edge case
           deriving Show
 
-data Creator = AuthorCreator Author 
-             | ArtistCreator Artist  
+data Creator = AuthorCreator Author
+             | ArtistCreator Artist
              deriving Show
-             
+
 data Author = Author Name deriving Show
 
 data Artist = Person Name | Band String deriving Show
 
 
 data Book = Book {
-     author    :: Creator   
-   , isbn      :: String   
-   , bookTitle :: String   
-   , bookYear  :: Int   
-   , bookPrice :: Double   } 
+     author    :: Creator
+   , isbn      :: String
+   , bookTitle :: String
+   , bookYear  :: Int
+   , bookPrice :: Double   }
 
 
 data VinylRecord = VinylRecord {
-         artist        :: Creator   
-       , recordTitle   :: String   
-       , recordYear    :: Int   
+         artist        :: Creator
+       , recordTitle   :: String
+       , recordYear    :: Int
        , recordPrice   :: Double   }
 
 
 data CollectibleToy = CollectibleToy {
-         name       :: String   
-       , descrption :: String   
+         name       :: String
+       , descrption :: String
        , toyPrice   :: Double   }
 
 data Pamphlet = Pamphlet {
@@ -44,8 +44,8 @@ data Pamphlet = Pamphlet {
     --    , pamphletPrice  :: Double
     }
 
-data StoreItem = BookItem Book 
-               | RecordItem VinylRecord 
+data StoreItem = BookItem Book
+               | RecordItem VinylRecord
                | ToyItem CollectibleToy -- addition
                | PamphletItem Pamphlet
 
@@ -61,10 +61,12 @@ madeBy (RecordItem   record  ) = show $ artist record
 madeBy (PamphletItem pamphlet) = show $ contact pamphlet
 madeBy (ToyItem      toy     ) = "unknown"
 
+
+
 -- Q16.2
 --recall patient name or author name
 data Shape = Circle Radius | Square Length | Rectange Length Breadth --deriving Show
-type Radius = Double
+type Radius = Double -- note without type constructor name as solo Double is a "major type"
 -- data Circle = CircleArea Radius
 --             | CirclePeri Radius
 

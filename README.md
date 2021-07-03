@@ -540,6 +540,10 @@ Unit 1
          `Sex` : type constuctor
          `Male | Female` : - data constructors RHS ie values ~ True and False
                            - The Sex type is an instance of either of these data constructors.
+
+         -- Another e.g
+         data Shape = Circle Radius | Square Length | Rectange Length Breadth --deriving Show
+         type Radius = Double -- note without type constructor name as solo Double is a "major type"
          ```
          The steps are:
          1. `data` : to initiate a new (data) type
@@ -846,4 +850,83 @@ Unit 1
          ```
     12. **newtype** can replace `data` but not vice versa. `newtype` can have only one type constructor and one type (in the case of Name above,it’s Tuple -- Name(String, String)). **For simplicity, we’ll stick to creating types with data throughout this book.**
     13.  Arrows from one class to another indicate a superclass relationship. Type class road map ![Alt text](unit2/lesson14/TypeclassRoadMap.png?raw=true "Type Class Road Map")
-    14.  Note minimum complete definition for creating `instance typeclass Type where...`. See unit2/lesson14/l14exercises.hs
+    14.  Note minimum complete definition when creating `instance Typeclass MyType where...`. PLEASE See unit2/lesson14/l14exercises.hs
+    15. Define a type class with function and then an instance of it.
+          ```
+            --Q14.2 (Ans)
+            -- qn : define a five-sided die
+            data FiveSidedDie = S1 | S2 | S3 | S4 | S5 deriving (Enum, Eq, Show) -- Dont need Ord as Eq is a superclass of Ord
+
+            -- qn: define a type class named Die with a useful method for a die. Include a superclass (chose Eq as superclass of Ord which die must have)
+            class (Eq a, Enum a) => Die a where
+            roll :: Int ->  a
+
+            -- qn: make your FiveSidedDie an instance of Die
+            instance Die FiveSidedDie where
+            roll n = toEnum (n `mod` 5)
+           ```
+13. Ch16.0
+    1. Algebraic data types = any types that can be made by combining other types, only 2 types
+       1. Product types (using `and` as in a name is a String and another String)
+       2. Sum types (using `or` as in  Bool which is a True data constructor or a False data constructor).
+    2. Product types are created by combining two or more existing types with *and* .e.g
+       1. fraction : numerator (`Integer`) *and* a denominator (`Integer`). NB `Integer` is infinite range of number but (-2 ^ 29) < `Int` < ((2 ^ 29) -1)
+       2. street address: number (`Int`) *and* a street name (`String`)
+       3. mailing address: street name (`String`) *and* a city (`String`) *and* a state (`String`) *and* a zip code (`Int`)
+    3. Sum types are created by combining two or more existing types with *or* e.g
+       1. Bool or Name, Creator, Artist in below. `Artist`, `Author`, and as a result, `Creator` all depend on the definition of `Name`. But you had to change only the definition of `Name` itself and didn’t need to worry at all about how any other types using `Name` are defined. With Sum type, creating groups of similar types is convenient (e.g StoreItem which is a book/record/collectible toy.)
+         ```
+         type FirstName = String
+         type LastName = String
+         type MiddleName = String
+
+         -- Sum type example 1
+         data Name = Name FirstName LastName                     -- RHS Name is a type constructor
+                  | NameWithMiddle FirstName MiddleName LastName -- NameWithMiddle is a type constructor consisting of 3 strings
+                  | TwoInitialsWithLast Char Char LastName       --for edge case e.g H.P. Lovecraft
+                  | FirstNameWithTwoInits FirstName Char Char    -- more edge case
+                  deriving (Show)         -- needed if going to create other types with data constructors that use `Name`. See unit3/lesson16/productNSumTypes.hs quick check 16.2 `show (author book)` in fn `madeBy` when this `deriving (Show)` is removed.
+
+         -- Sum type example 2
+         data Creator = AuthorCreator Author
+                     | ArtistCreator Artist
+
+         newtype Author = Author Name
+
+        -- Sum type example 3
+         data Artist = Person Name | Band String
+
+         -- so this makes creating a creator with 2 initials & a last name
+         hpLovecraft :: Creator
+         hpLovecraft = AuthorCreator
+                           (Author
+                              (TwoInitialsWithLast 'H' 'P' "Lovecraft"))
+
+        -- Sum type example 4
+        data StoreItem = BookItem Book
+                        | RecordItem VinylRecord
+                        | ToyItem CollectibleToy
+         ```
+    4. Trap of record syntax. See unit3/lesson16/productNSumTypes.hs for Book (bookPrice) vs VinylRecord (recordPrice). In record syntax, we cannot reuse the same name ie price otherwise we have duplicate function name for different purposes.
+         ```
+         -- without record syntax
+         data Book = Book Creator String String Int Double
+
+         -- record syntax style (book)
+         price :: Book -> Double
+         price (Book _ _ _ _ val) = val
+
+         -- record syntax style (vinylRecord)
+         price :: VinylRecord -> Double
+         price (VinylRecord _ _ _ val) = val
+
+         The problem is that using the same name for a property of both a Book and a VinylRecord means defining conflicting functions!
+
+         ```
+    5. To access attribute of a any StoreType type of which all has its prices with a different label (see unit3/lesson16/productNSumTypes.hs. See also unit3/lesson16/l16exercises.hs -> Rem to add `deriving (Show)` when creating fresh types that uses my new created types e.g. `Name`, `Creator` ..etc
+         ```
+         price :: StoreItem -> Double
+         price (BookItem book) = bookPrice book
+         price (RecordItem record) = recordPrice record
+         price (ToyItem toy) = toyPrice toy
+         ```
