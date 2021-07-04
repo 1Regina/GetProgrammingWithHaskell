@@ -950,7 +950,7 @@ Unit 1
          myAny testFunc = (foldr (||) False) . (map testFunc)
          ```
     2. Composability (combining functions) with type class. Composability = combine 2 same type things -> get new thing of the same type.
-    3.  **Semigroup** steps
+    3.  **Semigroup** steps to combine two instances of a type into a new instance.
        1. import `Data.Semigroup` at top of file
        2. use `<>` as operator to combine instances of the same type. ie implement `Semigroup` for typeclassofChoice by defining `<>`.
          ```
