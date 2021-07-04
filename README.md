@@ -373,7 +373,7 @@ Unit 1
          where rightResult = myFoldr f init xs
 
 
-      foldr (-) 0 [1,2,3,4] -- = (1 - (2 - (3 - (4 - 0))))
+      foldr (-) 0 [1,2,3,4] = (1 - (2 - (3 - (4 - 0))))
       ```
    6. Folds summary:
       1. foldl is the most intuitive behaving of the folds, but it usually has terrible perfor-mance and can’t be used on infinite lists.
@@ -742,7 +742,7 @@ Unit 1
          For read :: Double
          read "10" returns 10.0
          ```
-    5. **Superclass** : `Eq` is a superclass of `Ord` means that every instance of `Ord` must also be an instance of `Eq`. e.g  to compare SixSided-Die data constructors, which means implementing Ord, so first you need to implement Eq
+    5. **Superclass** : `Eq` is a superclass of `Ord` means that every instance of `Ord` must also be an instance of `Eq`. e.g  to compare SixSided-Die data constructors, which means implementing Ord, so first you need to implement Eq. Conversely. `Ord` is a subclass of `Eq`
          ```
          class Eq a where
             (==) :: a -> a -> Bool
@@ -930,3 +930,254 @@ Unit 1
          price (RecordItem record) = recordPrice record
          price (ToyItem toy) = toyPrice toy
          ```
+
+14. Ch17.0
+    1.   A special higher-order function that’s just a period (called compose) takes two functions as arguments.
+         ```
+         myLast :: [a] -> a
+         myLast = head . reverse
+
+         myMin :: Ord a => [a] -> a
+         myMin = head . sort                    -- sort requires the Data.List module to be imported.
+
+         myMax :: Ord a => [a] -> a
+         myMax = myLast . sort
+
+         myAll :: (a -> Bool) -> [a] -> Bool     -- myAll tests that a property is true of all items in a list.
+         myAll testFunc = (foldr (&&) True) . (map testFunc)
+
+         myAny :: (a -> Bool) -> [a] -> Bool     -- myAny tests that a property is True for ≥ 1 value in the list.
+         myAny testFunc = (foldr (||) False) . (map testFunc)
+         ```
+    2. Composability (combining functions) with type class. Composability = combine 2 same type things -> get new thing of the same type.
+    3.  **Semigroup** steps
+       1. import `Data.Semigroup` at top of file
+       2. use `<>` as operator to combine instances of the same type. ie implement `Semigroup` for typeclassofChoice by defining `<>`.
+         ```
+         instance Semigroup Integer where
+            (<>) x y = x + y       -- define the <> operator as simple addition
+
+         -- use the “instance” keyword to make Integer an instance of the Semigroup type class.
+         -- recall `instance Eq SixSidedDie where ..`, `instance Ord Name where..`, `instance Enum SixSidedDie where..`
+
+         ```
+       3. Type signature for semigroup.
+         ```
+         *Main> :t (<>)
+         (<>) :: Semigroup a => a -> a -> a
+         ```
+
+       4. Rem to insert `deriving (Show,Eq) `  or whatever typeclass when creating new type
+       5. Semigroup rule: **Associative** means that the order in which you apply your <> operator doesn’t matter. e.g. colour mixing order -> output colour. Handle with guards.See color mix in unit3/lesson17/combineFn.hs
+       6. Guards `|` for separate condition. Order is impt. Put the strictest first. Complete the rest of conditions with patten matching.
+             ```
+             howMuch :: Int -> String
+             howMuch n | n > 10 = "a whole bunch"
+                       | n > 0 = "not much"
+                       | otherwise = "we're in debt!"
+             ```
+    4. **Monoid** is similar to **Semigroup** as a type class. but Monoid needs an identity element for the type.
+       1. Identity element is:
+         ```
+         x <> id = x
+
+         (also)
+         id <> x = x
+         ```
+       2. For addition of integer, the `id` = 0 but in `Color` , there is no `id`.
+       3. `id` is **Important** bcos it can enable a fold function to combine lists of the same type (as the init value in fold, specifically `foldr` for `mconcat`). The Monoid `id` for lists is [] ( ie. an empty list).
+       4. As `Monoid` is a subclass (bcos stricter than Semigroup) of `Semigroup` (or `Semigroup` is a superclass of `Monoid`), `Monoid` definition **should** have been.....
+         ```
+         class Semigroup a => Monoid a where
+            identity :: a
+         ```
+       5. HOWEVER, `Monoid` predates `Semigroup` and isn’t officially a subclass of Semigroup as `Monoid` was added to Haskell before `Semigroup`, so `Monoid` definition is
+          ```
+          class Monoid a where
+            mempty :: a                    -- equivalent of `identity`
+            mappend :: a -> a -> a         -- equivalent of `<>` ie the `Semigroup` operator
+            mconcat :: [a] -> a
+          ```
+       6. Most common `Monoid` is a list.
+          1. identity `id` for lists: empty list
+          2. `<>` operator for lists: `++` (the `append` operator) bcos append a list type to another list type returns still a list type.
+          3. Thus with `m` for `Monoid`, we attach `m` to common list functions : `empty`, `append`, `concat`. See equivalents for `append` list vs `<>` (semigroup) vs `mappend` for list using the `id` equivalent of empty list in variants:
+          ```
+          GHCi> [1,2,3] ++ []
+          [1,2,3]
+
+          GHCi> [1,2,3] <> []
+          [1,2,3]
+
+          Prelude> [1,2,3] `mappend` []
+          [1,2,3]
+
+          Prelude> [1,2,3] ++ mempty
+          [1,2,3]
+
+          Prelude> [1,2,3] <> mempty
+          [1,2,3]
+
+          GHCi> [1,2,3] `mappend` mempty
+          [1,2,3]
+
+          ```
+       7. Note that `mappend` (a Monoid operator) has the same type signature as `<>` (a Semigroup operator)
+          ```
+          Prelude> :t mappend
+          mappend :: Monoid a => a -> a -> a
+
+          Prelude> :t (<>)
+          (<>) :: Semigroup a => a -> a -> a
+          ```
+       8. Requirements for `Monoid` are just `mempty` and  `mappend`. `mconcat` is free. `mconcat` type signature reads takes a list of Monoids and combines them, returning a single Monoid:
+          ```
+          Prelude> :t mconcat
+          mconcat :: Monoid a => [a] -> a
+
+          -- As Strings = lists of `Char`s
+          GHCi> mconcat ["does"," this"," make"," sense?"]
+          "does this make sense?"
+
+          -- With `mempty` and `mappend`, Haskell can infer `mconcat` with `foldr`
+          mconcat = foldr mappend mempty
+
+          -- recall
+          foldr (-) 0 [1,2,3,4] = (1 - (2 - (3 - (4 - 0))))
+
+          -- LHS of foldr
+          Prelude> foldr mappend mempty ["does"," this"," make"," sense?"]
+          "does this make sense?"
+          Prelude> foldr mappend [] ["does"," this"," make"," sense?"]
+          "does this make sense?"
+          Prelude> foldr mappend [] [" sense?"]
+          " sense?"
+
+          -- RHS of foldr
+          Prelude> " sense?" `mappend` []
+          " sense?"
+          Prelude> " make" `mappend` (" sense?" `mappend` [])
+          " make sense?"
+          Prelude> [" make"] `mappend` ([" sense?"] `mappend` [])
+          [" make"," sense?"]
+
+          Prelude> "does" ++ (" this" ++ (" make" ++ (" sense?" ++ [])))
+          "does this make sense?"
+          Prelude> "does" <> (" this" <> (" make" <> (" sense?" <> [])))
+          "does this make sense?"
+          Prelude> "does" `mappend` (" this" `mappend` (" make" `mappend` (" sense?" `mappend` [])))
+          "does this make sense?"
+
+
+          Prelude> ['h','e','l','l','o']                       --- string = list of char
+          "hello"
+          Prelude> 'h' ++ ('e' ++ ('l' ++ ('l' ++ ('o' ++ [])  -- list can append but not char
+          error
+          Prelude> "he" ++ "llo"                               -- list (of char) ie strings can concant
+          "hello"
+          Prelude> [1] ++ [2]
+          [1,2]
+          ```
+       9. 4 `Monoid` laws
+          1. Rule 1
+               ```
+               mappend mempty x = x
+
+               -- mappend is (++) and mempty is [] in a list so
+               [] ++ [1, 2, 3] = [1, 2, 3]
+              ```
+          2. Rule 2. inverse of rule 1
+               ```
+               mappend x mempty = x
+               [1,2,3] ++ [] = [1,2,3]
+               ```
+          3. Rule 3 is associativity
+             ```
+             mappend x (mappend y z) = mappend (mappend x y) z.
+
+             -- list example
+             [1] ++ ([2] ++ [3]) = ([1] ++ [2]) ++ [3]
+
+             ```
+          4. Rule 4: `mconcat`
+             ```
+             mconcat = foldr mappend mempty.
+
+             foldr can work with infinite lists, whereas foldl will force the evaluation.
+             mconcat not only requires less typing, but also provides a preferable way to combine strings.
+             ```
+    5. `zipWith` zips two lists together and apply a function to those lists.
+       ```
+       GHCi> zipWith (+) [1,2,3] [4,5,6]
+       [5,7,9]
+       ```
+    6. `Cartesian product` = a combination of all events and all probabilities ie To combine ≥ 2 probability tables
+       ```
+       -- desired output
+
+       heads-heads|0.25
+       heads-tails|0.25
+       tails-heads|0.25
+       tails-tails|0.2
+
+       -- 1.   cartCombine function for Cartesian product
+      cartCombine :: (a -> b -> c) -> [a] -> [b] -> [c]
+      cartCombine func l1 l2 = zipWith func newL1 cycledL2    -- zipWith :  repeat each element in the first list once for each element in the second.
+            where nToAdd = length l2
+                  repeatedL1 = map (take nToAdd . repeat) l1    -- Maps l1 and makes nToAdd copies of the element. Returns a list of lists
+                  newL1 = mconcat repeatedL1                    -- join the list of lists from repeated
+                  cycledL2 = cycle l2                           -- to use zipWith to combine these two lists. cycle the second list
+
+      -- 2. combineEvents and combineProbs
+      combineEvents :: Events -> Events -> Events
+      combineEvents e1 e2 = cartCombine combiner e1 e2
+            where combiner = (\x y -> mconcat [x,"-",y])           -- combine events with "-"
+
+      combineProbs :: Probs -> Probs -> Probs
+      combineProbs p1 p2 = cartCombine (*) p1 p2               -- combine probabilities by multiply them
+
+      -- 3. make PTable an instance of Semigroup with combineEvent and combineProbs
+      instance Semigroup PTable where
+         (<>) ptable1 (PTable [] []) = ptable1                  --  special case of having an empty PTable
+         (<>) (PTable [] []) ptable2 = ptable2                  -- special case of having an empty PTable
+         (<>) (PTable e1 p1) (PTable e2 p2) = createPTable newEvents newProbs
+            where newEvents = combineEvents e1 e2
+                  newProbs = combineProbs p1 p2
+
+      -- 3a. createPTable (done above)
+      -- createPTable :: Events -> Probs -> PTable
+      -- createPTable events probs = PTable events normalizedProbs where
+      --     totalProbs = sum probs
+      --     normalizedProbs = map (\x -> x/totalProbs) probs
+
+      -- 4. make PTable an instance of Monoid. Recall : mappend and <> are the same; so settle the identity -- mempty element aka PTable [] [].
+      instance Monoid PTable where
+         mempty = PTable [] []
+         mappend = (<>)
+
+      -- 5. example combine a coin and a colour spinner
+      coin :: PTable
+      coin = createPTable ["heads","tails"] [0.5,0.5]
+
+      spinner :: PTable
+      spinner = createPTable ["red","blue","green"] [0.1,0.2,0.7]
+
+      *Main> coin <> spinner
+      heads-red|5.0e-2
+      heads-blue|0.1
+      heads-green|0.35
+      tails-red|5.0e-2
+      tails-blue|0.1
+      tails-green|0.35
+
+       -- 3 heads in a row
+       *Main> mconcat [coin,coin,coin]
+      heads-heads-heads|0.125
+      heads-heads-tails|0.125
+      heads-tails-heads|0.125
+      heads-tails-tails|0.125
+      tails-heads-heads|0.125
+      tails-heads-tails|0.125
+      tails-tails-heads|0.125
+      tails-tails-tails|0.125
+       ```
