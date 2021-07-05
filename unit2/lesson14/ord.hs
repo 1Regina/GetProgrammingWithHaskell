@@ -23,3 +23,7 @@ names :: [Name]
 names = [Name ("Emil","Cioran")
       , Name ("Eugene","Thacker")
       , Name ("Friedrich","Nietzsche")]
+
+
+-- >>> sort names
+-- [Name ("Emil","Cioran"),Name ("Friedrich","Nietzsche"),Name ("Eugene","Thacker")]
