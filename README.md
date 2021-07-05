@@ -950,7 +950,7 @@ Unit 1
          myAny testFunc = (foldr (||) False) . (map testFunc)
          ```
     2. Composability (combining functions) with type class. Composability = combine 2 same type things -> get new thing of the same type.
-    3.  **Semigroup** steps to combine two instances of a type into a new instance.
+    3. **Semigroup** steps to combine two instances of a type into a new instance.
        1. import `Data.Semigroup` at top of file
        2. use `<>` as operator to combine instances of the same type. ie implement `Semigroup` for typeclassofChoice by defining `<>`.
          ```
@@ -1121,63 +1121,63 @@ Unit 1
        tails-tails|0.2
 
        -- 1.   cartCombine function for Cartesian product
-      cartCombine :: (a -> b -> c) -> [a] -> [b] -> [c]
-      cartCombine func l1 l2 = zipWith func newL1 cycledL2    -- zipWith :  repeat each element in the first list once for each element in the second.
+       cartCombine :: (a -> b -> c) -> [a] -> [b] -> [c]
+       cartCombine func l1 l2 = zipWith func newL1 cycledL2    -- zipWith :  repeat each element in the first list once for each element in the second.
             where nToAdd = length l2
                   repeatedL1 = map (take nToAdd . repeat) l1    -- Maps l1 and makes nToAdd copies of the element. Returns a list of lists
                   newL1 = mconcat repeatedL1                    -- join the list of lists from repeated
                   cycledL2 = cycle l2                           -- to use zipWith to combine these two lists. cycle the second list
 
-      -- 2. combineEvents and combineProbs
-      combineEvents :: Events -> Events -> Events
-      combineEvents e1 e2 = cartCombine combiner e1 e2
+       -- 2. combineEvents and combineProbs
+       combineEvents :: Events -> Events -> Events
+       combineEvents e1 e2 = cartCombine combiner e1 e2
             where combiner = (\x y -> mconcat [x,"-",y])           -- combine events with "-"
 
-      combineProbs :: Probs -> Probs -> Probs
-      combineProbs p1 p2 = cartCombine (*) p1 p2               -- combine probabilities by multiply them
+       combineProbs :: Probs -> Probs -> Probs
+       combineProbs p1 p2 = cartCombine (*) p1 p2               -- combine probabilities by multiply them
 
-      -- 3. make PTable an instance of Semigroup with combineEvent and combineProbs
-      instance Semigroup PTable where
+       -- 3. make PTable an instance of Semigroup with combineEvent and combineProbs
+       instance Semigroup PTable where
          (<>) ptable1 (PTable [] []) = ptable1                  --  special case of having an empty PTable
          (<>) (PTable [] []) ptable2 = ptable2                  -- special case of having an empty PTable
          (<>) (PTable e1 p1) (PTable e2 p2) = createPTable newEvents newProbs
             where newEvents = combineEvents e1 e2
                   newProbs = combineProbs p1 p2
 
-      -- 3a. createPTable (done above)
-      -- createPTable :: Events -> Probs -> PTable
-      -- createPTable events probs = PTable events normalizedProbs where
-      --     totalProbs = sum probs
-      --     normalizedProbs = map (\x -> x/totalProbs) probs
+       -- 3a. createPTable (done above)
+       -- createPTable :: Events -> Probs -> PTable
+       -- createPTable events probs = PTable events normalizedProbs where
+       --     totalProbs = sum probs
+       --     normalizedProbs = map (\x -> x/totalProbs) probs
 
-      -- 4. make PTable an instance of Monoid. Recall : mappend and <> are the same; so settle the identity -- mempty element aka PTable [] [].
-      instance Monoid PTable where
+       -- 4. make PTable an instance of Monoid. Recall : mappend and <> are the same; so settle the identity -- mempty element aka PTable [] [].
+       instance Monoid PTable where
          mempty = PTable [] []
          mappend = (<>)
 
-      -- 5. example combine a coin and a colour spinner
-      coin :: PTable
-      coin = createPTable ["heads","tails"] [0.5,0.5]
+       -- 5. example combine a coin and a colour spinner
+       coin :: PTable
+       coin = createPTable ["heads","tails"] [0.5,0.5]
 
-      spinner :: PTable
-      spinner = createPTable ["red","blue","green"] [0.1,0.2,0.7]
+       spinner :: PTable
+       spinner = createPTable ["red","blue","green"] [0.1,0.2,0.7]
 
-      *Main> coin <> spinner
-      heads-red|5.0e-2
-      heads-blue|0.1
-      heads-green|0.35
-      tails-red|5.0e-2
-      tails-blue|0.1
-      tails-green|0.35
+       *Main> coin <> spinner
+       heads-red|5.0e-2
+       heads-blue|0.1
+       heads-green|0.35
+       tails-red|5.0e-2
+       tails-blue|0.1
+       tails-green|0.35
 
        -- 3 heads in a row
        *Main> mconcat [coin,coin,coin]
-      heads-heads-heads|0.125
-      heads-heads-tails|0.125
-      heads-tails-heads|0.125
-      heads-tails-tails|0.125
-      tails-heads-heads|0.125
-      tails-heads-tails|0.125
-      tails-tails-heads|0.125
-      tails-tails-tails|0.125
+       heads-heads-heads|0.125
+       heads-heads-tails|0.125
+       heads-tails-heads|0.125
+       heads-tails-tails|0.125
+       tails-heads-heads|0.125
+       tails-heads-tails|0.125
+       tails-tails-heads|0.125
+       tails-tails-tails|0.125
        ```
