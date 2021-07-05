@@ -1181,3 +1181,192 @@ Unit 1
        tails-tails-heads|0.125
        tails-tails-tails|0.125
        ```
+15. Ch 17.0
+    1. Parameterized types = types that take any number of types as arguments. e.g a box - an abstract container that can hold any other type. Once a concrete value is inside the box, the box type = the concrete value type.
+       ```
+       data Box a = Box a deriving Show
+
+       -- first Box = Type constructor
+       -- first a = declaration of a type variable
+       -- second Box = Data constructor
+       -- second a = Type variable being used
+
+       GHCi> n = 6 :: Int
+       GHCi> :t Box n
+       Box n :: Box Int
+       GHCi> word = "box"
+       GHCi> :t Box word
+       Box word :: Box [Char]
+       GHCi> f x = x
+       GHCi> :t Box f
+       Box f :: Box (t -> t)
+       GHCi> otherBox = Box n
+       GHCi> :t Box otherBox
+       Box otherBox :: Box (Box Int)
+       char = 'a'
+       -- >>> :t Box char
+       -- Box char :: Box Char
+       ```
+    2. Wrap and unwrap box
+       ```
+       wrap :: a -> Box a
+       wrap x = Box x
+       unwrap :: Box a -> a
+       unwrap (Box x) = x
+
+       -- >>> :t wrap
+       -- wrap :: forall a. a -> Box a
+       -- >>> :t wrap n
+       -- >>> :t wrap word
+       -- >>> :t wrap f
+       -- >>> :t wrap otherBox
+       -- >>> :t wrap char
+       -- wrap n :: Box Int
+       -- wrap word :: Box [Char]
+       -- wrap f :: forall p. Box (p -> p)
+       -- wrap otherBox :: Box (Box Int)
+       -- wrap char :: Box Char
+
+       -- >>> :t unwrap
+       -- unwrap :: forall a. Box a -> a
+       -- >>> :t unwrap (Box n)
+       -- >>> :t unwrap (Box word)
+       -- >>> :t unwrap (Box f)
+       -- >>> :t unwrap (Box otherBox)
+       -- >>> :t unwrap (Box char)
+       -- unwrap (Box n) :: Int
+       -- unwrap (Box word) :: [Char]
+       -- unwrap (Box f) :: forall p. p -> p
+       -- unwrap (Box otherBox) :: Box Int
+       -- unwrap (Box char) :: Char
+
+       -- >>> :t wrap (Box char)
+       -- wrap (Box char) :: Box (Box Char)
+       ```
+    3. Triple with 3 values of same type e.g 3D space with `data Triple a = Triple a a a deriving Show`.
+       1. Uses
+         ```
+         type Point3D = Triple Double
+         aPoint :: Point3D
+         aPoint = Triple 0.1 53.2 12.3
+
+         -- others include Triple String or Triple Char for names
+         ```
+       2. Assess tuples: Index `fst` and `snd` for 2-tuples but for bigger tuples, create assessors.
+         ```
+         first :: Triple a -> a
+         first (Triple x _ _) = x
+
+         second :: Triple a -> a
+         second (Triple _ x _ ) = x
+
+         third :: Triple a -> a
+         third (Triple _ _ x) = x
+         ```
+       3. toList on Triple
+         ```
+         toList :: Triple a -> [a]
+         toList (Triple x y z) = [x,y,z]
+         ```
+       4. transform Triple
+         ```
+         transform :: (a -> a) -> Triple a -> Triple a
+         transform f (Triple x y z) = Triple (f x) (f y) (f z)
+
+         -- transform example after aPoint, aPerson, initials are defined. (See unit3/lesson18/paramTypes.hs)
+         1. transform (* 3) aPoint
+         2. transform reverse aPerson
+         3. transform toLower initials
+         -- combine and transform
+         toList (transform toLower initials)
+
+         * import Data.Text(toLower) to use toLower
+         ```
+       5. `transform` vs `map`
+        ```
+         transform :: forall a. (a -> a) -> Triple a -> Triple a
+         map :: forall a b. (a -> b) -> [a] -> [b]
+
+         -- The transform function doesn’t allow you to change the type; that is, a function (a -> b). The map function for lists does allow this
+        ```
+    4. `List` with `:info []` .[] is a special built-in syntax for lists
+       1. [] vs Cons
+         ```
+         data [] a = [] | a:[a]
+
+         -- first and second [] is a type n a data constructor
+         -- `:` cons operator is a data constructor!
+
+         data List a = Empty | Cons a (List a) deriving Show
+
+         -- A list of type a is either Empty or the consing of the value a with another list of type a.
+         ```
+       2. mapping a list
+         ```
+         ourMap :: (a -> b) -> List a -> List b
+         ourMap _ Empty = Empty
+         ourMap func (Cons a rest)  = Cons (func a) (ourMap func rest)
+         ```
+    5. Tuples are the most ubiquitous multiparameter type. `:info (,)` or `:info (, ,)` for more multi parameter tuples.
+       1. tuple definition for 2-tuple type definition with two type variables.
+       ```
+       data (,) a b = (,) a b
+
+       ```
+       2. list of tuples: Say building inventory with (item, price). The most common instance of a parameterized type is List, which can contain elements of any type
+       ```
+         itemCount1 :: (String,Int)
+         itemCount1 = ("Erasers",25) ...etc
+
+         itemInventory :: [(String,Int)]
+         itemInventory = [itemCount1,itemCount2,itemCount3]
+
+       ```
+    6. Function, data, and types have types. but type of a type is *kind*.
+       1. kind of a type indicates the number of parameters the type takes, expressed using an asterisk (*).
+          1. Types without parameters have a kind of *,
+          2. Types with one parameter have the kind * -> *,
+          3. Types with two parameters have the kind * -> * -> * ..etc.
+       2. `:kind` **needs import Data.Map**. concrete types have a different kind than their nonconcrete equivalents.
+       ```
+         *Main> :kind Int
+         Int :: *
+         *Main> :kind [Int]       -- concrete type
+         [Int] :: *
+
+         *Main> :kind Triple
+         Triple :: * -> *
+         *Main> :kind Triple Char  -- concrete type
+         Triple Char :: *
+       ```
+    7. Maps. Qualified imports with `import qualified Data.Map as Map`.
+       1. Preface with  Map. Map to look up values by using keys.
+       2. Map.Map is similar to `Dictionary` in python.
+       3. Ensure numbered key or whatever ID which is of class `Ord`.
+       4. Fine if not all ID runs sequentially so gaps are ok.
+       5. Build the Map (aka the catalog) after knowing the keys and values
+       6. The most common way to build a Map is with the fromList function
+         ```
+         fromList :: Ord k => [(k,a)] -> Map k a
+
+         -- 1. type variable for the keyis restricted to the class Ord
+         -- 2. Input is a list of key/value tuples
+         -- 3. Map takes two type parameters: the type of the keys, k, and of the values, a
+         ```
+       7. zip function takes two lists and returns a list of pairs.
+         ```
+         organPairs :: [(Int,Organ)]
+         organPairs = zip ids organ
+         ```
+       8. Create the catalog with fromList to make a Map aka Dictionary
+         ```
+         organCatalog :: Map.Map Int Organ
+         organCatalog = Map.fromList organPairs
+         ```
+       9. Use  Map.lookup to find the value for the key. run:
+         ```
+         Map.lookup 7 organCatalog -- gives `Just Heart` bcos Map.lookup output a Maybe
+
+         Map.lookup :: Ord k => k -> Map.Map k a -> Maybe a
+         ```
+       10. Map is a parameterized type that takes two arguments: one for the type of its keys and another for the type of its values.
