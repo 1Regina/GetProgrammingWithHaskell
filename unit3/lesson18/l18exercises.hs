@@ -69,3 +69,6 @@ organInventory :: Map.Map Organ Int
 organInventory = Map.fromList (zip organNames organCounts)
 -- >>> organInventory
 -- fromList [(Heart,2),(Brain,1),(Kidney,1),(Spleen,2)]
+
+-- >>> Map.lookup Heart organInventory
+-- Just 2
