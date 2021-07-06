@@ -1373,3 +1373,92 @@ Unit 1
          ```
        10. Map is a parameterized type that takes two arguments: one for the type of its keys and another for the type of its values.
        11. See unit3/lesson18/l18exercises.hs for example of inventory count vs unit3/lesson18/paramTypes.hs for just enum inventory list.
+16. Ch 19.0
+    1.  Maybe type takes cares of null values problem. Something of a Maybe type can be either Nothing, or Just something of type a.
+       ```
+       data Maybe a = Nothing | Just a
+       ```
+    2. Definition of `Just value`. *might* be an instance of `Organ`.
+      ```
+      GHCi> Map.lookup 13 organCatalog
+      Just Brain
+
+      *Main> :t Just Brain
+      Just Brain :: Maybe Organ
+      -- >>> :t Map.lookup 13 organCatalog
+      -- Map.lookup 13 organCatalog :: Maybe Organ
+      ```
+    3. The Nothing case is also a Maybe.
+      ```
+      -- >>> Map.lookup 3 organCatalog
+      -- Nothing
+      -- >>> :t Map.lookup 3 organCatalog
+      -- Map.lookup 3 organCatalog :: Maybe Organ
+      ```
+    4. Maybe is used in all the typical places that Null values pop up:
+       1. Opening non-existent files
+       2. Reading a database that contains some null values
+       3. Requesting RESTful API to a potentially missing resource.
+    5. To access the inventory (of organs from l18exercises.hs), do the following:
+       1. Define a range of keys:
+         ```
+         possibleDrawers :: [Int]
+         possibleDrawers = [1 .. 50]
+         ```
+       2. function to get the contents of each drawer with the lookup function:
+         ```
+         -- note the intro of Maybe in [Maybe Organ]
+         getDrawerContents :: [Int] -> Map.Map Int Organ -> [Maybe Organ]
+         getDrawerContents ids catalog = map getContents ids where
+                                 getContents = \id -> Map.lookup id catalog
+         ```
+       3. list of available organs inclusive those with missing values bcos of Maybe
+         ```
+         -- note the intro of Maybe in [Maybe Organ]
+         availableOrgans :: [Maybe Organ]
+         availableOrgans = getDrawerContents possibleDrawers organCatalog
+         ```
+       4. Count instances of organs
+         ```
+         countOrgan :: Organ -> [Maybe Organ] -> Int
+         countOrgan organ available = length (filter
+                                                (\x -> x == Just organ)
+                                                available)
+
+         --  Maybe implements `Eq`, so you can just compare two Maybe Organs.
+         ```
+    6. Create a string of organs without Just and Nothing. continue from above
+       1. To filter out and remove Nothing, use a filter function list
+         ```
+         -- B1. filter availableOrgans for when it is not Nothing. ie **isJust**
+         isSomething :: Maybe Organ -> Bool
+         isSomething Nothing = False
+         isSomething (Just _) = True
+
+         -- B2 Using isSomething with filter to clean [Maybe Organ]
+         justTheOrgans :: [Maybe Organ]
+         justTheOrgans = filter isSomething availableOrgans
+         -- >>> justTheOrgans
+         -- [Just Heart,Just Heart,Just Brain,Just Spleen,Just Spleen,Just Kidney]
+
+         ```
+       2. **isJust** and **isNothing** from the Data.Maybe. Clean up list of organs to just show String not Maybe. otherwise DIY
+         ```
+         showOrgan :: Maybe Organ -> String
+         showOrgan (Just organ) = show organ
+         showOrgan Nothing = ""
+
+         -- isJust actually works on all types.
+         justTheOrgans' :: [Maybe Organ]
+         justTheOrgans = filter isJust availableOrgans
+         ```
+       3. use map to create a list without Nothing and Organs without Just.
+         ```
+         organList :: [String]
+         organList = map showOrgan justTheOrgans
+         ```
+       4. **intercalate** "," to insert commas to make list of strings into one string.
+         ```
+         cleanList :: String
+         cleanList = intercalate ", " organList
+         ```
