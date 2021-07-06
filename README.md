@@ -1368,5 +1368,8 @@ Unit 1
          Map.lookup 7 organCatalog -- gives `Just Heart` bcos Map.lookup output a Maybe
 
          Map.lookup :: Ord k => k -> Map.Map k a -> Maybe a
+
+         e.g  Map.lookup 7 organCatalog
          ```
        10. Map is a parameterized type that takes two arguments: one for the type of its keys and another for the type of its values.
+       11. See unit3/lesson18/l18exercises.hs for example of inventory count vs unit3/lesson18/paramTypes.hs for just enum inventory list.

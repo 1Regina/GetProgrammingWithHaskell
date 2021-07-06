@@ -181,9 +181,15 @@ ids = [2,7,13,14,21,24]
 
 organPairs :: [(Int,Organ)]
 organPairs = zip ids organs
+-- >>> organPairs
+-- [(2,Heart),(7,Heart),(13,Brain),(14,Spleen),(21,Spleen),(24,Kidney)]
+
 
 organCatalog :: Map.Map Int Organ
 organCatalog = Map.fromList organPairs
+-- >>> organCatalog
+-- fromList [(2,Heart),(7,Heart),(13,Brain),(14,Spleen),(21,Spleen),(24,Kidney)]
+
 
 -- why fromList:
 -- fromList :: Ord k => [(k,a)] -> Map k a
