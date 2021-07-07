@@ -1549,3 +1549,10 @@ Unit 1
             -- >>> processRequest 13 organCatalog
             -- "Brain in a vat in the Lab"
             ```
+    8. A map for Maybe
+         ```
+         -- map :: (a -> b) -> [a] -> [b]
+         maybeMap :: (a -> b) ->  Maybe a -> Maybe b
+         maybeMap function Nothing = Nothing
+         maybeMap function (Just a) = Just (function a)
+         ```
