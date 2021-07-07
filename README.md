@@ -1277,6 +1277,7 @@ Unit 1
          1. transform (* 3) aPoint
          2. transform reverse aPerson
          3. transform toLower initials
+
          -- combine and transform
          toList (transform toLower initials)
 
@@ -1313,7 +1314,7 @@ Unit 1
        data (,) a b = (,) a b
 
        ```
-       2. list of tuples: Say building inventory with (item, price). The most common instance of a parameterized type is List, which can contain elements of any type
+       1. list of tuples: Say building inventory with (item, price). The most common instance of a parameterized type is List, which can contain elements of any type
        ```
          itemCount1 :: (String,Int)
          itemCount1 = ("Erasers",25) ...etc
@@ -1450,15 +1451,101 @@ Unit 1
 
          -- isJust actually works on all types.
          justTheOrgans' :: [Maybe Organ]
-         justTheOrgans = filter isJust availableOrgans
+         justTheOrgans' = filter isJust availableOrgans
+
+         -- >>> justTheOrgans
+         -- [Just Heart,Just Heart,Just Brain,Just Spleen,Just Spleen,Just Kidney]
          ```
        3. use map to create a list without Nothing and Organs without Just.
          ```
          organList :: [String]
          organList = map showOrgan justTheOrgans
+
+         -- >>> organList
+         -- ["Heart","Heart","Brain","Spleen","Spleen","Kidney"]
          ```
        4. **intercalate** "," to insert commas to make list of strings into one string.
          ```
          cleanList :: String
          cleanList = intercalate ", " organList
+
+         -- >>> cleanList
+         -- "Heart, Heart, Brain, Spleen, Spleen, Kidney"
          ```
+       5. **import Data.List** to use intercalate
+    7. Computation with Maybe**S**: process reports
+       1. Create additional types n instances.
+         ```
+         data Container = Vat Organ | Cooler Organ | Bag Organ
+
+         instance Show Container where
+               show (Vat organ) = show organ ++ " in a vat"
+               show (Cooler organ) = show organ ++ " in a cooler"
+               show (Bag organ) = show organ ++ " in a bag"
+
+         data Location = Lab | Kitchen | Bathroom deriving Show
+         ```
+       2. Functions to assign items to their containers
+         ```
+         organToContainer :: Organ -> Container
+         organToContainer Brain = Vat Brain
+         organToContainer Heart = Cooler Heart
+         organToContainer organ = Bag organ
+         ```
+       3. Function to assign location to tuples
+         ```
+         placeInLocation :: Container -> (Location,Container)
+         placeInLocation (Vat a) = (Lab, Vat a)
+         placeInLocation (Cooler a) = (Lab, Cooler a)
+         placeInLocation (Bag a) = (Kitchen, Bag a)
+         ```
+       4. A process function that is composite function
+         ```
+         process :: Organ -> (Location, Container)
+         process organ =  placeInLocation (organToContainer organ)
+         -- >>> process Brain
+         -- (Lab,Brain in a vat)
+         ```
+       5. Report function to string together the process function output
+          1. **Maybe** to handle cases of missing item (aka organ)
+            ```
+            reportMaybe :: Maybe  (Location,Container) -> String
+            reportMaybe Nothing = " no container as organ is missing"
+            reportMaybe (Just (location, container)) = show container
+                                                      ++ " in the "
+                                                      ++ show location
+
+
+            portMaybe (Just (Lab, Vat Kidney))
+            -- "Kidney in a vat in the Lab"
+            -- >>> reportMaybe Nothing
+            -- " no container as organ is missing"
+
+            ```
+          2. **without Maybe** where concern with missing items.
+            ```
+            report ::(Location,Container) -> String
+            report (location,container) = show container ++" in the " ++ show location
+            -- NB: (Location, Container) is derived from process function (Step 4)
+
+            -- >>> report (process Brain)
+            -- "Brain in a vat in the Lab"
+            ```
+
+       6. Handling requests:
+          1. **Maybe** combine report and process into a function that handles the Maybe Organ
+            ```
+               processAndReport :: (Maybe Organ) -> String
+               processAndReport (Just organ) = report (process organ)
+               processAndReport  Nothing = "error, id not found"
+            ```
+          2. **without Maybe** ready to use the processRequest without the maybe
+            ```
+            -- compare with report (process someOrgan), processRequest take an drawer index n catalog
+            processRequest :: Int -> Map.Map Int Organ -> String
+            processRequest id catalog = processAndReport organ where
+                              organ = Map.lookup id catalog
+
+            -- >>> processRequest 13 organCatalog
+            -- "Brain in a vat in the Lab"
+            ```

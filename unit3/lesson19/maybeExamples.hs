@@ -139,8 +139,10 @@ process organ =  placeInLocation (organToContainer organ)
 -- >>>  process Spleen
 -- (Kitchen,Spleen in a bag)
 
+
 report ::(Location,Container) -> String
 report (location,container) = show container ++" in the " ++ show location
+-- (Location, Container) is derived from process function 
 -- >>> report (process Brain)
 -- "Brain in a vat in the Lab"
 -- >>> report (process Spleen)
@@ -172,3 +174,9 @@ reportMaybe Nothing = " no container as organ is missing"
 reportMaybe (Just (location, container)) = show container
                                             ++ " in the "
                                             ++ show location
+
+-- >>> reportMaybe (Just (Lab, Vat Kidney))
+-- "Kidney in a vat in the Lab"
+-- >>> reportMaybe Nothing
+-- " no container as organ is missing"
+
