@@ -105,7 +105,7 @@
                 -- Map.lookup :: Ord k => k -> Map.Map k a -> Maybe a
                 -- `return` :  a String is returned as a Maybe String so put it back in the do-context
                 ouput:
-                
+
                 *Main> maybeMain
                 Just "The 20.0 pizza is cheaper at 5.729577951308232e-2 per square inch."
             ```
@@ -115,3 +115,114 @@
          1.   read    (to change IO type to non-IO type)
          2.   show    (to make into a String)
          3.   return  (to put output back in IO context)
+18. Ch22.0
+    1.  ` getArgs` function in **System.Environment**. e.g unit4/lesson22/sum.hs
+        1.  unknown how many args user will input
+        2.  to sum agr from user input.
+        3.  get a list of Strings in the context of IO. Cover the case of a user failing to enter an argument
+            ```
+            (not working well)
+            main :: IO ()
+            main = do
+                args <- getArgs
+                let linesToRead = if length args > 0
+                                then read (head args)
+                                else 0 :: Int
+                print linesToRead
+            ```
+        4.  `mapM` (the M stands for Monad). It map over a list of values in the context of IO (technically, on any member of the Monad type class). It returns a list.
+        5.  `mapM_` : works like mapM BUT throws away the result. Typically, when a function ends with an underscore in Haskell, it indicates that you’re throwing away the results
+        6.  Rem to cover case where user didnt enter argument ie 0 lines.
+        7.  `print` function is `(putStrLn . show)`
+    2. IO repeat function: quickcheck 22.1: Write  a  main  that  uses  mapM  to  call  getLine  three  times,  and  then  use mapM_ to print out the values’ input. (Hint: You’ll need to throw away an argument when using mapM with getLine; use (\_ -> ...) to achieve this.
+        ```
+        quickcheck1 :: IO ()
+        quickcheck1 = do
+                args <- mapM (\_ -> getLine) [1 .. 3]
+                mapM_ putStrLn args
+
+        ```
+    3. `replicateM` works with `getLine` . It is a function for iterating.  `replicateM`takes a value for the number of times you want to repeat and an IO action and repeats the action as expected. **import Control.Monad**
+        ```
+        mainReplicate :: IO ()
+        mainReplicate = do
+                    args <- getArgs
+                    let linesToRead = if length args > 0
+                                    then read (head args)
+                                    else 0
+                    numbers <- replicateM linesToRead getLine
+                    print "sum goes here"
+        ```
+        1. recall getLine returns a String in the IO contex.
+        2. need to convert them to Ints, and then you can return the sum of this list
+    4. Functions for interating in an IO context:
+        | Function	| Behaviour   	|
+        |---	        |---	|
+        |  mapM 	    | Takes an IO action and a regular list, performing the action on each item in the list, and returning a list in the IO context	|
+        |  mapM_ 	    | Same as mapM, but it throws away the values (note the underscore)  	                                                        |
+        |  replicateM 	| Takes an IO action, an Int n, and then repeats the IO action n times, returning the results in an IO list                   	|
+        |  replicateM_ 	| Same as replicateM, but it throws away the results                                                                          	|
+    5. Quick check 22.2 Write your own version of replicateM, myReplicateM, that uses mapM
+        ```
+        myReplicateM :: Monad m => Int -> m a -> m [a]
+        myReplicateM n function = mapM (\ _ ->  function ) [1 .. n]
+        ```
+    6. The primary purpose of having an IO type is to separate functions that absolutely must work in I/O with more general ones.
+    7. **getContents** action lets you treat the I/O stream for STDIN as a list of characters. `getContents` action reads input until it gets an end-of-file signal.
+       1. For text file , its the end of file
+       2. for user input, it is Ctrl-D
+    8. With getContents, you can rewrite your program, completely ignoring IO until later.  Becos if you treat the user input as a regular lazy list of Chars, you can abstract out nearly all of your non-I/O code much more easily. ie.only need to treat list as I/O when first received.
+    9. -- Quick check 22.3    Use lazy I/O to write a program that reverses your input and prints it back to you.
+        ```
+        mainLazyReverse :: IO ()
+        mainLazyReverse = do
+            userInput <- getContents
+            let reversee = reverse userInput
+            putStr reversee
+        ```
+    10. To run the program in prompt: Read also http://learnyouahaskell.com/input-and-output
+        1.  ghc --make summary.hs
+        2.  ./summary
+        3.  <ctdl-d> to end and get results of computation
+    11.  Data.List.Split module contains a more generic function than lines, splitOn, which splits a String based on another String. Data.List.Split isn’t part of base Haskell, but is included in the Haskell Platform. If you aren’t using the Haskell Platform, you may need to install it. The splitOn function is a useful one to know when processing text. Here’s how lines could be written with splitOn.
+    12. `splitOn` is same as `lines` but need the Data.List.Split module
+        1.   map the read function over your new lists to get list of Ints.
+            ```
+            toInts :: String -> [Int]
+            toInts = map read . lines
+            ```
+        2. apply toInts to userInput from getContents
+    13. A nice summing program with IO
+        ```
+        import System.Environment
+        import Control.Monad
+
+
+        toInts :: String -> [Int]
+        toInts = map read . lines
+
+        main :: IO ()
+        main = do
+            putStrLn "Input integers to sum"
+            userInput <- getContents        --- treat the I/O stream for STDIN as a list of characters.
+            let numbers = toInts userInput  -- make the list of char ie String into a list of Int
+            print (sum numbers)
+
+        ```
+    14. A square then sum program
+       ```
+       import System.Environment
+       import Control.Monad
+
+
+        toInts :: String -> [Int]
+        toInts = map read . lines
+
+        main :: IO ()
+        main = do
+            putStrLn "Input integers to square and then sum"
+            userInput <- getContents       --- treat the I/O stream for STDIN as a list of characters.
+            let numbers = toInts userInput -- make the list of char ie String into a list of Int
+            let squares = map (^2) numbers
+            print (sum squares)
+       ```
