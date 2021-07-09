@@ -168,7 +168,7 @@
         myReplicateM n function = mapM (\ _ ->  function ) [1 .. n]
         ```
     6. The primary purpose of having an IO type is to separate functions that absolutely must work in I/O with more general ones.
-    7. **getContents** action lets you treat the I/O stream for STDIN as a list of characters. `getContents` action reads input until it gets an end-of-file signal.
+    7. **getContents** action lets you treat the I/O stream for STDIN as a list of characters. `getContents` action reads input until it gets an end-of-file signal. [getContents](https://stackoverflow.com/questions/21189325/haskell-how-getcontents-works/21190648#:~:text=getcontents%20reads%20all%20the%20stdin%2C%20but%20it%20works%20lazily.%20it%20returns%20a%20thunk%2C%20)  reads all the stdin, but it works lazily. It returns a [thunk](https://wiki.haskell.org/Thunk), it is a promise to return some value when you ask it (force the thunk).
        1. For text file , its the end of file
        2. for user input, it is Ctrl-D
     8. With getContents, you can rewrite your program, completely ignoring IO until later.  Becos if you treat the user input as a regular lazy list of Chars, you can abstract out nearly all of your non-I/O code much more easily. ie.only need to treat list as I/O when first received.
@@ -204,7 +204,7 @@
         main :: IO ()
         main = do
             putStrLn "Input integers to sum"
-            userInput <- getContents        --- treat the I/O stream for STDIN as a list of characters.
+            userInput <- getContents        --- treat the I/O stream for STDIN as a list of lazy characters.
             let numbers = toInts userInput  -- make the list of char ie String into a list of Int
             print (sum numbers)
 
@@ -221,8 +221,172 @@
         main :: IO ()
         main = do
             putStrLn "Input integers to square and then sum"
-            userInput <- getContents       --- treat the I/O stream for STDIN as a list of characters.
+            userInput <- getContents       --- treat the I/O stream for STDIN as a list of lazy characters.
             let numbers = toInts userInput -- make the list of char ie String into a list of Int
             let squares = map (^2) numbers
             print (sum squares)
        ```
+19. Ch23.0
+    1.  `Text` doesnt use lazy evaluation. To use lazy text, use Data.Text.Lazy which has same interface as Data.Text. `Data.Text` is preferred over `String`. For qualified import
+        ```
+        import qualified Data.Text as T
+
+        T.pack :: String -> T.Text
+        T.unpack :: T.Text -> String
+        ```
+    2. Data.Text has two functions. but Avoid converting back and forth between Text and String due to cost
+       1. `pack`
+       2. `unpack`
+       3. example:
+       ```
+       firstWord :: String
+       firstWord = "pessimism"
+       secondWord :: T.Text
+       secondWord = T.pack firstWord
+       thirdWord :: String
+       thirdWord = T.unpack secondWord
+       ```
+    3. literal strings problem to define Text.
+        1. literal string cant define Text
+            ```
+            myWord :: T.Text
+            myWord = "dog"  -- a String
+
+            -- Error : Couldn't match expected type 'T.Text' with actual type '[Char]'
+            ```
+       2. Literal numbers like Int, Integer, Double dont have literal strings problem and can define text.
+            ```
+            myNum1 :: Int
+            myNum1 = 3
+            myNum2 :: Integer
+            myNum2 = 3
+            myNum3 :: Double
+            myNum3 = 3
+            ```
+       3. [2withExtension.hs]To overcome literal string cant define Text, use `OverloadedStrings`.2 solutions
+          1. as a flag: `$ ghc text.hs -XOverloadedStrings`
+          2. PREFERRED: a `LANGUAGE` pragma at top of file. {-# LANGUAGE <Extension Name> #-}
+            ```
+            {-# LANGUAGE OverloadedStrings #-}
+            import qualified Data.Text as T
+
+            aWord :: T.Text
+            aWord = "Cheese"
+
+            main :: IO ()
+            main = do  print aWord
+            ```
+    4. Useful language extensions:
+         | Extensions  	        | objective                                                                                                 	|
+         |---	                |---	                                                                                                        |
+         | OverloadedStrings  	| make string literals as text  	                                                                            |
+         | ViewPatterns  	    | support more-sophisticated pattern matching                                                               	|
+         | TemplateHaskell  	    | Provides tools for Haskell metaprogramming                                                               	|
+         | DuplicateRecordFields | solve lesson 16, where using the same field name for different types using record syntax causes a conflict  	|
+         | NoImplicitPrelude     | allows you to not use the default Prelude so you can customized your own Prelude                             |
+    5. After qualified import, use functions on Text like string with preface `T`. Almost any useful function for working with strings works on text and has its own Textversion. Useful common functions:
+           1. T.lines : split into list of strings
+           2. T.unlines: join a [String(s)] into a string with \n no whitespace
+           3. T.words : same as lines, but it works for any whitespace characters, rather than just new lines
+           4. T.unwords : join a [String(s)] into a String
+           5. T.splitOn : splitOn is part of the Data.List.Split module and included in Data.Text so no additional import is needed. splitOn lets you split up text by any substring of text and separate the 2 parts by `","`
+           6. T.intercalate: join a list of 2 strings into a string by replacing `","` with the joining text(s)
+                ```
+                {-# LANGUAGE OverloadedStrings #-}
+                import qualified Data.Text as T
+
+                -- 1. lines and unlines
+                sampleInput :: T.Text
+                sampleInput = "this\nis\ninput"
+                GHCi>T.lines sampleInput
+                ["this","is","input"]
+                GHCi> T.unlines (T.lines sampleInput)
+                "this\nis\ninput\n"
+
+
+                -- 2. words and unwords
+                someText :: T.Text
+                someText = "Some\ntext for\t you"
+                GHCi> T.words someText
+                ["Some","text","for","you"]
+                GHCi> T.unwords (T.words someText)
+                "Some text for you"
+
+                -- 3. splitOn and intercalate(join)
+                breakText :: T.Text
+                breakText = "simple"
+                break2Text :: T.Text
+                break2Text = "simple to"
+                exampleText :: T.Text
+                exampleText = "This is simple to do"
+                GHCi> T.splitOn breakText exampleText
+                ["This is "," to do"]
+                GHCi> T.intercalate breakText (T.splitOn breakText exampleText)
+                "This is simple to do"
+                >>> T.splitOn break2Text exampleText
+                ["This is "," do"]
+                -- >>> T.intercalate break2Text (T.splitOn break2Text exampleText)
+                -- "This is simple to do"
+
+                ```
+           7. **Exception**: there is no "++" for Text. Solve with **`Monoid` and `Semigroup` which can combine like types and concatenate lists of the same type**. use import Semigroup and `<>` or `mconcat`. Because String is also an instance of Monoid and Semigroup, strings can be combined in the same way.
+            ```
+            {-# LANGUAGE OverloadedStrings #-}
+            import qualified Data.Text as T
+
+            import Data.Semigroup --to use <> and mconcat to join Text since there is no T.++
+
+            combinedTextMonoid :: T.Text
+            combinedTextMonoid = mconcat ["some"," ","text"]
+            combinedTextSemigroup :: T.Text
+            combinedTextSemigroup = "some" <> " " <> "text"
+
+            >>> combinedTextMonoid
+            -- "some text"
+            -- >>> combinedTextSemigroup
+            -- "some text"
+
+            ```
+    6. [3highlightText.hs]A highlight program to search a Sanskrit word in text and highlight it. ![alt text](highlightText.png "Highlight program")
+        ```
+        highlight :: T.Text -> T.Text -> T.Text
+        highlight query fullText = T.intercalate highlighted pieces
+            where pieces = T.splitOn query fullText
+                  highlighted = mconcat ["{",query,"}"]
+        ```
+    7. TIO.putStrLn, you can print your Text type just as you would String so can apply Monoid mconcat or Semigroup <>. Any IO action you’ve used related to the String type has an equivalent in Data.Text.IO. e.g
+        ```
+        import qualified Data.Text.IO as TIO
+
+        Examples
+        1. TIO.putStrLn
+        2. name <- TIO.getLine
+        3. userInput <- TIO.getContents
+
+
+        {-# LANGUAGE OverloadedStrings #-}
+        import qualified Data.Text as T
+        import qualified Data.Text.IO as TIO
+        import Data.Semigroup --to use <> and mconcat to join Text since there is no T.++
+
+        helloPerson :: T.Text -> T.Text
+        helloPerson name = "Hello" <> " " <> name <> "!"
+
+        main :: IO ()
+        main = do
+            TIO.putStrLn "Hello! What's your name?"
+            name <- TIO.getLine
+            let statement = helloPerson (name)
+            TIO.putStrLn statement
+        ```
+    8. There is no T.read so use ` map (read . T.unpack) . T.lines`
+        ```
+        toInts :: T.Text -> [Int]
+        toInts = map (read . T.unpack) . T.lines
+        ```
+    9. Sometimes we use lazy.IO. See unit4/lesson23/l23_2exercises.hs
+        ```
+        {-# LANGUAGE OverloadedStrings #-}
+        import qualified Data.Text.Lazy as T
+        import qualified Data.Text.Lazy.IO as TIO
+        ```
