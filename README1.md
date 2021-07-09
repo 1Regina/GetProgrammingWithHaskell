@@ -285,68 +285,67 @@
          | DuplicateRecordFields | solve lesson 16, where using the same field name for different types using record syntax causes a conflict  	|
          | NoImplicitPrelude     | allows you to not use the default Prelude so you can customized your own Prelude                             |
     5. After qualified import, use functions on Text like string with preface `T`. Almost any useful function for working with strings works on text and has its own Textversion. Useful common functions:
-           1. T.lines : split into list of strings
-           2. T.unlines: join a [String(s)] into a string with \n no whitespace
-           3. T.words : same as lines, but it works for any whitespace characters, rather than just new lines
-           4. T.unwords : join a [String(s)] into a String
-           5. T.splitOn : splitOn is part of the Data.List.Split module and included in Data.Text so no additional import is needed. splitOn lets you split up text by any substring of text and separate the 2 parts by `","`
-           6. T.intercalate: join a list of 2 strings into a string by replacing `","` with the joining text(s)
-                ```
-                {-# LANGUAGE OverloadedStrings #-}
-                import qualified Data.Text as T
+        1. T.lines : split into list of strings
+        2. T.unlines: join a [String(s)] into a string with \n no whitespace
+        3. T.words : same as lines, but it works for any whitespace characters, rather than just new lines
+        4. T.unwords : join a [String(s)] into a String
+        5. T.splitOn : splitOn is part of the Data.List.Split module and included in Data.Text so no additional import is needed. splitOn lets you split up text by any substring of text and separate the 2 parts by `","`
+        6. T.intercalate: join a list of 2 strings into a string by replacing `","` with the joining text(s)
+             ```
+             {-# LANGUAGE OverloadedStrings #-}
+             import qualified Data.Text as T
 
-                -- 1. lines and unlines
-                sampleInput :: T.Text
-                sampleInput = "this\nis\ninput"
-                GHCi>T.lines sampleInput
-                ["this","is","input"]
-                GHCi> T.unlines (T.lines sampleInput)
-                "this\nis\ninput\n"
+             -- 1. lines and unlines
+             sampleInput :: T.Text
+             sampleInput = "this\nis\ninput"
+             GHCi>T.lines sampleInput
+             ["this","is","input"]
+             GHCi> T.unlines (T.lines sampleInput)
+             "this\nis\ninput\n"
 
 
-                -- 2. words and unwords
-                someText :: T.Text
-                someText = "Some\ntext for\t you"
-                GHCi> T.words someText
-                ["Some","text","for","you"]
-                GHCi> T.unwords (T.words someText)
-                "Some text for you"
+             -- 2. words and unwords
+             someText :: T.Text
+             someText = "Some\ntext for\t you"
+             GHCi> T.words someText
+             ["Some","text","for","you"]
+             GHCi> T.unwords (T.words someText)
+             "Some text for you"
 
-                -- 3. splitOn and intercalate(join)
-                breakText :: T.Text
-                breakText = "simple"
-                break2Text :: T.Text
-                break2Text = "simple to"
-                exampleText :: T.Text
-                exampleText = "This is simple to do"
-                GHCi> T.splitOn breakText exampleText
-                ["This is "," to do"]
-                GHCi> T.intercalate breakText (T.splitOn breakText exampleText)
-                "This is simple to do"
-                >>> T.splitOn break2Text exampleText
-                ["This is "," do"]
-                -- >>> T.intercalate break2Text (T.splitOn break2Text exampleText)
-                -- "This is simple to do"
+             -- 3. splitOn and intercalate(join)
+             breakText :: T.Text
+             breakText = "simple"
+             break2Text :: T.Text
+             break2Text = "simple to"
+             exampleText :: T.Text
+             exampleText = "This is simple to do"
+             GHCi> T.splitOn breakText exampleText
+             ["This is "," to do"]
+             GHCi> T.intercalate breakText (T.splitOn breakText exampleText)
+             "This is simple to do"
+             >>> T.splitOn break2Text exampleText
+             ["This is "," do"]
+             -- >>> T.intercalate break2Text (T.splitOn break2Text exampleText)
+             -- "This is simple to do"
 
-                ```
-           7. **Exception**: there is no "++" for Text. Solve with **`Monoid` and `Semigroup` which can combine like types and concatenate lists of the same type**. use import Semigroup and `<>` or `mconcat`. Because String is also an instance of Monoid and Semigroup, strings can be combined in the same way.
-            ```
-            {-# LANGUAGE OverloadedStrings #-}
-            import qualified Data.Text as T
+             ```
+        7. **Exception**: there is no "++" for Text. Solve with **`Monoid` and `Semigroup` which can combine like types and concatenate lists of the same type**. use import Semigroup and `<>` or `mconcat`. Because String is also an instance of Monoid and Semigroup, strings can be combined in the same way.
+             ```
+             {-# LANGUAGE OverloadedStrings #-}
+             import qualified Data.Text as T
 
-            import Data.Semigroup --to use <> and mconcat to join Text since there is no T.++
+             import Data.Semigroup --to use <> and mconcat to join Text since there is no T.++
 
-            combinedTextMonoid :: T.Text
-            combinedTextMonoid = mconcat ["some"," ","text"]
-            combinedTextSemigroup :: T.Text
-            combinedTextSemigroup = "some" <> " " <> "text"
+             combinedTextMonoid :: T.Text
+             combinedTextMonoid = mconcat ["some"," ","text"]
+             combinedTextSemigroup :: T.Text
+             combinedTextSemigroup = "some" <> " " <> "text"
 
-            >>> combinedTextMonoid
-            -- "some text"
-            -- >>> combinedTextSemigroup
-            -- "some text"
-
-            ```
+             >>> combinedTextMonoid
+             -- "some text"
+             -- >>> combinedTextSemigroup
+             -- "some text"
+             ```
     6. [3highlightText.hs]A highlight program to search a Sanskrit word in text and highlight it. ![alt text](highlightText.png "Highlight program")
         ```
         highlight :: T.Text -> T.Text -> T.Text
