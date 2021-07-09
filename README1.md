@@ -346,7 +346,7 @@
              -- >>> combinedTextSemigroup
              -- "some text"
              ```
-    6. [3highlightText.hs]A highlight program to search a Sanskrit word in text and highlight it. ![alt text](highlightText.png "Highlight program")
+    6. [3highlightText.hs]A highlight program to search a Sanskrit word in text and highlight it. ![alt text](unit4/lesson23/highlightText.png?raw=true "Highlight program") 
         ```
         highlight :: T.Text -> T.Text -> T.Text
         highlight query fullText = T.intercalate highlighted pieces
