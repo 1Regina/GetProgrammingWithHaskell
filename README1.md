@@ -146,7 +146,7 @@
         ```
         mainReplicate :: IO ()
         mainReplicate = do
-                    args <- getArgs
+                    args <- getArgs   -- need to import System.Environment
                     let linesToRead = if length args > 0
                                     then read (head args)
                                     else 0
@@ -389,3 +389,163 @@
         import qualified Data.Text.Lazy as T
         import qualified Data.Text.Lazy.IO as TIO
         ```
+20. Ch24.0
+    1.  `import System.IO`
+    2.  openFile :: FilePath -> IOMode -> IO Handle
+    3.  type FilePath = String
+    4.  For purpose of action with file: `data IOMode = ReadMode | WriteMode | AppendMode | ReadWriteMode`
+    5.  `IO Handle` : The Handle type is a file handle that lets you pass around a reference to a file.IO type means that you have a handle in the context of IO. In order to get this file handle, you’ll ultimately be doing the work in your main IO action.
+    6.  `hClose` (for handle close): whenever you open a file, you use hClose to close it when you are finished.
+    7.  `hPutStrLn` & `hGetLine`. The only difference between these two functions and putStrLn and getLine is that you need to pass in a handle.
+        1.  `putStrLn` is a specific instance of `hPutStrLn`. In `hPutStrLn` the handle is assumed to be stdout.
+        2.  `getLine` is `hGetLinewhere` the handle is stidn.
+    8. Simple IO tools for file
+        ```
+        readFile :: FilePath -> IO String
+        writeFile :: FilePath -> String -> IO ()
+        appendFile :: FilePath -> String -> IO ()
+        ```
+    9. Count file contents metadata. Progam that takes a file as an argument, and then count the characters, words, and lines in the file. The program will display this data to the user and append the info to a stats.dat file.
+        ```
+        --1. getCounts collects character, word, and line count info into a tuple
+        getCounts :: String -> (Int,Int,Int)
+        getCounts input = (charCount, wordCount, lineCount)
+            where charCount = length input
+                wordCount = (length . words) input
+                lineCount = (length . lines) input
+        --2. Report summary of file contents with unwords and show
+        countsText :: (Int,Int,Int) -> String
+        countsText (cc,wc,lc) =  unwords ["chars: "
+                                        , show cc
+                                        , " words: "
+                                        , show wc
+                                        , " lines: "
+                                        ,  show lc]
+
+        -- >>> (countsText . getCounts) "this is\n some text"
+        -- "chars:  18  words:  4  lines:  2"
+
+        -- 3. A program that put all the metadata into a file
+        main :: IO ()
+        main = do
+            args <- getArgs           -- need import System.Environment
+            let fileName = head args
+            input <- readFile fileName
+            let summary = (countsText . getCounts) input
+            appendFile "stats.dat" (mconcat [fileName, " ",summary, "\n"])
+            putStrLn summary
+
+        -- Steps to run
+        -- 1. ghc --make 3fileCounts.hs
+        -- 2. ./3fileCounts hello.txt
+        -- 3. cat stats.dat
+        ```
+    10. `getArgs` The type of getArgs is IO [String]. When you bind it with <-, as in the OP, the bound symbol (args) gets the type [String], i.e. a list of strings. The [getArgs](https://stackoverflow.com/questions/49055999/how-does-getargs-work#:~:text=the%20type%20of%20getargs%20is%20io%20%5Bstring%5D) function isn't interactive. It'll just return the arguments supplied from the command line, if any were supplied.
+    11. Why `/fileCounts stats.dat` fail? Bcos readFile doesn’t close the file handle and just returns the results of hGetContent. lazy evaluation, if readFile closes the handle, won't be able to use the contents of the file. This is because a function acting on the contents of the file wouldn’t be called until after the file handle was closed. Under the hood:
+        ```
+        readFile :: FilePath -> IO String
+        readFile name = do
+        inputFile <- openFile name ReadMode
+        hGetContents inputFile
+        ```
+    12. Lazy eval problems: although lazy I/O can be powerful, it can also lead to nasty bugs. ![alt text](unit4/lesson24/failLazyEval.png?raw=true "Problem with closing a file before we use it when using lazy evaluation")
+        1.  Your input isn’t used until you define summary but..
+        2.  Summary isn’t used until you call appendFile
+        3.  Because appendFile performs an IO action, it does force summary to be evaluated, which forces input to be evaluated.
+        4.  Real problem is that hClose closes the file immediately because it’s an IO action and must happen as soon as you evaluate it.
+            ```
+            mainCloseTooSoon :: IO ()
+            mainCloseTooSoon = do
+                args <- getArgs
+                let fileName = head args
+                file <- openFile fileName ReadMode
+                input <- hGetContents file
+                hClose file
+                let summary = (countsText . getCounts) input
+                appendFile "stats.dat" (mconcat [fileName, " ",summary, "\n"])
+                putStrLn summary
+            ```
+        5.  But by put hClose after appendFile because that’s when summary is finally evaluated
+            ```
+            appendFile (mconcat [fileName, " ",summary, "\n"])
+            hClose file
+            ```
+        6.  Doing 5 will go back where you started; you’re closing the file after you need a new han-dle!
+        7. (Solution for Lazy) needs to evaluate summary before you write to the file by move putStrLn summary before you write to the file. so it will
+           1. force summary to be evaluated first.
+           2. Then close the handle,
+           3. finally appending the file.
+           4. ![alt text](unit4/lesson24/fixLazyEval.png?raw=true "Fix for lazy evaluation bugs above")
+            ```
+            main :: IO ()
+            main = do
+                    args <- getArgs
+                    let fileName = head args
+                    file <- openFile fileName ReadMode
+                    input <- hGetContents file
+                    let summary = (countsText . getCounts) input
+                    putStrLn summary
+                    hClose file
+                    appendFile "stats.dat" (mconcat [fileName, " ",summary, "\n"])
+            ```
+    13. Count file contents metadata. **Best Solution** use a strict (nonlazy) type as Data.Text is preferred over String when working with text data. Data.Text is a strict data type (it doesn’t use lazy evaluation). Rewrite the original program by using the Text type, and problem will be solved! Strict evaluation means that your I/O code works just as you’d expect it to.
+        ```
+        {-# LANGUAGE OverloadedStrings #-}
+        import System.IO
+        import System.Environment
+        import qualified Data.Text as T
+        import qualified Data.Text.IO as TI
+
+        getCounts :: T.Text -> (Int,Int,Int)
+        getCounts input = (charCount, wordCount, lineCount)
+                where charCount = T.length input
+                    wordCount = (length . T.words) input
+                    lineCount = (length . T.lines) input
+
+
+        countsText :: (Int,Int,Int) -> T.Text
+        countsText (cc,wc,lc) = T.pack (unwords ["chars: ", show cc,
+                                                " words: ", show wc,
+                                                " lines: ",  show lc])
+
+
+        main :: IO ()
+        main = do
+            args <- getArgs
+            let fileName = head args
+            input <- TI.readFile fileName
+            let summary = (countsText . getCounts) input
+            TI.appendFile "stats.dat"
+                    (mconcat [(T.pack fileName), " ",summary, "\n"])
+            TI.putStrLn summary
+
+        -- Steps to run
+        -- 1. ghc --make filename.hs
+        -- 2. ./filename hello.txt
+        -- 3. cat stats.dat
+        ```
+    14. **IMPORTANT** Lazy vs Strict Evaluation
+        1.  Lazy Evaluation for: program that reads a single file + little I/O work
+        2.  Strict Evaluation for: > moderate complex e.g A)  reading + writing files; B) operations with important order
+    15. copy and renama a file program
+        ```
+        {-# LANGUAGE OverloadedStrings #-}
+        import System.IO
+        import System.Environment
+        import qualified Data.Text as T
+        import qualified Data.Text.IO as TI
+
+        main :: IO ()
+        main = do
+            args <- getArgs
+            let source =  args !! 0
+            let dest = args !! 1
+            input <- TI.readFile source
+            TI.writeFile dest input
+
+        -- Steps
+        -- 1. ghc --make l24_1exercises.hs
+        -- 2. ./l24_1exercises hello.txt hello2.txt
+        -- 3. (check that hello2.txt is generated)
+        ```
+    16.
