@@ -80,3 +80,7 @@ main = do
     userInput <- getContents
     let numbers = toInts userInput
     print (sum numbers)
+
+-- 1.  ghc --make filename.hs
+-- 2.  ./filename
+-- 3.  <ctdl-d> to end and get results of computation
