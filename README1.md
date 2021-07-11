@@ -1,4 +1,4 @@
-17. Ch21.0
+17. Ch21.0 Hello World! - Introducing IO types
     1. In an IO function: `getLine` returns the user input (which is an IO String)
         ```
         helloPerson :: String -> String
@@ -115,7 +115,7 @@
          1.   read    (to change IO type to non-IO type)
          2.   show    (to make into a String)
          3.   return  (to put output back in IO context)
-18. Ch22.0
+18. Ch22.0: Interacting with command line and lazy I/O
     1.  ` getArgs` function in **System.Environment**. e.g unit4/lesson22/sum.hs
         1.  unknown how many args user will input
         2.  to sum agr from user input.
@@ -226,7 +226,7 @@
             let squares = map (^2) numbers
             print (sum squares)
        ```
-19. Ch23.0
+19. Ch23.0: Working with text and Unicode
     1.  `Text` doesnt use lazy evaluation. To use lazy text, use Data.Text.Lazy which has same interface as Data.Text. `Data.Text` is preferred over `String`. For qualified import
         ```
         import qualified Data.Text as T
@@ -389,7 +389,7 @@
         import qualified Data.Text.Lazy as T
         import qualified Data.Text.Lazy.IO as TIO
         ```
-20. Ch24.0
+20. Ch24.0 Working with file with IO action
     1.  `import System.IO`
     2.  openFile :: FilePath -> IOMode -> IO Handle
     3.  type FilePath = String
@@ -548,4 +548,238 @@
         -- 2. ./l24_1exercises hello.txt hello2.txt
         -- 3. (check that hello2.txt is generated)
         ```
-    16.
+20. Ch25.0: Working with Binary data
+    1.  ByteString
+        1.  allows you to treat raw binary data as though it were a regular string.
+        2.  It is another important type that’s similar to String and Text.
+        3.  It is an array of bytes and not a type of text
+        4.  is an efficient way to deal with any streams of binary data.
+        5.  **import** `import qualified Data.ByteString as B`
+        6.  There are 256, or 28 (8 bits) ASCII characters, so every possible byte can be represented as an ASCII character.
+        7.  Use the `Over-loadedStrings` extension for literal ASCII strings to represent vectors of byte.
+    2. `ByteString.Char8` allows use of the same core functions for working with text as `Data.Text` does.
+        1.  ByteString.Char8’s unpack works just like Data.Text’s unpack.
+        2.  Data.ByteString **doesn’t allow** you to treat bytes just like Char, so instead you use Data.ByteString.Char8. Changing ByteString to List of Byte.
+            ```
+            import qualified Data.ByteString.Char8 as BC  --NOT Data.ByteString
+
+            sampleBytes :: B.ByteString
+            sampleBytes = "Hello!"
+
+            B.unpack :: BC.ByteString -> [GHC.Word.Word8]
+            BC.unpack :: BC.ByteString -> [Char]
+
+            bcInt :: BC.ByteString
+            bcInt = "6"
+
+            bcToInt :: BC.ByteString -> Int
+            bcToInt = read .  BC.unpack
+            ```
+        3. B.unpack now uses the ByteString representation from ByteString.Char8.
+        4. Can now treat ByteStrings as plain ASCII text
+    3. GlitchArt program
+       1. Take a filename argument from the user.
+       2. Read in the binary data for the image file -- by using BC.readFile.
+       3. Randomly alter bytes in the image data -- BEST use code instead of IO.
+       4. Write a new file containing the glitched image
+       5. ![alt text](unit4/lesson25/basicglitcher.png?raw=true "Basic layout of glitcher.hs")
+          1. If the glitched variable doesn’t need to be an IO type, line can be changed so that glitched is a regular variable : `let glitched = imageFile`
+    4. GlitchArt Program random byte altering process: a function that will convert an Int to a Char.
+       1. Use Int -> Char with toEnum since Char is a member of Enum.
+       2. Constraint Char to 0 - 255 with mod 255
+       3. Code to change int to Char
+           ```
+           intToChar :: Int -> Char
+           intToChar int =  toEnum safeInt
+               where safeInt = int `mod` 255
+           ```
+       2. Convert Char to ByteString with BC.unpack (see unit4/lesson25/1byteString.hs). Goal: make an Int into a single byte represented as a BC.ByteString
+       5. Because BC.pack requires a string, you need to put your Char inside a list.
+         ```
+         intToBC :: Int -> BC.ByteString
+         intToBC int = BC.pack [intToChar int]
+         ```
+       6.  write the code to replace a byte with this value with replaceByte function which will take : ![alt text](unit4/lesson25/replaceByte.png?raw=true "replaceByte removes a byte and replaces it with a new one")
+           1.  the location of the byte to be replaced
+           2.  the Int value of the new Char/Byte to go there,
+           3.  and the bytes of the image file.
+       7. Use BC.splitAt to split your byte around the target byte. `BC.splitAt` will give you a pair of values representing the first part of the data and then the rest (just like calling take and drop at the same time).
+       8. Then you’ll drop one from the rest of the bytes to make room for your new byte.
+       9. Finally, you’ll concatenate the new byte in the middle of these two sections.
+          ```
+          -- Step 6-9
+          replaceByte :: Int -> Int -> BC.ByteString -> BC.ByteString
+          replaceByte loc charVal bytes = mconcat [before,newChar,after]
+               where (before,rest) = BC.splitAt loc bytes
+                      after = BC.drop 1 rest
+                      newChar = intToBC charVal
+           ```
+       10. Now IO action. using randomRIO from `System.Random. randomRIO` will take a pair of values in a tuple and randomly give you a number in that range. The IO action will be named `randomReplaceByte`.
+       11. `randomReplaceByte` pick two random numbers: one for the Char, and one for the location, both randomly given the 2 respective ranges.
+            ```
+            randomReplaceByte :: BC.ByteString -> IO BC.ByteString
+            randomReplaceByte bytes = do
+                    let bytesLength = BC.length bytes
+                    location <- randomRIO (1,bytesLength)
+                    charVal <- randomRIO (0,255)
+                    return (replaceByte location charVal bytes)
+            ```
+       12.  error with random: solution : `cabal install --lib random`
+            ```
+                    2glitcher.hs:4:1: error:
+                Could not find module ‘System.Random’
+                Use -v (or `:set -v` in ghci) to see a list of the files searched for.
+            4 | import System.Random
+            ```
+       13.  Minimal GlitchArt Program code for mainGlitchLittle:
+            ```
+            import System.Environment
+            import qualified Data.ByteString as B
+            import qualified Data.ByteString.Char8 as BC
+            import System.Random
+
+            intToChar :: Int -> Char
+            intToChar int =  toEnum safeInt
+                where safeInt = int `mod` 255
+
+            intToBC :: Int -> BC.ByteString
+            intToBC int = BC.pack [intToChar int]
+
+            replaceByte :: Int -> Int -> BC.ByteString -> BC.ByteString
+            replaceByte loc charVal bytes = mconcat [before,newChar,after]
+                where (before,rest) = BC.splitAt loc bytes
+                    after = BC.drop 1 rest
+                    newChar = intToBC charVal
+
+            randomReplaceByte :: BC.ByteString -> IO BC.ByteString
+            randomReplaceByte bytes = do
+                let bytesLength = BC.length bytes
+                location <- randomRIO (1,bytesLength)
+                charVal <- randomRIO (0,255)
+                return (replaceByte location charVal bytes)
+
+            main :: IO ()
+            main = do
+                args <- getArgs
+                let fileName = head args
+                imageFile <- BC.readFile fileName
+                glitched <- randomReplaceByte imageFile  -- GLITCHING POINT
+                let glitchedFileName = mconcat ["glitched_",fileName]
+                BC.writeFile glitchedFileName glitched
+                print "all done"
+            ```
+       14.  Commands to run gltichArt program:
+            ```
+            $ ghc 2glitcher.hs
+            $ ./2glitcher lovecraft.jpg
+            ```
+       15. To enhance glitchArt, replace **randomReplaceByte with randomSortSection (here)**
+           1.  take a subsection to sort from a point with BC.splitAt.
+           2.  Split the second part into a chunk of fixed size.
+           3.  Sort the chunk
+           4.  Put it all back together with `mconcat`.
+           5.  This sortSection function, which takes a starting point of the section, a size of the section, and the byte stream
+                ```
+                sortSection :: Int -> Int -> BC.ByteString -> BC.ByteString
+                sortSection start size bytes = mconcat [before,changed,after]
+                    where (before,rest) = BC.splitAt start bytes
+                          (target,after) = BC.splitAt size rest
+                          changed =  BC.reverse (BC.sort target)
+                ```
+           6. create an IO action that picks a random starting point with sortSection
+               ```
+               randomSortSection :: BC.ByteString -> IO BC.ByteString
+               randomSortSection bytes = do
+                    let sectionSize = 25
+                    let bytesLength = BC.length bytes
+                    start <- randomRIO (0,bytesLength - sectionSize)
+                    return (sortSection start sectionSize bytes)
+               ```
+           7. Arbitrarily pick size and location: ![alt text](unit4/lesson25/sortSectionIO.png?raw=true "Random location and size with IO action")
+           8. Revised program code for mainGlitchBetter
+            ```
+            import System.Environment
+            import qualified Data.ByteString as B
+            import qualified Data.ByteString.Char8 as BC
+            import System.Random
+
+            sortSection :: Int -> Int -> BC.ByteString -> BC.ByteString
+            sortSection start size bytes = mconcat [before,changed,after]
+                where (before,rest) = BC.splitAt start bytes
+                      (target,after) = BC.splitAt size rest
+                      changed =  BC.reverse (BC.sort target)
+
+            randomSortSection :: BC.ByteString -> IO BC.ByteString
+            randomSortSection bytes = do
+                 let sectionSize = 25
+                 let bytesLength = BC.length bytes
+                 start <- randomRIO (0,bytesLength - sectionSize)
+                 return (sortSection start sectionSize bytes)
+
+            main :: IO ()
+            main = do
+                args <- getArgs
+                let fileName = head args
+                imageFile <- BC.readFile fileName
+                glitched <- randomSortSection imageFile  -- GLITCHING POINT
+                let glitchedFileName = mconcat ["glitched_",fileName]
+                BC.writeFile glitchedFileName glitched
+                print "all done"
+            ```
+       16. Combo GlitchArt by use `randomSortSection` (twice) and `randomReplaceByte` (three times) for mainGlitchCombo.
+            ```
+            main :: IO ()
+            main = do
+                    args <- getArgs
+                    let fileName = head args
+                    imageFile <- BC.readFile fileName
+                    glitched1 <- randomReplaceByte imageFile --- THE POINT OF GLITCHING
+                    glitched2 <- randomSortSection glitched1 --- THE POINT OF GLITCHING
+                    glitched3 <- randomReplaceByte glitched2 --- THE POINT OF GLITCHING
+                    glitched4 <- randomSortSection glitched3 --- THE POINT OF GLITCHING
+                    glitched5 <- randomReplaceByte glitched4 --- THE POINT OF GLITCHING
+                    let glitchedFileName = mconcat ["glitched_",fileName]
+                    BC.writeFile glitchedFileName glitched5
+                    print "all done"
+            ```
+       17. Use foldM from **Control.Monad** to reduce Step 16 typo and use lambda for chaining.
+           1.  `mapM` generalizes map to monads; `foldM` does the same for folding.
+           2.  take your original imageFile as the initial values, plus a list of IO actions to transform the file with a simple lambda.
+            ```
+            main :: IO ()
+            main = do
+                args <- getArgs
+                let fileName = head args
+                imageFile <- BC.readFile fileName
+                glitched <- foldM (\bytes func -> func bytes) imageFile
+                                                                    [randomReplaceByte,randomSortSection,randomReplaceByte,randomSortSection,randomReplaceByte]
+                let glitchedFileName = mconcat ["glitched_",fileName]
+                BC.writeFile glitchedFileName glitched
+                print "all done"
+            ```
+       18. GlitchArt Code with a list of glitch Actions
+            ```
+            import System.Environment
+            import qualified Data.ByteString as B
+            import qualified Data.ByteString.Char8 as BC
+            import System.Random ( randomRIO )
+            import Control.Monad ( foldM )
+
+            glitchActions :: [BC.ByteString -> IO BC.ByteString]
+            glitchActions = [randomReplaceByte
+                            ,randomSortSection
+                            ,randomReplaceByte
+                            ,randomSortSection
+                            ,randomReplaceByte]
+
+            -- Using stringed glitchActions
+            main :: IO ()
+            main = do
+                        args <- getArgs
+                        let fileName = head args
+                        imageFile <- BC.readFile fileName
+                        glitched <- foldM (\bytes func -> func bytes) imageFile glitchActions
+                        let glitchedFileName = mconcat ["glitched_",fileName]
+                        BC.writeFile glitchedFileName glitched
+                        print "all done"
+            ```
