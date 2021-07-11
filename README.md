@@ -33,7 +33,7 @@ Unit 1
 3. Ch04: First class functions are functions that can
    1. take functions as input arguments or
    2. return function as its value output.
-4. Ch05:
+4. Ch05:Closures and partial application
    1. When you capture a value inside a lambda function, this is referred to as a closure.
    2. Anytime you might want to use a closure (which in Haskell is pretty much anytime), you want to order your arguments from most to least general. e.g. `getRequestURL host apiKey resource id ` GHCi> getRequestURL "http://example.com" "1337hAsk3ll" "book" "1234" outputs "http://example.com/book/1234?token=1337hAsk3ll" .  Closures combine lambda functions and first-class functions to give you amazing power but partial application makes life even easier.
    3. `add4 a b c d = a + b + c + d`;  `addXto3 x = (\b c d ->add4 x b c d)` makes `addXto3` a closure awaiting 3 remaining arguments.
@@ -68,7 +68,7 @@ Unit 1
          GHCi> (/) 10 2
          5.0
          ```
-5. Ch06:
+5. Ch06: Lists
    1. The tail of a list with just one element is [].
    2. head and tail
       ```
@@ -222,7 +222,7 @@ Unit 1
          GHCi> assignToGroups 2 ["Bob","Kathy","Sue","Joan","Jim","Mike"]
          [(1,"Bob"),(2,"Kathy"),(1,"Sue"),(2,"Joan"),(1,"Jim"),(2,"Mike")]
          ```
-6. Ch07:
+6. Ch07: Rules for recursion and pattern matching
    1. No *for*, *while* and *until* loops in functional language because dont have state changes. Solution is recursion using pattern matching. Recursive -> defined in terms of itself.
    2. Recursion is merely a list of goals and alternative cases. Think in patterns.
    3. Recursive functions rules:
@@ -243,7 +243,7 @@ Unit 1
       ```
       myHead (x:xs) = xmyHead [] = error "No head for empty list"
       ```
-7. Ch08:
+7. Ch08: other recursion functions
    1. `:set +s` to time your function calls in prelude
    2. Sometimes the 5 recursion rules dont apply. e.g cycle has no goat state.
    3. Ackermann function
@@ -260,7 +260,7 @@ Unit 1
                   else 1 + collatz (n*3 + 1)
       ```
    5. Fibonacci with Q8.2
-8. Ch09:
+8. Ch09: Higher-order functions
    1. Higher-order function is technically any function that takes another function as an argument.
    2. The map function takes another function and a list as arguments and applies that function to each element in the list.
       1. Map examples
@@ -379,7 +379,7 @@ Unit 1
       1. foldl is the most intuitive behaving of the folds, but it usually has terrible perfor-mance and can’t be used on infinite lists.
       2. foldl' is a nonlazy version of foldl that’s often much more efficient.
       3. foldr is often more efficient than foldl and is the only fold that works on infinite lists
-9. Ch11:
+9. Ch11: Type basics
    1. Type Int and Integer are different in Haskell
       1. Type Int is bound
       ```
@@ -495,7 +495,7 @@ Unit 1
       > f2 is a function that can produce a much wider range of possible values. The f1 function could behave only by changing a value and keeping it as the same type: Int -> Int, Char -> Char, and so forth. In contrast, f2 can represent a much broader range of possible behaviors: Int -> Char, Int -> Int, Int -> Bool, Char -> Int, Char -> Bool, and so forth.
 
    13. See exercises for 11.3
-10. Ch12.0
+10. Ch12.0 Creating your own types
     1.  [Char] = `String` --> Type synonym
     2.  Type synonyms: 2 types
         1.   1:1 replacement
@@ -623,7 +623,7 @@ Unit 1
          jackieSmithUpdated :: Patient'
          jackieSmithUpdated = jackieSmith { age = 44 }
          ```
-11. Ch13.0
+11. Ch13.0 Type Classes
     1.  Type classes allow you to group types based on shared behavior. A type class states which functions a type must support and is a way of describing groups of types that all behave in the same way
     2. `Num a` means some type `a` of class `Num`. Use `:info` to get definition. All members of cthe class must implement these functions, where output type and argument types are the same such that you cannot add two `Int`s  nand get a `Double`.
          ```
@@ -728,7 +728,7 @@ Unit 1
          GHCi> Chocolate > Vanilla
          False
          ```
-12. Ch14.0
+12. Ch14.0 Using type classes
     1.  Functions in type classes are called *methods*.
     2.  Unless it is a type definition with show, add `deriving (Show)`.
     3.  But to intro other ( corresponding string) output beyond data constructors, specify `data` constructor to define type definition and `instance Show type where show data-constructor-value = "I" ` etc. See SixSidedDie in /Users/regina/Code/Haskell/GetProgrammingWithHaskell/unit2/lesson14/typeClassCreation.hs
@@ -865,7 +865,7 @@ Unit 1
             instance Die FiveSidedDie where
             roll n = toEnum (n `mod` 5)
            ```
-13. Ch16.0
+13. Ch16.0 Creating types with "and" and "or"
     1. Algebraic data types = any types that can be made by combining other types, only 2 types
        1. Product types (using `and` as in a name is a String and another String)
        2. Sum types (using `or` as in  Bool which is a True data constructor or a False data constructor).
@@ -931,7 +931,7 @@ Unit 1
          price (ToyItem toy) = toyPrice toy
          ```
 
-14. Ch17.0
+14. Ch17.0 Design by composition - Semigroups and monoids
     1.   A special higher-order function that’s just a period (called compose) takes two functions as arguments.
          ```
          myLast :: [a] -> a
@@ -1181,7 +1181,7 @@ Unit 1
        tails-tails-heads|0.125
        tails-tails-tails|0.125
        ```
-15. Ch 17.0
+15. Ch 18.0: Parameterized types
     1. Parameterized types = types that take any number of types as arguments. e.g a box - an abstract container that can hold any other type. Once a concrete value is inside the box, the box type = the concrete value type.
        ```
        data Box a = Box a deriving Show
@@ -1374,7 +1374,7 @@ Unit 1
          ```
        10. Map is a parameterized type that takes two arguments: one for the type of its keys and another for the type of its values.
        11. See unit3/lesson18/l18exercises.hs for example of inventory count vs unit3/lesson18/paramTypes.hs for just enum inventory list.
-16. Ch 19.0
+16. Ch 19.0: The Maybe Type: dealing with missing values
     1.  Maybe type takes cares of null values problem. Something of a Maybe type can be either Nothing, or Just something of type a.
        ```
        data Maybe a = Nothing | Just a
