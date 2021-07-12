@@ -582,7 +582,7 @@
        2. Read in the binary data for the image file -- by using BC.readFile.
        3. Randomly alter bytes in the image data -- BEST use code instead of IO.
        4. Write a new file containing the glitched image
-       5. ![alt text](unit4/lesson25/basicglitcher.png?raw=true "Basic layout of glitcher.hs")
+       5. ![alt text](unit4/lesson25/basicglitcher.png?raw=true "Basic layout of glitchArt.hs")
           1. If the glitched variable doesn’t need to be an IO type, line can be changed so that glitched is a regular variable : `let glitched = imageFile`
     4. GlitchArt Program random byte altering process: a function that will convert an Int to a Char.
        1. Use Int -> Char with toEnum since Char is a member of Enum.
@@ -626,7 +626,7 @@
             ```
        12.  error with random: solution : `cabal install --lib random`
             ```
-                    2glitcher.hs:4:1: error:
+                    2glitchArt.hs:4:1: error:
                 Could not find module ‘System.Random’
                 Use -v (or `:set -v` in ghci) to see a list of the files searched for.
             4 | import System.Random
@@ -670,8 +670,8 @@
             ```
        14.  Commands to run gltichArt program:
             ```
-            $ ghc 2glitcher.hs
-            $ ./2glitcher lovecraft.jpg
+            $ ghc 2glitchArt.hs
+            $ ./2glitchArt lovecraft.jpg
             ```
        15. To enhance glitchArt, replace **randomReplaceByte with randomSortSection (here)**
            1.  take a subsection to sort from a point with BC.splitAt.
@@ -761,14 +761,14 @@
                 BC.writeFile glitchedFileName glitched
                 print "all done"
             ```
-       18. GlitchArt Code with a list of glitch Actions
+       18. GlitchArt Code with a list of glitch Actions.
             ```
             import System.Environment
             import qualified Data.ByteString as B
             import qualified Data.ByteString.Char8 as BC
             import System.Random ( randomRIO )
             import Control.Monad ( foldM )
-
+            ..... rem to add randomSortSection and randomReplaceByte from unit4/lesson25/2glitchArt.
             glitchActions :: [BC.ByteString -> IO BC.ByteString]
             glitchActions = [randomReplaceByte
                             ,randomSortSection
@@ -776,7 +776,7 @@
                             ,randomSortSection
                             ,randomReplaceByte]
 
-            -- Using stringed glitchActions
+            -- Using stringed glitchActions. It is named mainw5Actions in unit4/lesson25/2glitchArt.hs
             main :: IO ()
             main = do
                         args <- getArgs
@@ -787,4 +787,102 @@
                         BC.writeFile glitchedFileName glitched
                         print "all done"
             ```
-            
+       19. Adding another glitching technique, randomReverseBytes, that randomly reverses a section of bytes in your data
+            ```
+                reverseSection :: Int -> Int -> BC.ByteString -> BC.ByteString
+                reverseSection start size bytes = mconcat [before,changed,after]
+                                where (before,rest) = BC.splitAt start bytes
+                                        (target,after) = BC.splitAt size rest
+                                        changed =  BC.reverse target
+
+                randomReverseBytes :: BC.ByteString -> IO BC.ByteString
+                randomReverseBytes bytes = do
+                    let sectionSize = 25
+                    let bytesLength = BC.length bytes
+                    start <- randomRIO (0,(bytesLength - sectionSize))
+                    return (reverseSection start sectionSize bytes)
+
+                glitchActionswReverse :: [BC.ByteString -> IO BC.ByteString]
+                glitchActionswReverse = [randomReplaceByte
+                                        ,randomSortSection
+                                        ,randomReplaceByte
+                                        ,randomSortSection
+                                        ,randomReplaceByte
+                                        ,randomReverseBytes]
+
+                main :: IO ()
+                main = do
+                            args <- getArgs
+                            let fileName = head args
+                            imageFile <- BC.readFile fileName
+                            glitched <- foldM (\bytes func -> func bytes) imageFile glitchActionswReverse
+                            let glitchedFileName = mconcat ["glitched_",fileName]
+                            BC.writeFile glitchedFileName glitched
+                            print "all done"
+
+                -- Steps to execute:
+                -- 1. ghc 2glitchArt.hs
+                -- 2. ./2glitchArt lovecraft.jpg
+            ```
+    5. **Unicode** Char8 ByteStrings are only for ASCII to transform text to just bytes primarily being writing Uni-code to a file as ByteStrings.
+       1. To get from T.Text -> B.ByteString but could lose foreign language text , do :
+            ```
+            (BC.pack . T.unpack) sampleT.Text
+            ```
+       2. To preserve foreign language text, use convert Text directly to a B.ByteString and not a BC.ByteString along the way, use **Data.Text.Encoding** with its 2 essential functions to convert Unicode text to raw bytes and back again.
+            ```
+            import qualified Data.Text.Encoding as E
+
+            E.encodeUtf8 :: T.Text -> BC.ByteString
+            E.decodeUtf8 :: BC.ByteString -> T.Text
+            ```
+       3. Data.Text.Encoding in action to convert between Text and ByteString with de/encodeUtf8
+            ```
+             nagarjunaText :: T.Text
+             nagarjunaText = "नागर्जुन"
+
+             nagarjunaSafe :: B.ByteString
+             nagarjunaSafe = E.encodeUtf8 nagarjunaText
+
+             GHCi> TIO.putStrLn (E.decodeUtf8 nagarjunaSafe)
+             नागर्जुन
+            ```
+        4. Program to count character and byte in a file (see unit4/lesson25/l25_1exercises.hs
+            ```
+            {-# LANGUAGE OverloadedStrings #-}
+            import System.IO
+            import System.Environment
+            import qualified Data.ByteString.Char8 as BC
+            import qualified Data.Text as T
+            import qualified Data.Text.Encoding as E
+
+            main :: IO ()
+            main = do
+
+            -- book solution
+                        args <- getArgs
+                        let fileName = args !! 0  -- or can be head args
+                        input <- BC.readFile fileName
+                        putStrLn "Bytes: "
+                        print (BC.length input)
+                        putStrLn "Characters: "
+                        print ((T.length. E.decodeUtf8) input)  -- decodeUtf8 :: BC.ByteString -> T.Text
+                        putStrLn "Difference: "
+                        print (BC.length input - (T.length. E.decodeUtf8) input)
+
+            -- my solution with let statements & head args
+                        args <- getArgs
+                        let fileName = head args -- or can be:  args !! 0
+                        input <- BC.readFile fileName
+                        let byteCount = BC.length input
+                        let charCount = ((T.length. E.decodeUtf8) input) -- decodeUtf8 :: BC.ByteString -> T.Text
+                        putStrLn "Bytes: "
+                        print (byteCount)
+                        putStrLn "Characters: "
+                        print (charCount)
+                        putStrLn "Difference: "
+                        print (byteCount - charCount)
+            ```
+    6. never use the convenience of Data.ByteString.Char8 if you’re working with data that may contain Unicode.
+       1. combination of regular ByteStrings and Char8 works great for purely binary data (ASCII).
+       2. anything else (ie non binary), stick to ByteString, Text, and Text.Encoding
