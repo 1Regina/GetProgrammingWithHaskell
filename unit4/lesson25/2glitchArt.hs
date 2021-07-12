@@ -52,8 +52,8 @@ mainGlitchLittle = do
     print "all done"
 
 -- Steps to execute:after rename mainGlitchLittle to main
--- 1. ghc 2glitcher.hs
--- 2. ./2glitcher lovecraft.jpg
+-- 1. ghc 2glitchArt.hs
+-- 2. ./2glitchArt lovecraft.jpg
 
 -- Quick check 25.3 Write an IO action that returns a random Char. (See notes 20.4 on toEnum)
 -- randomChar :: IO Char
@@ -89,8 +89,8 @@ mainGlitchBetter = do
         print "all done"
 
 -- Steps to execute:after rename mainGlitchBetter to main
--- 1. ghc 2glitcher.hs
--- 2. ./2glitcher lovecraft.jpg
+-- 1. ghc 2glitchArt.hs
+-- 2. ./2glitchArt lovecraft.jpg
 
 -- Combo GlitchArt : use randomSortSection twice on your data and randomReplaceByte three times.
 mainGlitchCombo :: IO ()
@@ -108,8 +108,8 @@ mainGlitchCombo = do
             print "all done"
 
 -- Steps to execute:after rename mainGlitchCombo to main
--- 1. ghc 2glitcher.hs
--- 2. ./2glitcher lovecraft.jpg
+-- 1. ghc 2glitchArt.hs
+-- 2. ./2glitchArt lovecraft.jpg
 
 -- With foldM from Control.Monad (Step 17) to reduce typo and use lambda for chaining.
 mainLambdaActions :: IO ()
