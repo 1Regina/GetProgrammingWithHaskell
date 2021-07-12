@@ -133,13 +133,54 @@ glitchActions = [randomReplaceByte
                 ,randomSortSection
                 ,randomReplaceByte]
 
--- Step 18. Using stringed glitchActions
+-- Step 18. Using stringed glitchActions. Final in book
+-- mainw5Actions :: IO ()
+-- mainw5Actions = do
+--             args <- getArgs
+--             let fileName = head args
+--             imageFile <- BC.readFile fileName
+--             glitched <- foldM (\bytes func -> func bytes) imageFile glitchActions
+--             let glitchedFileName = mconcat ["glitched_",fileName]
+--             BC.writeFile glitchedFileName glitched
+--             print "all done"
+
+-- Steps to execute:after rename mainw5Actions to main
+-- 1. ghc 2glitchArt.hs
+-- 2. ./2glitchArt lovecraft.jpg
+
+-- Q25.2 Add another glitching technique, randomReverseBytes, that randomly reverses a section of bytes in your data (reference function is sortSection)
+-- Steo 19
+reverseSection :: Int -> Int -> BC.ByteString -> BC.ByteString
+reverseSection start size bytes = mconcat [before,changed,after]
+                  where (before,rest) = BC.splitAt start bytes
+                        (target,after) = BC.splitAt size rest
+                        changed =  BC.reverse target
+
+randomReverseBytes :: BC.ByteString -> IO BC.ByteString
+randomReverseBytes bytes = do
+    let sectionSize = 25
+    let bytesLength = BC.length bytes
+    start <- randomRIO (0,(bytesLength - sectionSize))
+    return (reverseSection start sectionSize bytes)
+
+glitchActionswReverse :: [BC.ByteString -> IO BC.ByteString]
+glitchActionswReverse = [randomReplaceByte
+                        ,randomSortSection
+                        ,randomReplaceByte
+                        ,randomSortSection
+                        ,randomReplaceByte
+                        ,randomReverseBytes]
+
 main :: IO ()
 main = do
             args <- getArgs
             let fileName = head args
             imageFile <- BC.readFile fileName
-            glitched <- foldM (\bytes func -> func bytes) imageFile glitchActions
+            glitched <- foldM (\bytes func -> func bytes) imageFile glitchActionswReverse
             let glitchedFileName = mconcat ["glitched_",fileName]
             BC.writeFile glitchedFileName glitched
             print "all done"
+
+-- Steps to execute:
+-- 1. ghc 2glitchArt.hs
+-- 2. ./2glitchArt lovecraft.jpg
