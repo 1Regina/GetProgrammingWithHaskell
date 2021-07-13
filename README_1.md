@@ -125,7 +125,7 @@
                     partCost = show (cost part)
                     partCount = show (count part)
             ```
-        4. Map is a useful type for this DB example because it naturally involves three instances of Functor: it’s made from a List, returns Maybe values, and is itself a Functor. Build a Map is with the fromList function.
+        4. Map is a useful type for this DB example because it naturally involves three instances of Functor: it’s made from a List, returns Maybe values, and is itself a Functor. Build a Map is with the fromList function.NB: Haskell Map (dictionary is a list of tuples instead of key:value. There is do colon **`:`**)
             ```
             partsDB :: Map.Map Int RobotPart
             partsDB = Map.fromList keyVals
@@ -391,13 +391,13 @@
     15.  Functor’s fmap (=the <$> operator) can do apply the `Int -> Double` function to the `Maybe Int` value, *resulting* in a `Maybe Double` value. `Functor` allow you to **reuse a single function (e.g renderHtml) with any type belonging to the Functor type class**. [Int], Maybe Int, and IO Int can all use the same core functions. Recap all HTML trnsformation with renderHTML. Functor’s <$> provides a common interface to apply any function to a value in a contex.
         ```
         partHtml :: Maybe Html
-        partHtml = renderHtml <$> partVal      --[*fmap with a **Maybe***]
+        partHtml = renderHtml <$> partVal      -- [fmap in a Maybe context]
         allPartsHtml :: [Html]
-        allPartsHtml = renderHtml <$> allParts -- [*fmap with a **list***]
+        allPartsHtml = renderHtml <$> allParts -- [fmap in a list container]
         htmlPartsDB :: Map.Map Int Html
-        htmlPartsDB = renderHtml <$> partsDB   -- [*fmap with a **Map ie Dictionary***]
+        htmlPartsDB = renderHtml <$> partsDB   -- [fmap in a Map ie Dictionary container]
         htmlSnippet :: IO Html
-        htmlSnippet = renderHtml <$> leftArmIO -- [*fmap with a **IO***]
+        htmlSnippet = renderHtml <$> leftArmIO -- [fmap in a IO context]
         ```
     16. Q27.3 Write a command-line interface for partsDB that lets the user look up the cost of an item, given an ID. Use the Maybe type to handle the case of the user entering missing input. Solution: reuse `data RobotPart` to `partsDB` from unit5/lesson27/2robotPartsDBfmapListMapMaybeIO.hs then add imports, showCost and main. Complete codes in unit5/lesson27/l27_2exercises.hs
         ```
