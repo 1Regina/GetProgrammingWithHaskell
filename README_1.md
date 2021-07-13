@@ -191,7 +191,7 @@
     12. KINDS: Map’s kind is * -> * -> * because Map takes two type arguments 1 Key + 1 Value. Functors must be of kind * -> *. `<$> on your partsDB` makes it clear. Functor for Map is concerned only about the Map’s values and not its keys. When Map is made an instance of Functor, only concerned about a single type variable, the one used for its values ie as being of kind * -> *.
     13. **Functor’s <$> provides a common interface to apply any function to a value in a context**. For types such as `List` and `Map`, this is a convenient way to update values in these *containers*. For `IO`, it’s essential to be able to change values in an *IO context*, *because you can’t take IO values out of their context*.
     14. The Functor type class allows you to apply an ordinary function to values inside a container (for example, List) or a context (for example, IO or Maybe).
-    15.  Functor’s fmap (=the <$> operator) can do apply the `Int -> Double` function to the `Maybe Int` value, *resulting* in a `Maybe Double` value. `Functor` allow you to **reuse a single function (e.g renderHtml) with any type belonging to the Functor type class**. [Int], Maybe Int, and IO Int can all use the same core functions. Recap all HTML trnsformation with renderHTML. Functor’s <$> provides a common interface to apply any function to a value in a contex.
+    15. Functor’s fmap (=the <$> operator) can do apply the `Int -> Double` function to the `Maybe Int` value, *resulting* in a `Maybe Double` value. `Functor` allow you to **reuse a single function (e.g renderHtml) with any type belonging to the Functor type class**. [Int], Maybe Int, and IO Int can all use the same core functions. Recap all HTML trnsformation with renderHTML. Functor’s < $> provides a common interface to apply any function to a value in a contex.
         ```
         partHtml :: Maybe Html
         partHtml = renderHtml <$> partVal      -- fmap in a Maybe context
@@ -230,4 +230,4 @@
         -- 5. output is shown
         ```
 
-24. Ch
+23. Ch
