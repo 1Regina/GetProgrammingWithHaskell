@@ -194,13 +194,13 @@
     15.  Functor’s fmap (=the <$> operator) can do apply the `Int -> Double` function to the `Maybe Int` value, *resulting* in a `Maybe Double` value. `Functor` allow you to **reuse a single function (e.g renderHtml) with any type belonging to the Functor type class**. [Int], Maybe Int, and IO Int can all use the same core functions. Recap all HTML trnsformation with renderHTML. Functor’s <$> provides a common interface to apply any function to a value in a contex.
         ```
         partHtml :: Maybe Html
-        partHtml = renderHtml <$> partVal      -- [fmap in a Maybe context]
+        partHtml = renderHtml <$> partVal      -- (fmap in a Maybe context)
         allPartsHtml :: [Html]
-        allPartsHtml = renderHtml <$> allParts -- [fmap in a list container]
+        allPartsHtml = renderHtml <$> allParts -- (fmap in a list container)
         htmlPartsDB :: Map.Map Int Html
-        htmlPartsDB = renderHtml <$> partsDB   -- [fmap in a Map ie Dictionary container]
+        htmlPartsDB = renderHtml <$> partsDB   -- (fmap in a Map ie Dictionary container)
         htmlSnippet :: IO Html
-        htmlSnippet = renderHtml <$> leftArmIO -- [fmap in a IO context]
+        htmlSnippet = renderHtml <$> leftArmIO -- (fmap in a IO context)
         ```
     16. Q27.3 Write a command-line interface for partsDB that lets the user look up the cost of an item, given an ID. Use the Maybe type to handle the case of the user entering missing input. Solution: reuse `data RobotPart` to `partsDB` from unit5/lesson27/2robotPartsDBfmapListMapMaybeIO.hs then add imports, showCost and main. Complete codes in unit5/lesson27/l27_2exercises.hs
         ```
