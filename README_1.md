@@ -326,7 +326,7 @@
             >>> (++) <$> Just "cats" <*> Nothing
             Nothing
             ```
-    5.  can use <$> and <*> to chain together any number of arguments.  Quick check 28.3  in  unit5/lesson28/1distance.hs ![Alt text](unit5/lesson28/applicativeWithFmapCompute.png?raw=true "Combine applicative and fmap in a Maybe context for partial application")
+    5.  can use <$> and <*> to chain together any number of arguments.  Quick check 28.3  in  unit5/lesson28/1distance.hs ![Alt text](unit5/lesson28/applicativeWithFmapCompute.png?raw=true "Combine applicative and fmap in a Maybe context for partial application") <p align="center"> Combine applicative and fmap in a Maybe context for partial application </p>
         ```
         val1 = Just 10
         val2 = Just 5
