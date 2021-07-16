@@ -29,7 +29,7 @@
             reverseMaybe Nothing = Nothing
             ```
        2. Above scaling is difficult bcos needs a version for every function that use a `Maybe`. Solution **functor**
-    4. functor explanation and type signature : ![Alt text](unit5/lesson27/fmapTypeSignature.png?raw=true "Fmap type signature")
+    4. functor explanation and type signature : ![Alt text](unit5/lesson27/fmapTypeSignature.png?raw=true "Fmap type signature") <p align="center"> Fmap type signature </p>
        1. <$>, which is a synonym for fmap (except it’s a binary operator rather than a function).
     5. Making Maybe an instance of Functor:
         ```
@@ -265,13 +265,13 @@
             printDistance :: Maybe Double -> IO ()
             .....cases for  Nothing + Just distances
             ```
-        5. `locationDB` will give you Maybe values but `haversine :: LatLong  -> LatLong  -> Double` and should be ![Alt text](unit5/lesson28/2locationsToDist_Type_Signature.png?raw=true "Type Signature for Function to connect locationsDb to printDistance")
+        5. `locationDB` will give you Maybe values but `haversine :: LatLong  -> LatLong  -> Double` and should be ![Alt text](unit5/lesson28/2locationsToDist_Type_Signature.png?raw=true "Type Signature for Function to connect locationsDb to printDistance") <p align="center"> Type Signature for Function to connect locationsDb to printDistance </p>
            1. It is almost similar to `haversine`, but everything is in the context of a `Maybe`.
            2. with `Functor` : we use normal functions in a context.
            3. Problems with `haversineMaybe` are :
               1. wrapper for any similar function ---> repetitive
               2. a different `haversineMaybe` for other context e.g `IO`.
-           4. Limitations of a Functor ![Alt text](unit5/lesson28/fmapTypeSignature.png?raw=true "Functor's only method - fmap") : `fmap` function takes any function from type a to type b (where type a COULD be type b also), and the value of type a in the context of a Functor (like Maybe), and returns a value of type b in the same context.
+           4. Limitations of a Functor ![Alt text](unit5/lesson28/fmapTypeSignature.png?raw=true "Functor's only method - fmap") <p align="center"> Functor's only method - fmap </p> : `fmap` function takes any function from type a to type b (where type a COULD be type b also), and the value of type a in the context of a Functor (like Maybe), and returns a value of type b in the same context.
            5. Problem we have 2 arguments but Functor has only 1 method (fmap). fmap only takes one argument the `f a`
            6. Close look:
               1. need `haversine :: (LatLong -> LatLong -> Double)`
