@@ -29,7 +29,7 @@
             reverseMaybe Nothing = Nothing
             ```
        2. Above scaling is difficult bcos needs a version for every function that use a `Maybe`. Solution **functor**
-    4. functor explanation and type signature : ![Alt text](unit5/lesson27/fmapTypeSignature.png?raw=true "Fmap type signature") <b align="center"> Fmap type signature </b>
+    4. functor explanation and type signature : ![Alt text](unit5/lesson27/fmapTypeSignature.png?raw=true "Fmap type signature") <p align="center"> Fmap type signature </p>
        1. <$>, which is a synonym for fmap (except it’s a binary operator rather than a function).
     5. Making Maybe an instance of Functor:
         ```
@@ -265,13 +265,13 @@
             printDistance :: Maybe Double -> IO ()
             .....cases for  Nothing + Just distances
             ```
-        5. `locationDB` will give you Maybe values but `haversine :: LatLong  -> LatLong  -> Double` and should be ![Alt text](unit5/lesson28/2locationsToDist_Type_Signature.png?raw=true "Type Signature for Function to connect locationsDb to printDistance") <b align="center"> Type Signature for Function to connect locationsDb to printDistance </b>
+        5. `locationDB` will give you Maybe values but `haversine :: LatLong  -> LatLong  -> Double` and should be ![Alt text](unit5/lesson28/2locationsToDist_Type_Signature.png?raw=true "Type Signature for Function to connect locationsDb to printDistance") <p align="center"> Type Signature for Function to connect locationsDb to printDistance </p>
            1. It is almost similar to `haversine`, but everything is in the context of a `Maybe`.
            2. with `Functor` : we use normal functions in a context.
            3. Problems with `haversineMaybe` are :
               1. wrapper for any similar function ---> repetitive
               2. a different `haversineMaybe` for other context e.g `IO`.
-           4. Limitations of a Functor ![Alt text](unit5/lesson28/fmapTypeSignature.png?raw=true "Functor's only method - fmap") <b align="center"> Functor's only method - fmap </b> : `fmap` function takes any function from type a to type b (where type a COULD be type b also), and the value of type a in the context of a Functor (like Maybe), and returns a value of type b in the same context.
+           4. Limitations of a Functor ![Alt text](unit5/lesson28/fmapTypeSignature.png?raw=true "Functor's only method - fmap") <p align="center"> Functor's only method - fmap </p> : `fmap` function takes any function from type a to type b (where type a COULD be type b also), and the value of type a in the context of a Functor (like Maybe), and returns a value of type b in the same context.
            5. Problem we have 2 arguments but Functor has only 1 method (fmap). fmap only takes one argument the `f a`
            6. Close look:
               1. need `haversine :: (LatLong -> LatLong -> Double)`
@@ -326,7 +326,7 @@
             >>> (++) <$> Just "cats" <*> Nothing
             Nothing
             ```
-    5.  can use <$> and <*> to chain together any number of arguments.  Quick check 28.3  in  unit5/lesson28/1distance.hs ![Alt text](unit5/lesson28/applicativeWithFmapCompute.png?raw=true "Combine applicative and fmap in a Maybe context for partial application") <b align="center"> Combine applicative and fmap in a Maybe context for partial application </b>
+    5.  can use <$> and <*> to chain together any number of arguments.  Quick check 28.3  in  unit5/lesson28/1distance.hs ![Alt text](unit5/lesson28/applicativeWithFmapCompute.png?raw=true "Combine applicative and fmap in a Maybe context for partial application") <p align="center"> Combine applicative and fmap in a Maybe context for partial application </p>
         ```
         val1 = Just 10
         val2 = Just 5
@@ -390,4 +390,4 @@
 
 24. Ch 29.0:  Lists as context/ A deeper look at the Applicative Type class.
     1.  Applicative type class allows you to use functions that are inside a context, such as Maybe or IO -- extending the power of `Functor` type class.
-    2.  Applicative works with Functor, Functor is a superclass of Applicative. ![Alt text](unit5/lesson29/functorVapplicative.png?raw=true "Applicative v Functor Type signature") <b align="center"> Applicative vs Functor Type signature </b>
+    2.  Applicative works with Functor, Functor is a superclass of Applicative. ![Alt text](unit5/lesson29/functorVapplicative.png?raw=true "Applicative v Functor Type signature") <p align="center"> Applicative vs Functor Type signature </p>
