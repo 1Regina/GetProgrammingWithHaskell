@@ -271,7 +271,7 @@
            3. Problems with `haversineMaybe` are :
               1. wrapper for any similar function ---> repetitive
               2. a different `haversineMaybe` for other context e.g `IO`.
-           4. Limitations of a Functor ![Alt text](unit5/lesson28/fmapTypeSignature.png?raw=true "Functor's only method - fmap") <p align="center"> Functor's only method - fmap </p> : `fmap` function takes any function from type a to type b (where type a COULD be type b also), and the value of type a in the context of a Functor (like Maybe), and returns a value of type b in the same context.
+           4. Limitations of a Functor ![Alt text](unit5/lesson28/fmapTypeSignature.png?raw=true "Functor's only method - fmap") <b align="center"> Functor's only method - fmap </b> : `fmap` function takes any function from type a to type b (where type a COULD be type b also), and the value of type a in the context of a Functor (like Maybe), and returns a value of type b in the same context.
            5. Problem we have 2 arguments but Functor has only 1 method (fmap). fmap only takes one argument the `f a`
            6. Close look:
               1. need `haversine :: (LatLong -> LatLong -> Double)`
