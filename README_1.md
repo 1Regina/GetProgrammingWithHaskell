@@ -326,7 +326,7 @@
             >>> (++) <$> Just "cats" <*> Nothing
             Nothing
             ```
-    5.  can use <$> and <*> to chain together any number of arguments.  Quick check 28.3  in  unit5/lesson28/1distance.hs ![Alt text](unit5/lesson28/applicativeWithFmapCompute.png?raw=true "Combine <$> with <*> in a Maybe context for partial application")
+    5.  can use <$> and <*> to chain together any number of arguments.  Quick check 28.3  in  unit5/lesson28/1distance.hs ![Alt text](unit5/lesson28/applicativeWithFmapCompute.png?raw=true "Combine applicative and fmap in a Maybe context for partial application")
         ```
         val1 = Just 10
         val2 = Just 5
@@ -387,3 +387,7 @@
     15. Summary :  Applicative’s <*> operator allows you to use functions that are themselves in a context. If you have a function that might not exist, `Maybe (Int -> Double)`, you can apply it to a value in the same context, `Maybe Int`, and get a result still in that context, `Maybe Double`.
         1.  This enable Functor extension to multi-argument functions.
         2.  Often bcos partial application in Haskell programs, common to wind up with a function in a context. With `Applicative`, we can use these functions.
+
+24. Ch 29.0:  Lists as context/ A deeper look at the Applicative Type class.
+    1.  Applicative type class allows you to use functions that are inside a context, such as Maybe or IO -- extending the power of `Functor` type class.
+    2.  Applicative works with Functor, Functor is a superclass of Applicative.| ![Alt text](unit5/lesson29/functorVapplicative.png?raw=true "Applicative v Functor Type signature") | |:--:| | <b> Applicative vs Functor Type signature </b>|
