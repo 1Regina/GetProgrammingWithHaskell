@@ -230,4 +230,160 @@
         -- 5. output is shown
         ```
 
-23. Ch
+23. Ch28: Applicative Type Class: Using Functions in a context
+    1.  The `Applicative` type class extends the power of Functor by allowing you to use functions that are themselves in a context.
+    2.  `Functor` can’t do passing two Maybe values to a function but `Applicative` can. `Applicative` can help create data in the context of either IO or Maybe, while allowing you to reuse the majority of your code.
+    3.  Case when Functor cant handdle 2 `Maybes` - a simple command-line application that allows the user to enter cities by name and then returns the distance between them but fail when city is non-existent in db. First try: use the `Maybe` type and the `Functor` type class will fail. See unit5/lesson28/1distance.hs
+        1. Process
+           1. get two locations from your locationDB
+           2. calculate their distance, and
+           3. then pass that distance to `printDistance`
+        2. Using a Map as your database of city coordinates
+            ```
+            type LatLong = (Double,Double)
+            locationDB :: Map.Map String LatLong
+            locationDB = Map.fromList [("Arkham",(42.6054,-70.7829))
+                                    ,("Innsmouth",(42.8250,-70.8150))...
+            ```
+        3. convert latitude and longitude to radians first (round globe) and do Haversine
+            ```
+            toRadians :: Double -> Double
+            toRadians degrees = degrees * pi / 180
+
+            latLongToRads :: LatLong -> (Double,Double)
+            latLongToRads (lat,long) = (rlat,rlong)
+                where rlat = toRadians lat
+                    rlong = toRadians long
+
+            haversine :: LatLong -> LatLong -> Double
+            haversine coords1 coords2 = earthRadius * c
+                where (rlat1,rlong1) = latLongToRads coords1
+                    (rlat2,rlong2) = latLongToRads coords2
+            ```
+        4. Command line tool for user to enter in two city names, and you’ll return the distance.
+            ```
+            printDistance :: Maybe Double -> IO ()
+            .....cases for  Nothing + Just distances
+            ```
+        5. `locationDB` will give you Maybe values but `haversine :: LatLong  -> LatLong  -> Double` and should be ![Alt text](unit5/lesson28/2locationsToDist_Type_Signature.png?raw=true "Type Signature for Function to connect locationsDb to printDistance")
+           1. It is almost similar to `haversine`, but everything is in the context of a `Maybe`.
+           2. with `Functor` : we use normal functions in a context.
+           3. Problems with `haversineMaybe` are :
+              1. wrapper for any similar function ---> repetitive
+              2. a different `haversineMaybe` for other context e.g `IO`.
+           4. Limitations of a Functor ![Alt text](unit5/lesson28/fmapTypeSignature.png?raw=true "Functor's only method - fmap") : `fmap` function takes any function from type a to type b (where type a COULD be type b also), and the value of type a in the context of a Functor (like Maybe), and returns a value of type b in the same context.
+           5. Problem we have 2 arguments but Functor has only 1 method (fmap). fmap only takes one argument the `f a`
+           6. Close look:
+              1. need `haversine :: (LatLong -> LatLong -> Double)`
+              2. to take 2 `Maybe` which are `Maybe LatLong -> Maybe LatLong`
+              3. finally answer in a `Maybe: Maybe Double`
+              4. snapshot view **INCORRECT**
+                ```
+                (LatLong -> LatLong -> Double) ->
+                        (Maybe LatLong ->  Maybe LatLong -> Maybe Double)
+
+                another view: Functor with 1 extra argument!! WRONG!
+                Functor f => (a -> b -> c) -> f a -> f b -> f c
+
+                ```
+              5. **Functor’s fmap: it only works on single-argument functions.**
+              6. 1 possible Solution: Partial Application - partial application means that calling an argument first so it results in a reduced function waiting only for the remaining (unaccounted) arguments. e.g distanceFromNY but in this case, this means
+                 1. having to set up function for every other cities to calculate distance from them.
+                 2. a function in a context like maybeInc :: Maybe (Integer -> Integer)  it’s inside a Maybe. You now have a Maybe function, but there’s no way to apply this function!
+           7. **all functions are functions of one argument. Multi-argument functions are just a chain of single-argument functions.**
+    4. Applicative contains a method that’s the <*> operator. :t (<*>) returns
+        ```
+        (<*>) :: Applicative f => f (a -> b) -> f a -> f b
+
+        example breakdown
+        (++) <$> Just "cats" <*> Just " and dogs"
+        (++) is the (a -> b)
+        <$> is the instance applicative instance f
+         Just "cats" is the fa
+
+        Prelude> :i (<*>)
+        class Functor f => Applicative (f :: * -> *) where
+        ...
+        (<*>) :: f (a -> b) -> f a -> f b
+        ```
+        ![Alt text](unit5/lesson28/applicativeTypeSignature.png?raw=true "Applicative type signature")
+        1. Applicative’s <*> allows you to apply a function in a context.
+            ```
+            maybeInc :: Maybe (Integer -> Integer)
+            maybeInc = (+) <$> Just 1
+
+            -- >>> maybeInc <*> Just 5 which is (+) <$> Just 1 <*> Just 5
+            -- Just 6
+            -- >>> maybeInc <*> Nothing
+            -- Nothing
+            ```
+        2. Applicative combine Strings in a Maybe context as well:
+            ```
+            >>> (++) <$> Just "cats" <*> Just " and dogs"
+            Just "cats and dogs"
+            >>> (++) <$> Nothing <*> Just " and dogs"
+            Nothing
+            >>> (++) <$> Just "cats" <*> Nothing
+            Nothing
+            ```
+    5.  can use <$> and <*> to chain together any number of arguments.  Quick check 28.3  in  unit5/lesson28/1distance.hs ![Alt text](unit5/lesson28/applicativeWithFmapCompute.png?raw=true "Combine <$> with <*> in a Maybe context for partial application")
+        ```
+        val1 = Just 10
+        val2 = Just 5
+        chain2 = (div) <$> val1 <*> val2
+        chain3 = (mod) <$> val1 <*> val2
+        ```
+    6. Distance between two cities program continue step 3 above. Core functionality without worry of exception
+        ```
+        main :: IO ()
+        main = do
+            putStrLn "Enter the starting city name:"
+            startingInput <- getLine
+            let startingCity = Map.lookup startingInput locationDB
+            putStrLn "Enter the destination city name:"
+            destInput <- getLine
+            let destCity = Map.lookup destInput locationDB
+            let distance = haversine <$> startingCity <*> destCity
+            printDistance distance
+
+        -- steps :
+        -- 1. ghc 1distance.hs
+        -- 2. ./1distance
+        ```
+    7. Functor and Applicative complement this safety by making it easy to mix regular functions such as haversine with `Maybe` types or `IO` types, without compromising that safety
+    8.  power of partial application and <*>, you can chain together as many arguments as you’d like e.g unit5/lesson28/min3.hs minOfThree val1 val2 val3 = **min** val1 *(**min** val2 val3)*
+    9. 3 arguments (min3.hs) chained applicative `minOfThree <$> Just 10 <*> Just 3 <*> Just 6` Note the position of <*> for applicative.
+    10. ***Maybe context*** create data with <$> and <*>
+        ```
+        data User = User
+        { name :: String
+        , gamerId :: Int
+        , score :: Int
+        } deriving Show
+
+        serverUsername :: Maybe String
+        serverUsername = Just "Sue"
+        serverGamerId :: Maybe Int
+        serverGamerId =  Just 1337
+        serverScore :: Maybe Int
+        serverScore = Just 9001
+
+        -- >>> User <$> serverUsername <*> serverGamerId <*> serverScore
+        -- Just (User {name = "Sue", gamerId = 1337, score = 9001})
+        ```
+    11. `readInt` function from the preceding lesson to transform user input directly to an Int
+    12. ***IO context*** create data with <$> and <*>
+        ```
+        readInt :: IO Int
+        readInt = read <$> getLine
+
+        main :: IO ()
+        main = do
+            putStrLn "Enter a username, gamerId and score"
+            user <- User <$> getLine <*> readInt <*> readInt
+            print user
+        ```
+    14. powerful thing here is define only a single type, User, that works with regular Strings and Ints. With Applicative type class, use the same code to create a user in different contexts.
+    15. Summary :  Applicative’s <*> operator allows you to use functions that are themselves in a context. If you have a function that might not exist, `Maybe (Int -> Double)`, you can apply it to a value in the same context, `Maybe Int`, and get a result still in that context, `Maybe Double`.
+        1.  This enable Functor extension to multi-argument functions.
+        2.  Often bcos partial application in Haskell programs, common to wind up with a function in a context. With `Applicative`, we can use these functions.
