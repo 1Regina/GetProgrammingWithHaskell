@@ -390,4 +390,4 @@
 
 24. Ch 29.0:  Lists as context/ A deeper look at the Applicative Type class.
     1.  Applicative type class allows you to use functions that are inside a context, such as Maybe or IO -- extending the power of `Functor` type class.
-    2.  Applicative works with Functor, Functor is a superclass of Applicative. ![Alt text](unit5/lesson29/functorVapplicative.png?raw=true "Applicative v Functor Type signature") <b align="center"> Applicative vs Functor Type signature </b>
+    2.  Applicative works with Functor, Functor is a superclass of Applicative. ![Alt text](unit5/lesson29/functorVapplicative.png?raw=true "Applicative v Functor Type signature") <p align="center"> Applicative vs Functor Type signature </p>
