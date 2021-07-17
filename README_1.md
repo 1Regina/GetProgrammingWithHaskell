@@ -460,7 +460,7 @@
                     composite = pure (*) <*> twoThroughN <*> twoThroughN
                     isNotComposite = not . (`elem` composite)
             ```
-       6. Suppose you have a list of usernames, some typical and others problematic in certain cases. Thinking of lists as context,use the same pattern used for IO and Maybe to generate many test users.
+       6. Generate/ Create data: Suppose you have a list of usernames, some typical and others problematic in certain cases. Thinking of lists as context,use the same pattern used for IO and Maybe to generate many test users. Use the **Data Constructor** as the **function** in `pure function <*> list1 <*> list2 <*> list3`
           1. For update: add whatever values you like to testNames, testIds, or testScores -> Quick  check  29.5 unit5/lesson29/listApplicative.hs    Add    your    own    name    to    testNames  and  regenerate  the  data.  How  many are there now?
             ```
             data User = User {
@@ -477,12 +477,12 @@
                             ,"Christina NULL"
                             ,"Randall Munroe"]
 
-            testData1 :: [User]
+            testData1 :: [User]  -- using the Data Constructor as the function
             testData1 = pure User <*> testNamesAdd
-                                <*> testIds
-                                <*> testScores
+                                  <*> testIds
+                                  <*> testScores
 
             *Main> length testData1
             45
             ```
-       7. generate test data that includes all possible combinations of certain list values means nondeterministically computing a list of possible users means use the Applicative properties of List to nondeterministically generate data.
+       7. generate test data that includes all possible combinations of certain list values means nondeterministically computing a list of possible users means use the Applicative properties (pure function <*> list1 <*> list2 <*> list3) of List to nondeterministically generate data.
