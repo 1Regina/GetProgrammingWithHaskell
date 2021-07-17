@@ -441,7 +441,7 @@
     10.  Int context:
        1. **Maybe Int** is a single Int value in the context that it may be missing
        2. An **IO Int** is an Int value in the context that it was produced by an IOaction that may have produced side effects.
-       3. An **[Int]** is an Int in the context that there are many possible values for that Int. With many possible values for that [Int], when you apply a function (Int -> Int -> Int) in the context of a list, think nondeterministically and compute all possible results of that operation. eg Game of 3 doors + 2 boxes gives 6 possibilties. The results of **adding two lists (list of 3 doors & list of 2 boxes) within the context** of a list are all **six** possible solutions in your non-deterministic world. ![Alt text](unit5/lesson29/pureApplicativeListContext.png?raw=true "pure applicative on list for nondeterministic) <p align="center"> pure applicative on list for non deterministic </p>
+       3. An **[Int]** is an Int in the context that there are many possible values for that Int. With many possible values for that [Int], when you apply a function (Int -> Int -> Int) in the context of a list, think nondeterministically and compute all possible results of that operation. eg Game of 3 doors + 2 boxes gives 6 possibilties. The results of **adding two lists (list of 3 doors & list of 2 boxes) within the context** of a list are all **six** possible solutions in your non-deterministic world. ![Alt text](unit5/lesson29/pureApplicativeListContext.png?raw=true "pure applicative on list for nondeterministic") <p align="center"> pure applicative on list for non deterministic </p>
        4. To compute multiply of 2 lists
             ```
                 doorPrize :: [Int]
