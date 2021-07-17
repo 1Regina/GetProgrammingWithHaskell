@@ -385,9 +385,104 @@
         ```
     14. powerful thing here is define only a single type, User, that works with regular Strings and Ints. With Applicative type class, use the same code to create a user in different contexts.
     15. Summary :  Applicative’s <*> operator allows you to use functions that are themselves in a context. If you have a function that might not exist, `Maybe (Int -> Double)`, you can apply it to a value in the same context, `Maybe Int`, and get a result still in that context, `Maybe Double`.
-        1.  This enable Functor extension to multi-argument functions.
-        2.  Often bcos partial application in Haskell programs, common to wind up with a function in a context. With `Applicative`, we can use these functions.
+        1. This enable Functor extension to multi-argument functions.
+        2. Often bcos partial application in Haskell programs, common to wind up with a function in a context. With `Applicative`, we can use these functions.
 
 24. Ch 29.0:  Lists as context/ A deeper look at the Applicative Type class.
-    1.  Applicative type class allows you to use functions that are inside a context, such as Maybe or IO -- extending the power of `Functor` type class.
-    2.  Applicative works with Functor, Functor is a superclass of Applicative. ![Alt text](unit5/lesson29/functorVapplicative.png?raw=true "Applicative v Functor Type signature") <p align="center"> Applicative vs Functor Type signature </p>
+    1. Applicative type class allows you to use functions that are inside a context, such as Maybe or IO -- extending the power of `Functor` type class.
+    2. Applicative works with
+    3. Functor, Functor is a superclass of Applicative. ![Alt text](unit5/lesson29/functorVapplicative.png?raw=true "Applicative v Functor Type signature") <p align="center"> Applicative vs Functor Type signature </p>
+    4. <*> has the same type signature as your fmap, except the function argument is also in a context. This small difference in <*> allows you to chain together larger sequences of functions inside members of the Functor type class. ![Alt text](unit5/lesson29/applicativeTypeClassDef.png?raw=true "Type Class definition of Applicative") <p align="center"> Type Class definition of Applicative </p>
+    5. Remember, because of fmap and <*>, you don’t need to rewrite any functions to work with Maybe values.
+    6. function `pure` is the second method required by the `Applicative` type class. The `pure` method is a useful helper function for taking an ordinary value or function and putting it into a context (e.g an `Int` into a `Maybe Int`), allowing all possible computations in a context.
+       1. Put value in a context: For `Maybe`, `pure` gives a `Just`
+            ```
+                1. into Maybe context
+                -- >>> pure 6 :: Maybe Int
+                -- Just 6
+
+                2. into IO context
+                hello :: IO String
+                hello = pure "Hello World"
+                -- >>> hello
+                -- "Hello World"
+            ```
+       2. Put function in a context: use `pure` to put a function into the context of `Applicative`. e.g add  6 to (Just 5), you can use either fmap or pure:
+            ```
+                Prelude> (6+) <$> Just 5
+                Just 11
+                Prelude> pure (6+) <*> Just 5
+                Just 11
+                Prelude> (+6) <$> Just 5
+                Just 11
+                Prelude> pure (+6) <*> Just 5
+                Just 11
+            ```
+    7. Applicative and Monad are for types as a context
+       1. Parameterized types that represent a **container are types that represent a data structure**. The best test of whether a type is a container is whether you can tell what it does, independent of its name.
+       2. When a type is a context, extra information is implied about the type, beyond its structure, beyond its structure.
+    8. Structure over name: Containver vs Context
+       1. data Blah a b = Blah a b is like a regular tuple
+       2. The Data.Map type is another, similar structure. You could call this a Dictionary, a Binary-SearchTree, a MagicLookupBox, and so forth. But what the type means is implied by the data structure itself. Contexts differ from containers in that they require you to understand something about the computation happening beyond what the data structure alone tells you.
+       3. **The 2-tuple (,) and Data.Map are both instances of Functor but not instances of Applicative.** The 2 are structures /containers
+       4. Remember that the key power of Applicative is that it lets you apply a function in a parameterized type (containers)
+       5. **IO and Maybe are context type**
+       6. List: both a **container** and a **context**.
+       7. List is a member of Applicative, so there must be a way to view List as a context. `:i Applicative` ---> `instance Applicative []`.
+       8. Context question for a list:  context matters for a list is that to use Applicative, you need to be able to answer the question, “What does it mean to *apply a function to two or more values in the context of a list*?” For example, what does [1000,2000,3000] + [500,20000] mean? In terms of Applicative, you’d read this statement as follows: `pure (+) <*> [1000,2000,3000] <*> [500,20000]`. Adding together two Ints in the context of a List means adding all possible combinations of the values in those lists.
+            ```
+                Prelude> pure (+) <*> [1000,2000,3000] <*> [500,20000]
+                [1500,21000,2500,22000,3500,23000]
+            ```
+       9. The best way to understand List as a context is that it describes nondeterministic computation. (computing multiple possibilities all at once.)
+    9. List behaviour:
+       1. A list as a container is a sequence of values that can hold any type. Each item in the list points to the next one or to the empty list.
+       2. A list as a context represents a set of possibilities. Think of a list as a context as being a single variable that can contain many possible values. ![Alt text](unit5/lesson29/listAsContext.png?raw=true "List as a context (non-deterministic): all possibilities") <p align="center"> List as a context (non-deterministic computing): all possibilities </p>
+    10.  Int context:
+       1. **Maybe Int** is a single Int value in the context that it may be missing
+       2. An **IO Int** is an Int value in the context that it was produced by an IOaction that may have produced side effects.
+       3. An **[Int]** is an Int in the context that there are many possible values for that Int. With many possible values for that [Int], when you apply a function (Int -> Int -> Int) in the context of a list, think nondeterministically and compute all possible results of that operation. eg Game of 3 doors + 2 boxes gives 6 possibilties. The results of **adding two lists (list of 3 doors & list of 2 boxes) within the context** of a list are all **six** possible solutions in your non-deterministic world. ![Alt text](unit5/lesson29/pureApplicativeListContext.png?raw=true "pure applicative on list for nondeterministic) <p align="center"> pure applicative on list for non deterministic </p>
+       4. To compute multiply of 2 lists
+            ```
+                doorPrize :: [Int]
+                doorPrize = [1000,2000,3000]
+                boxPrizeMultiplier :: [Int]
+                boxPrizeMultiplier = [10,50]
+                *Main> pure (*) <*>  doorPrize <*>
+                boxPrizeMultiplier
+                [10000,50000,20000,100000,30000,150000]
+            ```
+       5. Find prime numbers to N with composities via pure
+            ```
+            primesToN :: Integer -> [Integer]
+            primesToN n = filter isNotComposite twoThroughN
+                where twoThroughN = [2 .. n]
+                    composite = pure (*) <*> twoThroughN <*> twoThroughN
+                    isNotComposite = not . (`elem` composite)
+            ```
+       6. Suppose you have a list of usernames, some typical and others problematic in certain cases. Thinking of lists as context,use the same pattern used for IO and Maybe to generate many test users.
+          1. For update: add whatever values you like to testNames, testIds, or testScores -> Quick  check  29.5 unit5/lesson29/listApplicative.hs    Add    your    own    name    to    testNames  and  regenerate  the  data.  How  many are there now?
+            ```
+            data User = User {
+                    name :: String
+                    , gamerId :: Int
+                    , score :: Int
+                    } deriving Show
+            FOR changes in any of the lists, applicative with the amended list e.g testNamesAdd
+
+            testNamesAdd :: [String]
+            testNamesAdd = [ "Haskell Girl"
+                            ,"John Smith"
+                            ,"Robert'); DROP TABLE Students;--"
+                            ,"Christina NULL"
+                            ,"Randall Munroe"]
+
+            testData1 :: [User]
+            testData1 = pure User <*> testNamesAdd
+                                <*> testIds
+                                <*> testScores
+
+            *Main> length testData1
+            45
+            ```
+       7. generate test data that includes all possible combinations of certain list values means nondeterministically computing a list of possible users means use the Applicative properties of List to nondeterministically generate data.
