@@ -291,7 +291,7 @@
                  1. having to set up function for every other cities to calculate distance from them.
                  2. a function in a context like maybeInc :: Maybe (Integer -> Integer)  it’s inside a Maybe. You now have a Maybe function, but there’s no way to apply this function!
            7. **all functions are functions of one argument. Multi-argument functions are just a chain of single-argument functions.**
-    4. Applicative contains a method that’s the <*> operator. :t (<*>) returns
+    4. Applicative contains a method that’s the `<*>` operator. `:t (<*>)` returns
         ```
         (<*>) :: Applicative f => f (a -> b) -> f a -> f b
 
@@ -392,7 +392,7 @@
     1. Applicative type class allows you to use functions that are inside a context, such as Maybe or IO -- extending the power of `Functor` type class.
     2. Applicative works with
     3. Functor, Functor is a superclass of Applicative. ![Alt text](unit5/lesson29/functorVapplicative.png?raw=true "Applicative v Functor Type signature") <p align="center"> Applicative vs Functor Type signature </p>
-    4. <*> has the same type signature as your fmap, except the function argument is also in a context. This small difference in <*> allows you to chain together larger sequences of functions inside members of the Functor type class. ![Alt text](unit5/lesson29/applicativeTypeClassDef.png?raw=true "Type Class definition of Applicative") <p align="center"> Type Class definition of Applicative </p>
+    4. `<*>` has the same type signature as your fmap, except the function argument is also in a context. This small difference in `<*>` allows you to chain together larger sequences of functions inside members of the Functor type class. ![Alt text](unit5/lesson29/applicativeTypeClassDef.png?raw=true "Type Class definition of Applicative") <p align="center"> Type Class definition of Applicative </p>
     5. Remember, because of fmap and <*>, you don’t need to rewrite any functions to work with Maybe values.
     6. function `pure` is the second method required by the `Applicative` type class. The `pure` method is a useful helper function for taking an ordinary value or function and putting it into a context (e.g an `Int` into a `Maybe Int`), allowing all possible computations in a context.
        1. Put value in a context: For `Maybe`, `pure` gives a `Just`
@@ -485,7 +485,7 @@
             *Main> length testData1
             45
             ```
-       7. generate test data that includes all possible combinations of certain list values means nondeterministically computing a list of possible users means use the Applicative properties (pure function <*> list1 <*> list2 <*> list3) of List to nondeterministically generate data.
+       7. generate test data that includes all possible combinations of certain list values means nondeterministically computing a list of possible users means use the Applicative properties `(pure function <*> list1 <*> list2 <*> list3)` of List to nondeterministically generate data.
        8. For use as replacement for `Functor` as `Applicative` is more powerful: `pure function <*> (a Maybe Value ~e.g from Map.lookup someKey`)
             ```
                 pure lookupCredits <*> lookupUserName id
@@ -522,7 +522,7 @@
                 GHCi> pure (+) <*> Just 3 <*> Just 2
                 Just 5
             ```
-    3. `Monad` bind **>>=*** for when the initial argument isn’t in a context but its result is so it is for using any possible function in a context.
+    3. `Monad` bind **>>=** for when the initial argument isn’t in a context but its result is so it is for using any possible function in a context.
        1. Combine 2 Map lookups to look up a value in one Map in order to access another value in a second Map e.g employeeName to ID to bloodtype/ department.  **>>= allows you to chain together a sequence of function of a type `(a -> m b)`**.
           1. Maybe context Monad application
                 ```
@@ -550,7 +550,7 @@
             ```
             (>>=) :: Monad m => m a -> (a -> m b) -> m b
             ```
-       3. >>= is a member of the Monad type class. Maybe and IO are both instances of Monad, which means you can use >>= to solve Maybe and IO problems.
+       3. `>>=` is a member of the Monad type class. Maybe and IO are both instances of Monad, which means you can use >>= to solve Maybe and IO problems.
             ```
             Prelude> :i Monad
                 class Applicative m => Monad (m :: * -> *) where
@@ -566,7 +566,7 @@
         (<*>) :: Applicative f => f (a -> b) -> f a -> f b
         pure :: Applicative f => a -> f a
         ```
-    5. **<$>, <*>, pure, and >>=**, you can chain together any computation you need in a context. ![Alt text](unit5/lesson30/functorApplicativeMonadTypeSignature.png?raw=true "Functor vs Applicative vs Monad Type Signatures") <p align="center"> Functor vs Applicative vs Monad Type Signatures </p>
+    5. With **<$>, <*>, pure, and >>=**, you can chain together any computation you need in a context. ![Alt text](unit5/lesson30/functorApplicativeMonadTypeSignature.png?raw=true "Functor vs Applicative vs Monad Type Signatures") <p align="center"> Functor vs Applicative vs Monad Type Signatures </p>
     6. Monad has  four important methods in your type class definition.
         1.   only method required for the minimum definition of Monad is **>>=**.  >>= lets you chain together a function (of type `(a -> m b)`) that put a normal value into a context.
         2.   The **fail** method handles the case of errors happening in your Monad.
@@ -593,7 +593,7 @@
         allFmapM :: Monad m => (a -> b) -> m a -> m b
         allFmapM function val = val >>= (\x -> return (function x))
         ```
-    10. Q30.2 Monad is strictly more powerful than Applicative, write a universal version of <*>, called allApp, that defines <*> for all members of the Monad type clas
+    10. Q30.2 Monad is strictly more powerful than Applicative, write a universal version of `<*>`, called allApp, that defines `<*>` for all members of the Monad type clas
         ```
         allApp :: Monad m => m (a -> b) -> m a -> m b
         -- <*> :: Applicative f :: f(a -> b) -> f a -> f b
