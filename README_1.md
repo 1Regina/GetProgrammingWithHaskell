@@ -486,3 +486,129 @@
             45
             ```
        7. generate test data that includes all possible combinations of certain list values means nondeterministically computing a list of possible users means use the Applicative properties (pure function <*> list1 <*> list2 <*> list3) of List to nondeterministically generate data.
+       8. For use as replacement for `Functor` as `Applicative` is more powerful: `pure function <*> (a Maybe Value ~e.g from Map.lookup someKey`)
+            ```
+                pure lookupCredits <*> lookupUserName id
+            ```
+
+25. Ch30.0: Intro Monad Type Class
+    1.  `fmap`: when you have a value in a context and a regular function, and want your result in a context.
+        ```
+        fmap :: (a -> b) -> f a -> f b
+        GHCi> (+ 2) <$> Just 3
+        Just 5
+        ```
+    2.  `Applicative`:
+        1.  <*> allows you to connect a function in a context with values in a context,
+            ```
+            (<*>) :: f (a -> b) -> f a -> f b
+
+            Applicative’s <*> allows you to apply a function in a context.
+
+            maybeInc :: Maybe (Integer -> Integer)
+            maybeInc = (+) <$> Just 1
+
+            -- >>> maybeInc <*> Just 5 which is (+) <$> Just 1 <*> Just 5
+            -- Just 6
+            ```
+        2. `pure` method allows you to handle the case of your final result not being in a context, so you can always put a result into a context.
+            ```
+            pure :: a -> f a
+            hello :: IO String
+            hello = pure "Hello World"
+            ```
+        3. `Applicative` `<*>` with `pure`
+            ```
+                GHCi> pure (+) <*> Just 3 <*> Just 2
+                Just 5
+            ```
+    3. `Monad` bind **>>=*** for when the initial argument isn’t in a context but its result is so it is for using any possible function in a context.
+       1. Combine 2 Map lookups to look up a value in one Map in order to access another value in a second Map e.g employeeName to ID to bloodtype/ department.  **>>= allows you to chain together a sequence of function of a type `(a -> m b)`**.
+          1. Maybe context Monad application
+                ```
+                creditsFromId :: GamerId -> Maybe PlayerCredits
+                creditsFromId id = lookupUserName id >>= lookupCredits
+
+                lookupUserName id = Map.lookup id userNameDB
+                lookupCredits username = Map.lookup username creditsDB
+
+                lookupGamerId :: WillCoId -> Maybe GamerId
+                lookupGamerId id = Map.lookup id gamerIdDB
+
+                -- Monad in action
+                creditsFromWCId :: WillCoId -> Maybe PlayerCredits
+                creditsFromWCId id = lookupGamerId id >>= lookupUserName >>= lookupCredits
+                ```
+          2. IO context Monad application. See unit5/lesson30/2monadIO.hs
+            ```
+                helloName :: IO ()
+                helloName = askForName >>
+                            getLine >>= (\name ->return (nameStatement name))>>=
+                            putStrLn
+            ```
+       2. type signature.
+            ```
+            (>>=) :: Monad m => m a -> (a -> m b) -> m b
+            ```
+       3. >>= is a member of the Monad type class. Maybe and IO are both instances of Monad, which means you can use >>= to solve Maybe and IO problems.
+            ```
+            Prelude> :i Monad
+                class Applicative m => Monad (m :: * -> *) where
+                (>>=) :: m a -> (a -> m b) -> m b
+                (>>) :: m a -> m b -> m b
+                return :: a -> m a....
+                instance Monad Maybe
+                instance Monad IO
+            ```
+    4. Use `Applicative` constraint rather than `Functor` only because `Applicative` is more powerful. If you can’t solve your problem with `Applicative`, you can’t solve it with `Functor` either.
+        ```
+        (<$>) :: Functor f => (a -> b) -> f a -> f b
+        (<*>) :: Applicative f => f (a -> b) -> f a -> f b
+        pure :: Applicative f => a -> f a
+        ```
+    5. **<$>, <*>, pure, and >>=**, you can chain together any computation you need in a context. ![Alt text](unit5/lesson30/functorApplicativeMonadTypeSignature.png?raw=true "Functor vs Applicative vs Monad Type Signatures") <p align="center"> Functor vs Applicative vs Monad Type Signatures </p>
+    6. Monad has  four important methods in your type class definition.
+        1.   only method required for the minimum definition of Monad is **>>=**.  >>= lets you chain together a function (of type `(a -> m b)`) that put a normal value into a context.
+        2.   The **fail** method handles the case of errors happening in your Monad.
+             1.   For Maybe, fail returns Nothing;
+             2.   For IO, fail raises an I/O error.
+        3. **return** method is similar to `pure`.  only difference is: `pure` has a type class restraint on *Applicative*, whereas `return` has a constraint on the *Monad* type class bcos  `Monad` type class predates the `Applicative` type class, so the `return` method exists for legacy reasons. In context of `Monad`, stick with `return`. ![Alt text](unit2/lesson14/TypeclassRoadMap.png?raw=true "Type Classes Map") <p align="center"> Type Classes Map </p>
+        ```
+        pure :: Applicative f => a -> f a
+        return ::     Monad m => a -> m a
+        ```
+        4. last method **>>** operator throws away the first `m a` type e.g in `IO` context when using `putStrLn`, you don’t get anything back ie print something to user and throw away the IO ( ) `putStrLn` result
+
+    7. `Monad` **>>** operator: When working with IO, >> is useful anytime you need to perform an IO action that doesn’t meaningfully return a value.
+       1. send the results (hello + name) to putStrLn, and your action is finished. You start with chaining together askForName and getLine with >>, because you don’t need the results:(askForName >> getLine)
+       2. have an IO String, but you need to connect it with name-Statement, which is a regular String -> String function. You can use `>>=` to do this if you can make nameStatement return an IO String. Solution is to wrap nameStatement in a lambda and use return at the end. ![Alt text](unit5/lesson30/usingMonadReturn.png?raw=true "using Monad's return method") <p align="center"> using Monad's return method </p>
+    8. Last note: The Monad type class is the final refinement of computing in a context started with Functor. The most important method of the Monad type class is the >>= (pronounced bind) operator. You use >>= to chain together functions of the type (a -> m b) which is particularly important for working with the IO type. Unlike Maybe, you can’t trivially use pattern matching to access values inside the IO context. The Monad type class is what makes I/O programming possible.
+    9. Q30.1 Universal fmap for applicative <*> and monad >>= instances
+        ```
+        allFmap :: Applicative f => (a -> b) -> f a -> f b
+        allFmap function applicInstance = pure function <*> applicInstance
+
+        -- recall also (getLine >>= (\name ->return (nameStatement name))) in unit5/lesson30/2monadIO.hs
+
+        allFmapM :: Monad m => (a -> b) -> m a -> m b
+        allFmapM function val = val >>= (\x -> return (function x))
+        ```
+    10. Q30.2 Monad is strictly more powerful than Applicative, write a universal version of <*>, called allApp, that defines <*> for all members of the Monad type clas
+        ```
+        allApp :: Monad m => m (a -> b) -> m a -> m b
+        -- <*> :: Applicative f :: f(a -> b) -> f a -> f b
+        -- >>= :: Monad  m :: m a -> (a -> m b) -> m b
+
+        -- Two hints:
+        -- 1. Try to think exclusively in terms of the type signatures.
+        -- 2. Use <$> if you want and replace it with your answe    r to Q29.1
+        -- recall creditsFromId id = lookupUserName id >>= lookupCredits
+
+        allApp function val = function >>= (\f -> val  >>= (\x -> return (f x)))
+        ```
+    11. Q30.3 Implement a bind function which is the same as (>>=) for Maybe:
+        ```
+        bind :: Maybe a -> (a -> Maybe b) -> Maybe b
+        bind Nothing _ = Nothing
+        bind (Just val) function = function val
+        ```
