@@ -647,7 +647,8 @@
 
             ```
         ![Alt text](unit5/lesson31/monad2do.png?raw=true "Monad-to-do transformation") <p align="center"> Monad-to-do transformation. name missing in putStrLn (nameStatement name) </p>
-       6. Rewriting do to Monad (2 more examples)![Alt text](unit5/lesson31/desugar_do.png?raw=true "do-to- transformation") <p align="center"> Monad-to-do transformation. name missing in putStrLn (nameStatement name) </p>
+        
+       6. Rewriting do to Monad (2 more examples)
             ```
                 helloPerson :: String -> String
                 helloPerson name = "Hello" ++ " " ++ name ++ "!"
@@ -672,6 +673,7 @@
                     someString <- getLine
                     putStrLn someString
             ```
+            ![Alt text](unit5/lesson31/desugar_do.png?raw=true "do-to- transformation") <p align="center"> Monad-to-do transformation. name missing in putStrLn (nameStatement name) </p>
         7. Comparing the costs of two pizzas. Because do-notation works on all members of Monad, you were able to trivially translate this program to work with Maybe types when your values came from Data.Maps rather than IO.
         8. Different contexts using **do** in unit5/lesson31/2monad_do_3Contexts.hs.**PLEASE see the file**
            1. **IO Context** bcos of the Monad type class, you have an easy way to take a Candidate that wasn’t designed with I/O in mind and use that Candidate in the IO context
