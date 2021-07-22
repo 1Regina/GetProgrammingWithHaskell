@@ -632,8 +632,8 @@
                                 return (nameStatement name)) >>=
                             putStrLn
             ```
-       2. >> allows you to perform an **IO action** and chain it with another action, ignoring its value.`(>>) :: Monad m :: m a -> m b --> m b`. ie `askForName >> getLine `
-       3. >>= allows you to perform an IO action and then hand off the return value of that function to another waiting for a value `(>>=) :: Monad m :: m a -> (a -> m b) -> m b` ie
+       2. `>>` allows you to perform an **IO action** and chain it with another action, ignoring its value.`(>>) :: Monad m :: m a -> m b --> m b`. ie `askForName >> getLine `
+       3. `>>=` allows you to perform an IO action and then hand off the return value of that function to another waiting for a value `(>>=) :: Monad m :: m a -> (a -> m b) -> m b` ie
           1. getLine **>>=** (\name -> return (nameStatement name))
           2. (\name -> return (nameStatement name)) **>>=** putStrLn
        4. *return* `return :: Monad m :: a -> m a` ie (\x -> return (func x)) allows you to take an ordinary function and have it work in the context of IO
@@ -647,7 +647,7 @@
 
             ```
         ![Alt text](unit5/lesson31/monad2do.png?raw=true "Monad-to-do transformation") <p align="center"> Monad-to-do transformation. name missing in putStrLn (nameStatement name) </p>
-        
+
        6. Rewriting do to Monad (2 more examples)
             ```
                 helloPerson :: String -> String
