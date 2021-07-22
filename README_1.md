@@ -573,10 +573,10 @@
              1.   For Maybe, fail returns Nothing;
              2.   For IO, fail raises an I/O error.
         3. **return** method is similar to `pure`.  only difference is: `pure` has a type class restraint on *Applicative*, whereas `return` has a constraint on the *Monad* type class bcos  `Monad` type class predates the `Applicative` type class, so the `return` method exists for legacy reasons. In context of `Monad`, stick with `return`. ![Alt text](unit2/lesson14/TypeclassRoadMap.png?raw=true "Type Classes Map") <p align="center"> Type Classes Map </p>
-        ```
-        pure :: Applicative f => a -> f a
-        return ::     Monad m => a -> m a
-        ```
+            ```
+            pure :: Applicative f => a -> f a
+            return ::     Monad m => a -> m a
+            ```
         4. last method **>>** operator throws away the first `m a` type e.g in `IO` context when using `putStrLn`, you don’t get anything back ie print something to user and throw away the IO ( ) `putStrLn` result
 
     7. `Monad` **>>** operator: When working with IO, >> is useful anytime you need to perform an IO action that doesn’t meaningfully return a value.
@@ -584,31 +584,296 @@
        2. have an IO String, but you need to connect it with name-Statement, which is a regular String -> String function. You can use `>>=` to do this if you can make nameStatement return an IO String. Solution is to wrap nameStatement in a lambda and use return at the end. ![Alt text](unit5/lesson30/usingMonadReturn.png?raw=true "using Monad's return method") <p align="center"> using Monad's return method </p>
     8. Last note: The Monad type class is the final refinement of computing in a context started with Functor. The most important method of the Monad type class is the >>= (pronounced bind) operator. You use >>= to chain together functions of the type (a -> m b) which is particularly important for working with the IO type. Unlike Maybe, you can’t trivially use pattern matching to access values inside the IO context. The Monad type class is what makes I/O programming possible.
     9. Q30.1 Universal fmap for applicative <*> and monad >>= instances
-        ```
-        allFmap :: Applicative f => (a -> b) -> f a -> f b
-        allFmap function applicInstance = pure function <*> applicInstance
+            ```
+            allFmap :: Applicative f => (a -> b) -> f a -> f b
+            allFmap function applicInstance = pure function <*> applicInstance
 
-        -- recall also (getLine >>= (\name ->return (nameStatement name))) in unit5/lesson30/2monadIO.hs
+            -- recall also (getLine >>= (\name ->return (nameStatement name))) in unit5/lesson30/2monadIO.hs
 
-        allFmapM :: Monad m => (a -> b) -> m a -> m b
-        allFmapM function val = val >>= (\x -> return (function x))
-        ```
+            allFmapM :: Monad m => (a -> b) -> m a -> m b
+            allFmapM function val = val >>= (\x -> return (function x))
+            ```
     10. Q30.2 Monad is strictly more powerful than Applicative, write a universal version of `<*>`, called allApp, that defines `<*>` for all members of the Monad type clas
-        ```
-        allApp :: Monad m => m (a -> b) -> m a -> m b
-        -- <*> :: Applicative f :: f(a -> b) -> f a -> f b
-        -- >>= :: Monad  m :: m a -> (a -> m b) -> m b
+            ```
+            allApp :: Monad m => m (a -> b) -> m a -> m b
+            -- <*> :: Applicative f :: f(a -> b) -> f a -> f b
+            -- >>= :: Monad  m :: m a -> (a -> m b) -> m b
 
-        -- Two hints:
-        -- 1. Try to think exclusively in terms of the type signatures.
-        -- 2. Use <$> if you want and replace it with your answe    r to Q29.1
-        -- recall creditsFromId id = lookupUserName id >>= lookupCredits
+            -- Two hints:
+            -- 1. Try to think exclusively in terms of the type signatures.
+            -- 2. Use <$> if you want and replace it with your answe    r to Q29.1
+            -- recall creditsFromId id = lookupUserName id >>= lookupCredits
 
-        allApp function val = function >>= (\f -> val  >>= (\x -> return (f x)))
-        ```
+            allApp function val = function >>= (\f -> val  >>= (\x -> return (f x)))
+            ```
     11. Q30.3 Implement a bind function which is the same as (>>=) for Maybe:
+            ```
+            bind :: Maybe a -> (a -> Maybe b) -> Maybe b
+            bind Nothing _ = Nothing
+            bind (Just val) function = function val
+            ```
+26. Ch31.0: Making Monads easier with do-notation
+    1. Two useful tools that make working with Monads significantly easier.
+       1. The first is `do-notation`
+       2. The second list comprehension as `List` can work as a `Monad`
+    2. Monad refresher:
+       1. example
+            ```
+                askForName :: IO ()
+                askForName = putStrLn "What is your name?"
+
+                nameStatement :: String -> String
+                nameStatement name = "Hello, " ++ name ++ "!"
+
+                helloName :: IO ()
+                helloName = askForName >>
+                            getLine >>=
+                            (\name ->
+                                return (nameStatement name)) >>=
+                            putStrLn
+            ```
+       2. >> allows you to perform an **IO action** and chain it with another action, ignoring its value.`(>>) :: Monad m :: m a -> m b --> m b`. ie `askForName >> getLine `
+       3. >>= allows you to perform an IO action and then hand off the return value of that function to another waiting for a value `(>>=) :: Monad m :: m a -> (a -> m b) -> m b` ie
+          1. getLine **>>=** (\name -> return (nameStatement name))
+          2. (\name -> return (nameStatement name)) **>>=** putStrLn
+       4. *return* `return :: Monad m :: a -> m a` ie (\x -> return (func x)) allows you to take an ordinary function and have it work in the context of IO
+       5. Rewriting helloName using do-notation.
+            ```
+                helloNameDo :: IO ()
+                helloNameDo = do
+                    askForName
+                    name <- getLine
+                    putStrLn (nameStatement name)
+
+            ```
+        ![Alt text](unit5/lesson31/monad2do.png?raw=true "Monad-to-do transformation") <p align="center"> Monad-to-do transformation. name missing in putStrLn (nameStatement name) </p>
+       6. Rewriting do to Monad (2 more examples)![Alt text](unit5/lesson31/desugar_do.png?raw=true "do-to- transformation") <p align="center"> Monad-to-do transformation. name missing in putStrLn (nameStatement name) </p>
+            ```
+                helloPerson :: String -> String
+                helloPerson name = "Hello" ++ " " ++ name ++ "!"
+
+                helloPersonDo :: IO ()
+                helloPersonDo = do
+                        name <- getLine
+                        let statement = helloPerson name
+                        putStrLn statement
+
+                helloPersonMonad :: IO ()
+                helloPersonMonad = getLine >>=
+                                (\name ->
+                                    (\statement -> putStrLn statement)
+                                                            (helloPerson name))
+                ==========================================
+                echoMonad :: IO ()
+                echoMonad = getLine >>= putStrLn
+
+                echoDo :: IO ()
+                echoDo = do
+                    someString <- getLine
+                    putStrLn someString
+            ```
+        7. Comparing the costs of two pizzas. Because do-notation works on all members of Monad, you were able to trivially translate this program to work with Maybe types when your values came from Data.Maps rather than IO.
+        8. Different contexts using **do** in unit5/lesson31/2monad_do_3Contexts.hs.**PLEASE see the file**
+           1. **IO Context** bcos of the Monad type class, you have an easy way to take a Candidate that wasn’t designed with I/O in mind and use that Candidate in the IO context
+                ```
+                data Candidate = Candidate...
+
+                viable :: Candidate -> Bool
+
+                readCandidateIO :: IO Candidate
+
+                assessCandidateIO :: IO String
+                assessCandidateIO = do
+                    candidate <- readCandidateIO....
+                        let passed = viable candidate  -- where all tests == True
+                        let statement = if passed
+                                        then "passed"
+                                        else "failed"
+                        return statement
+                ```
+           2. **Maybe Context** Maybe is also a Monad
+                ```
+                candidate1 :: Candidate..., candidate2 :: Candidate..., candidate3 :: Candidate
+
+                    -- 5B.2  Create a candidate DB
+                    candidateDB :: Map.Map Int Candidate
+                    candidateDB = Map.fromList [(1,candidate1)
+                                            ,(2,candidate2)
+                                            ,(3,candidate3)
+
+                    -- need assessCandidateIO cousin for Maybe assessCandidateMaybe
+                    assessCandidateMaybe :: Int -> Maybe String
+                    assessCandidateMaybe cID = do
+                        candidate <- Map.lookup cID candidateDB
+                        let passed = viable candidate  -- where all tests == True
+                        let statement = if passed
+                                        then "passed"
+                                        else "failed"
+                        return statement
+                ```
+           3. **List Contex** List is also a Monad. Working with lists by using the tools of the Monad type class, you can treat entire lists as single values
+                ```
+                -- 5C.1 Possible Candidates in a list context
+                candidates :: [Candidate]
+                candidates = [candidate1
+                            ,candidate2
+                            ,candidate3]
+
+                -- 5C.2 Assessing a list of candidates using List as a MonadListing
+                assessCandidateList :: [Candidate] -> [String]
+                assessCandidateList candidates = do
+                        candidate <- candidates
+                        let passed = viable candidate  -- where all tests == True
+                        let statement = if passed
+                                        then "passed"
+                                        else "failed"
+                        return statement
+                ```
+           4. *Fun Fact* `assessCandidateIO`  and `assessCandidateMaybe` and `assessCandidateList` are almost identical.  because after you assign a variable with <- in do-notation, you get to pretend it’s an ordinary type that’s not in a particular context. The Monad type class and do-notation have abstracted away the context you’re working in. =>  can start thinking about all problems in a context in the same way
+
+    3. In IO `return` vs `print`
+       1. `print x = putStrLn (show x)`
+       2. `return :: Monad m => a -> m a` See [stackoverflow](https://stackoverflow.com/questions/20690304/type-of-return-in-do-block#:~:text=when%20learning%20about%20monads%20it's%20helpful%20)
         ```
-        bind :: Maybe a -> (a -> Maybe b) -> Maybe b
-        bind Nothing _ = Nothing
-        bind (Just val) function = function val
+        {-# LANGUAGE ScopedTypeVariables #-}
+
+            test1 :: IO String
+            test1 = do
+            a <- getLine             :: IO String
+            putStrLn a               :: IO ()
+            return a                 :: IO String
+            ====================================
+            test2 :: IO String
+            test2 = do
+            (a :: String) <- getLine  :: IO String
+            (() :: ()) <- putStrLn a  :: IO ()
+            return a                  :: IO String
+            ====================================
+            test3 :: IO String
+            test3 = getLine >>=
+                    (\a -> putStrLn a >>=
+                    \() -> return a)
         ```
+    4.  `do-notation` and the `Monad` type class allow you to solve problems while abstracting away the context:
+        1.  With `IO` , you can write code for IO types and not worry about the mismatch between IOStrings and regular Strings.
+        2.  With `Maybe`, you can write code for Maybe and forget about dealing with missing values.
+        3.  With `list`, you can even write code for lists and pretend you have only a single value.
+    5. The only limitation to using the same code in all three contexts is that the type signatures are too restrictive. Because *IO, Maybe, and List* are all **instances of Monad**, you can use a **type class constraint** in your definition of a universal `assessCandidate` function. The amazing thing here is you need to change only the type signature of your `assessCandidateList` function to do this. `Monad` type class allows you to write code for regular types and use them in increasingly powerful ways in a context such as `Maybe`, `IO`, or `List`. 5D A **universal** `assessCandidate` function with simply a common type class constraint.
+        ```
+        assessCandidate :: Monad m =>  m Candidate -> m String
+        assessCandidate candidates = do
+                candidate <- candidates
+                let passed = viable candidate  -- where all tests == True
+                let statement = if passed
+                                    then "passed"
+                                    else "failed"
+                return statement
+
+        -- 5D.1 Test in IO context by `ghci 2monad_do_3Contexts.hs`
+        -- *Main> assessCandidate readCandidateIO
+        -- Record candidate results
+        -- Enter candidate ID:
+        -- 8
+        -- Enter code review grade:
+        -- A
+        -- Enter cultural fit grade:
+        -- A
+        -- Enter highest education level:
+        -- MS
+        -- "passed"
+
+        --5D.2 Test in Maybe context
+        -- >>> assessCandidate (Map.lookup 1 candidateDB)
+        -- Just "failed"
+        -- >>> assessCandidate (Map.lookup 2 candidateDB)
+        -- Just "failed"
+        -- >>> assessCandidate (Map.lookup 3 candidateDB)
+        -- Just "passed"
+        -- >>> assessCandidate candidates
+        -- ["failed","failed","passed"]
+        ```
+    6. Monad-do transformation unit5/lesson31/l31exercises.hs. pizza comparison
+        ```
+        -- do way of compare
+        main :: IO ()
+        main = do
+            putStrLn "What is the size of pizza 1"
+            size1 <- getLine
+            putStrLn "What is the cost of pizza 1"
+            cost1 <- getLine
+            putStrLn "What is the size of pizza 2"
+            size2 <-  getLine
+            putStrLn "What is the cost of pizza 2"
+            cost2 <- getLine
+            let pizza1 = (read size1, read cost1)
+            let pizza2 = (read size2, read cost2)
+            let betterPizza = comparePizzas pizza1 pizza2
+            putStrLn (describePizza betterPizza)
+
+        =================
+        -- Monad alternative for do notation
+        cheaperPizza :: IO ()
+        cheaperPizza =  putStrLn "What is the size of pizza 1" >>
+                        getLine >>=
+                        (\size1 ->
+                            putStrLn "What is the cost of pizza 1" >>
+                            getLine >>=
+                            (\cost1 ->
+                                putStrLn "What is the size of pizza 2" >>
+                                getLine >>=
+                                (\size2 ->
+                                    putStrLn "What is the cost of pizza 2" >>
+                                    getLine >>=
+                                    (\cost2 ->
+                                        (\pizza1 ->
+                                            (\pizza2 ->
+                                                (\betterPizza ->
+                                                    putStrLn (describePizza betterPizza)
+                                                )   (comparePizzas pizza1 pizza2)
+                                            )(read size2 , read cost2)
+                                        )(read size1, read cost1)
+                                    ))))
+
+        =========================
+        -- Maybe Context
+        maybeMain :: Maybe String
+        maybeMain = do
+            size1 <- Map.lookup 1 sizeData
+            cost1 <- Map.lookup 1 costData
+            size2 <- Map.lookup 2 sizeData
+            cost2 <- Map.lookup 2 costData
+            let pizza1 = (size1,cost1)
+            let pizza2 = (size2,cost2)
+            let betterPizza = comparePizzas pizza1 pizza2
+            return  (describePizza betterPizza)
+
+        =========================
+        -- List Context
+        listMain :: [String]
+        listMain = do
+            size1 <- [10,12,17]
+            cost1 <- [12.0,15.0,20.0]
+            size2 <- [10,11,18]
+            cost2 <- [13.0,14.0,21.0]
+            let pizza1 = (size1,cost1)
+            let pizza2 = (size2,cost2)
+            let betterPizza = comparePizzas pizza1 pizza2
+            return  (describePizza betterPizza)
+
+        =========================
+        -- Universal Monad
+        monadMain :: Monad m => m Double -> m Double
+                    -> m Double -> m Double -> m String
+        monadMain s1 c1 s2 c2 = do
+            size1 <- s1
+            cost1 <- c1
+            size2 <- s2
+            cost2 <- c2
+            let pizza1 = (size1,cost1)
+            let pizza2 = (size2,cost2)
+            let betterPizza = comparePizzas pizza1 pizza2
+            return  (describePizza betterPizza)
+
+
+        ```
+
