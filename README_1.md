@@ -306,7 +306,7 @@
         ...
         (<*>) :: f (a -> b) -> f a -> f b
         ```
-        ![Alt text](unit5/lesson28/applicativeTypeSignature.png?raw=true "Applicative type signature")
+        ![Alt text](unit5/lesson28/applicativeTypeSignature.png?raw=true "Applicative type signature") <p align="center"> Applicative type signature </p>
         1. Applicative’s <*> allows you to apply a function in a context.
             ```
             maybeInc :: Maybe (Integer -> Integer)
@@ -724,8 +724,8 @@
                 -- 5C.2 Assessing a list of candidates using List as a MonadListing
                 assessCandidateList :: [Candidate] -> [String]
                 assessCandidateList candidates = do
-                        candidate <- candidates
-                        let passed = viable candidate  -- where all tests == True
+                        candidate <- candidates  -- By using <- , you’re able to treat your list of candidates like a single candidate
+                        let passed = viable candidate  -- where all tests == True. The viable function takes a singlec andidate as an argument
                         let statement = if passed
                                         then "passed"
                                         else "failed"
@@ -875,7 +875,71 @@
             let pizza2 = (size2,cost2)
             let betterPizza = comparePizzas pizza1 pizza2
             return  (describePizza betterPizza)
+       ```
+27. Ch31.0: The List Monad and List Comprehension
+    1.  In unit5/lesson31/2monad_do_3Contexts.hs assessCandidateList's `candidate <- candidates`, By using <- , you’re able to treat your list of candidates like a single candidate. Yet the final result is the same as applying your logic to every candidate in a list
+    2.  `List` as `Applicative` for nondeterministic computing:  two lists and use pure (*) to multiply them with <*>, you get every possible combination of the values from the two lists combined.e.g in the doorprize and boxprize in  lucky unit5/lesson29/listApplicative.hs
+    3. The main use of the list monad is to quickly generate lists. Figure 32.1 shows an example of using the list monad to create a list of powers of 2. ![Alt text](unit5/lesson32/listGeneratewithListMonad.png?raw=true "Monad List to generate lists") <p align="center"> Monad List to generate lists. Change to value <- [1 ..n] </p>
+       ```
+       --  list as a context with Monad abstracting out the context of the list.
+        powersOfTwo :: Int -> [Int]
+        powersOfTwo n = do
+            value <- [1 ..n]
+            return (2^value)
 
+        --  map : list as a list data structure, not abstracting out the context of the list.
+        powersOfTwoMap :: Int -> [Int]
+        powersOfTwoMap n = map (\x -> 2^x) [1 .. n]
+       ```
+    4. `return` pairs of Int in list context [( Int, Int)] is important
+       1. when creation of pair as each list element is generated in the 2 lists OR ![Alt text](unit5/lesson32/listPairWithDo.png?raw=true "List of Pairs with do-notation") <p align="center">List of Pairs with do-notation </p>
+            ```
+            powersOfTwoAndThree :: Int -> [(Int,Int)]
+            powersOfTwoAndThree n = do
+                value <- [1 .. n]
+                let powersOfTwo = 2^value    ---- [2,4,8,16,32]
+                let powersOfThree = 3^value  ---- [3,9,27,81,243]
+                return (powersOfTwo,powersOfThree)
+            -- >>> powersOfTwoAndThree 5
+            -- [(2,3),(4,9),(8,27),(16,81),(32,243)]
+            ```
+       2. when creation of pairs out of 2 completed lists ![Alt text](unit5/lesson32/listPairWithDo2.png?raw=true "List of Pairs with do-notation on (Complete Lists)") <p align="center">List of Pairs with do-notation on (Complete Lists) </p>
+            ```
+                powersOfTwo3 :: [(Int,Int)]
+                powersOfTwo3 = do
+                    value2 <- [2,4,8,16,32]
+                    value3 <- [3,9,27,81,243]
+                    return (value2, value3)
+                -- >>>powersOfTwo3
+                -- [(2,3),(2,9),(2,27),(2,81),(2,243),(4,3),(4,9),(4,27),(4,81),(4,243),(8,3),(8,9),(8,27),(8,81),(8,243),(16,3),(16,9),(16,27),(16,81),(16,243),(32,3),(32,9),(32,27),(32,81),(32,243)]
+            ```
+    5. In Control.Monad, a function called `guard` allows you to **filter** your values in a list. You have to import Control.Monad to use guard.
+        ```
+        evensGuard :: Int -> [Int]
+        evensGuard n = do
+            value <- [1 .. n]
+            guard(even value)  -- guard filters out all the values that don’t satisfy your test.
+            return value
+        ```
+    6. The Alternative type class is a subclass of Applicative (meaning all instances of Alternative must be instances of Applicative). But, unlike Applicative, Alternative isn’t a superclass of Monad; not all Monads are instances of Alternative. For the guard function, the **key method of Alternative is empty**, which works exactly like `mempty` from Monoid. Both `List` and `Maybe` are instances of Alternative. List’s empty value is [], and Maybe’s is Nothing. **IO, however, isn’t an instance of Alternative. You can’t use guard with IO types**. Also, guard  is  a  completely  `pure` function.
+        ```
+        guard :: Alternative f => Bool -> f()
+        ```
+    7. Haskell evenPowersOfTwo emulates Python’s list comprehensions. list comprehensions are just specialized applications of monads!
+        ```
+        evenSquares :: [Int]
+        evenSquares = do
+            n <- [0 .. 9]
+            let nSquared = n^2
+            guard(even nSquared)
+            return nSquared
+        ```
+    8. List comprehensions provide an even simpler way of generating lists than do-notation. Figure 32.2 shows how to translate a function, powersOfTwo, from do-notation to a list comprehension. ![Alt text](unit5/lesson32/listCompreFromDo.png?raw=true "List generation with list comprehension") <p align="center">List generation with list comprehension. Simplify do-notation </p>
+       1. final result in the beginning
+       2. more than one step in the process, then they are separated by a comma.
+       3. The `|` separates your final resultfrom the steps used to achieve that.
+        ```
+        Python: [n**2 for n in range(10) if n**2 % 2 == 0]
 
         ```
-
+    9. list comprehensions start with the result and then show how it’s generated. Easy to understand what a list comprehension is doing just by looking at the beginning of it
