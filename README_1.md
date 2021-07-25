@@ -943,3 +943,31 @@
 
         ```
     9. list comprehensions start with the result and then show how it’s generated. Easy to understand what a list comprehension is doing just by looking at the beginning of it
+        ```
+        import Control.Monad ( guard ) -- to use guard to filter values in a list.
+        import Data.Char (toUpper)
+        -- ist comprehension is doing just by looking at the beginning of it
+        allEvenOdds :: Int -> [(Int,Int)]
+        allEvenOdds n = [(evenValue,oddValue) |  evenValue <- [2,4 ..]
+                                              ,  oddValue <- [1,3 .. n]]
+
+        -- recall -- 32.1.1 The guard function
+        evensGuard :: Int -> [Int]
+        evensGuard n = do
+            value <- [1 .. n]
+            guard(even value)
+            return value
+
+        -- list compre form
+        evensGuardCompre :: Int -> [Int]
+        evensGuardCompre n = [ value | value <- [1 .. n]
+                                     , even value]
+
+        ==================
+        mrCap :: [String ]
+        mrCap = [ "Mr " ++ capWord | strin <- ["brown","blue","pink","orange"]
+                                , let capWord = (\(x : xs) -> toUpper x : xs) strin ]
+
+        -- >>> mrCap
+        -- ["Mr Brown","Mr Blue","Mr Pink","Mr Orange"]
+        ```

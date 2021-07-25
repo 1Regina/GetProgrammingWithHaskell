@@ -10,7 +10,6 @@ evensGuard :: Int -> [Int]
 evensGuard n = do
     value <- [1 .. n]
     guard(even value)
-
     return value
 
 -- list compre form
@@ -18,13 +17,16 @@ evensGuardCompre :: Int -> [Int]
 evensGuardCompre n = [ value | value <- [1 .. n]
                              , even value]
 
+-- >>> evensGuardCompre 10
+-- [2,4,6,8,10]
 
 -- Quick check 32.3    Write a list comprehension that takes the following words
 -- ["brown","blue","pink","orange"] and
 -- capitalizes the first letter, and prepends Mr. in front. (Hint: use Data.Char’s toUpper.)
 mrCap :: [String ]
-mrCap = [ "Mr" ++ capWord | strin <- ["brown","blue","pink","orange"]
-                          , let capWord = (\(x : xs) -> (toUpper x : xs) strin ]
+mrCap = [ "Mr " ++ capWord | strin <- ["brown","blue","pink","orange"]
+                          , let capWord = (\(x : xs) -> toUpper x : xs) strin ]
 
-
+-- >>> mrCap
+-- ["Mr Brown","Mr Blue","Mr Pink","Mr Orange"]
 
