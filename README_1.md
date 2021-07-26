@@ -971,3 +971,61 @@
         -- >>> mrCap
         -- ["Mr Brown","Mr Blue","Mr Pink","Mr Orange"]
         ```
+    10. Examples (5 methods) to generate calendar dates from unit5/lesson32/l32exercises.hs
+        ```
+        -- Method 1
+        calender1 :: [(String, Int)]
+        calender1 = [ (month, date)
+                | (month, dateEnds) <- monthLengths
+                , date <- [1 .. dateEnds]]
+
+        monthLengths = [("January", 31), ("February", 28)]
+
+        -- Method 2
+        calender2 :: [(String, Int)]
+        calender2 = [ (month, date)
+                    | month <- ["January", "February"]
+                    , let dateEnds = getMonthLength month
+                    , date <- [1 .. dateEnds]]
+
+        getMonthLength "February" = 28
+        getMonthLength _ = 31
+
+        -- Method 3
+        calender :: [(String, Int)]
+        calender = [ (month, date)
+                    | (month, dateEnds) <-[("January", 31), ("February", 28)]
+                    , date <- [1 .. dateEnds]]
+
+        -- Nethod 4
+        calenderZip :: [(String, Int)]
+        calenderZip = [ (month, date)
+                    | (month, dateEnds) <- zip ["January", "February"] [31,28]
+                    , date <- [1 .. dateEnds]]
+
+        -- Method 5
+        calenderExtList :: [(String, Int)]
+        calenderExtList = [ (month, date)
+                        | (month, dateEnds) <- zip months monthEnds
+                        , date <- [1 .. dateEnds]]
+
+        ```
+    11. Just number of days in months in list comprehension, do-notation, monad. from unit5/lesson32/l32exercises.hs
+        ```
+        1. list compre
+        monthEnds = [31,28]
+        dates monthEnds = [date | end <- monthEnds
+                        , date <- [1 ..end ] ]
+        2. do notation
+        datesDo ends = do
+                end <- ends
+                date <- [1 .. end]
+                return date
+
+        3. Monad style
+        datesMonad :: [Int] -> [Int]
+        datesMonad ends  =  ends >>=
+                    (\end ->
+                        [1 .. end] >>=
+                            (\date -> return date))
+        ```
