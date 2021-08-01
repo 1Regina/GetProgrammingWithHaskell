@@ -3,3 +3,5 @@ vscode/
 
 # ignore file
 *.DS_Store*
+*.hi
+*.o
