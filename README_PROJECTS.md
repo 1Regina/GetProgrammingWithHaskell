@@ -52,7 +52,7 @@
             GHCi> Prelude.head example
             ***Exception: Prelude.head: empty list
             ```
-    3. A palindrome program in 2 two files Reasons ![Alt text](unit6/lesson34/simplePalindrome.png?raw=true "Draft Palindrome") <p align="center"> Draft Palindrome </p>
+    3. A palindrome program in 2 files. Reasons ![Alt text](unit6/lesson34/simplePalindrome.png?raw=true "Draft Palindrome") <p align="center"> Draft Palindrome </p>
        1. correctly identifies racecar as a palindrome, but fails to identify A man, a plan, a canal: Panama!
             ```
             *Main> main
@@ -124,3 +124,22 @@
                 ```
     5. Note `import qualified Palindrome` vs `import Palindrome ()` in unit6/lesson34/Main.hs
     6. With Main.hs, we learn how to organize programs into separate files and compile them into a single program. You also learned how to export specific functions from your modules while hiding the rest.
+    7. Refactor String as Text for program in chapter exercises in unit6/lesson34/l34_exercises
+29. Ch35.0 Building Projects with Stack
+    1.  Building projects need a proper build automation. Haskell too has a powerful build tool: stack. Stack automates and manages several parts of Haskell projects:
+        1.  Provides an isolated installation of GHC per project to ensure that you’re always using the correct version
+        2.  Handles the installation of packages and their dependencies
+        3.  Automates the building of the project
+        4.  Aids you in organizing and running tests on your project
+    2. For every new project, do
+       1. make sure that stack is up-to-date with `stack update`
+       2. stack new example with `stack new palindrome-checker`.  This command causes stack to create a new project from a default template via a new directory named palindrome-checker with the following files and directories
+          1. LICENSE
+          2. src
+          3. Setup.hs
+          4. stack.yaml
+          5. app
+          6. test
+          7. palindrone-checker.cabal
+        8. Other templates are available in https://github.com/commercialhaskell/stack-templates is a source for many
+        9. palindrome-checker.**cabal**, your project configuration file contains all the metadata related to your project e.g project name, version, description,
