@@ -32,6 +32,7 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , text
   default-language: Haskell2010
 
 executable palindrome-checker-exe
@@ -44,6 +45,7 @@ executable palindrome-checker-exe
   build-depends:
       base >=4.7 && <5
     , palindrome-checker
+    , text
   default-language: Haskell2010
 
 test-suite palindrome-checker-test
@@ -57,4 +59,5 @@ test-suite palindrome-checker-test
   build-depends:
       base >=4.7 && <5
     , palindrome-checker
+    , text
   default-language: Haskell2010
