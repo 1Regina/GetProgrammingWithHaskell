@@ -201,25 +201,50 @@
         main :: IO ()
         main = someFunc
         ```
-    5A. Add edit your **.cabal** file to tell stack about any modules you’re depending on e.g. `Data.Text` into the `build-depends:` ![Alt text](unit6/lesson35/cabalEdits.png?raw=true "Add packages to dependencies") <p align="center"> Additions to build dependencies </p>
+    5. A. Add edit your **.cabal** file to tell stack about any modules you’re depending on e.g. `Data.Text` into the `build-depends:` ![Alt text](unit6/lesson35/cabalEdits.png?raw=true "Add packages to dependencies") <p align="center"> Additions to build dependencies </p>
     6A. With everything together to build project, ensures that stack is using the correct version of GHC, run setup **in project directory** with:
         ```
         stack setup
         ```
-    7A. Ensuring that your project is built with the version of GHC you used to write it is important. Specifying the version of GHC you want to use is done indirectly by choosing your stack resolver version. The stack resolver is set in the **stack.yaml** file: `resolver: lts-7.9`. The lts-7.9 version of the stack resolver uses GHC version 8.0.1. By default, stack uses the most recent stable resolver. Listing of the current resolver versions at www.stackage.org. For info on specific resolver, e.g 7.9 by www.stackage.org/lts-7.9 for the lts-7.9 resolver)
-    8A. Build your project with `stack build`.
-    9A. Run the project  with `exec` as in `stack exec palindrone-checker-exe` using the default 's `<project-name>-exe` The name of the project is taken from .cabal file line #38 `executable palindrone-checker-exe`
+    7. A. Ensuring that your project is built with the version of GHC you used to write it is important. Specifying the version of GHC you want to use is done indirectly by choosing your stack resolver version. The stack resolver is set in the **stack.yaml** file: `resolver: lts-7.9`. The lts-7.9 version of the stack resolver uses GHC version 8.0.1. By default, stack uses the most recent stable resolver. Listing of the current resolver versions at www.stackage.org. For info on specific resolver, e.g 7.9 by www.stackage.org/lts-7.9 for the lts-7.9 resolver)
+    8. A. Build your project with `stack build`.
+    9. A. Run the project  with `exec` as in `stack exec palindrone-checker-exe` using the default 's `<project-name>-exe` The name of the project is taken from .cabal file line #38 `executable palindrone-checker-exe`
     10A. **QuickFix** For large program with `Data.Text`, add OverloadedStrings pragma to every file. Shortcut:
         1.  Go to .cabal file and universally apply the `OverloadString` language extension at
         2.  after default-language:  Haskell2010 to **both** your library and executable sections of .cabal:
             ```
             extensions: OverloadedStrings
             ```
-    5B. **OTHERWISE** if the [.cabal#line3](https://github.com/1regina/GetProgrammingWithHaskell/blob/master/unit6/lesson35/palindrome-checker/palindrome-checker.cabal#L3) is `-- This file has been generated from package.yaml by hpack version 0.34.4.`, then go straight to **package.yaml**#dependencies and add instead . e.g to add text
+    10. **OTHERWISE** if the [.cabal#line3](https://github.com/1regina/GetProgrammingWithHaskell/blob/master/unit6/lesson35/palindrome-checker/palindrome-checker.cabal#L3) is `-- This file has been generated from package.yaml by hpack version 0.34.4.`, then go straight to **package.yaml**#dependencies and add instead . e.g to add text
         ```
         dependencies:
         - base >= 4.7 && < 5
         - text
         ```
-    6B. then do `stack run`
+    11. then do `stack run`
+    12. Exercises.
+        1.  Q35.1: (unit6/lesson35/palindrome-checker1) Cant do `extensions: OverloadedStrings` in .cabal nor package.yaml alternative (see pt 10 above) so retain OverloadedStrings pragma in Main.hs and Palindrome.hs. Completed below and `stack run`
+            ```
+            Added Palindrome.hs to src with
+            {-# LANGUAGE OverloadedStrings #-}
+            module Palindrome where......
+            =================
+            Edit: import Palindrom instead of Lib.hs in app/Main.hs with
+            {-# LANGUAGE OverloadedStrings #-}
+            module Main where
+
+            import Palindrome (isPalindrome)
+            import Data.Text as T
+
+            ====================
+            Add: `- text` in unit6/lesson35/palindrome-checker1/package.yaml in #line22
+
+            dependencies:
+            - base >= 4.7 && < 5
+            - text
+            ```
+        2. Q35.2 pizza compare from  unit 4, lesson 21
+           1. Added unit6/lesson35/pizza-compare/src/Compare.hs
+           2. Edited unit6/lesson35/pizza-compare/app/Main.hs. See new contents
+           3. `stack run`
 
