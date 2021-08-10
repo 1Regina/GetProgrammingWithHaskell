@@ -405,7 +405,7 @@
             done!
 
             ```
-    10. **Expand tests quickCheckWith** (ORIGINAL without stack install quickcheck-instances): try 1,000 using `quickCheckWith`.
+    10. **Expand tests with quickCheckWith** (ORIGINAL without stack install quickcheck-instances): try 1,000 using `quickCheckWith`.
         1.  Go to unit6/lesson36/palindrome-testingWOPackageYaml/test/Spec.hs and edit main and run `stack test` again.
             ```
             main :: IO ( )
@@ -419,7 +419,7 @@
             +++ OK, passed 1000 tests.
             done!
             ```
-        3.  (ORIGINAL without stack install quickcheck-instances): Quick Check Exercise 36.5 on *prop_reverseInvariant* and do: 
+        3.  (ORIGINAL without stack install quickcheck-instances): Quick Check Exercise 36.5 on *prop_reverseInvariant* and do:
            1.  update Lib.hs to avail `prop_reverseInvariant` in module Lib
            2.  add in unit6/lesson36/palindrome-testingWOPackageYaml/test/Spec.hs main `quickCheckWith stdArgs { maxSuccess = 1000}  prop_reverseInvariant `
                 ```
