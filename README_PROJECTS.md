@@ -420,8 +420,8 @@
             done!
             ```
         3.  (ORIGINAL without stack install quickcheck-instances): Quick Check Exercise 36.5 on *prop_reverseInvariant* and do:
-           1.  update Lib.hs to avail `prop_reverseInvariant` in module Lib
-           2.  add in unit6/lesson36/palindrome-testingWOPackageYaml/test/Spec.hs main `quickCheckWith stdArgs { maxSuccess = 1000}  prop_reverseInvariant `
+            1.  update Lib.hs to avail `prop_reverseInvariant` in module Lib
+            2.  add in unit6/lesson36/palindrome-testingWOPackageYaml/test/Spec.hs main `quickCheckWith stdArgs { maxSuccess = 1000}  prop_reverseInvariant `
                 ```
                 -- (in src/Lib.hs)
                 module Lib
@@ -442,7 +442,7 @@
                     quickCheck prop_reverseInvariant -- QuickCheck exercise 36.5
                     putStrLn "done!"
                 ```
-           3. results displayed
+            3. results displayed
                 ```
                 +++ OK, passed 1000 tests.
                 +++ OK, passed 1000 tests.
