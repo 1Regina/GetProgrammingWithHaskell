@@ -343,8 +343,8 @@
                 assert ((not . isPalindrome) "cat") "passed 'cat'" "FAIL: 'cat'"  -- rem the contrary case
                 putStrLn "done!"
             ```
-        4. exit GHCI by `:q`
-        5. run the test by `stack test` in the project directory
+        8. exit GHCI by `:q`
+        9. run the test by `stack test` in the project directory
     8.  **Property Testing** To isPalindrome other punctuation, the *isPunctuation* function in *Data.Char* is the correct solution. But there are endless punctuations to think of for testing. So a powerful solution is *property testing* and this automates much of the hassle of creating individual unit tests.
         1.  Refactor the *isPalindrome* function inside Lib module in Lib.hs into a *preprocess* function so the real testing interest is *preprocess*
         2.  To test that the output, given the input, is punctuation invariant, ie don’t care about whether the input string has punctuation.
@@ -376,11 +376,11 @@
                 ......
                 ```
            2. Case where package.yaml is used: [add dependencies. Specify version](https://github.com/1Regina/GetProgrammingWithHaskell/blob/8db5f8a8d7e08be5f959b0bcdd45c21d807b1189/unit6/lesson36/palindrome-testingQC/package.yaml#L24)
-           ```
-           dependencies:
-          - base >= 4.7 && < 5
-          - QuickCheck  >= 2.7
-           ```
+                ```
+                dependencies:
+                - base >= 4.7 && < 5
+                - QuickCheck  >= 2.7
+                ```
         3.  import Test.QuickCheck at the top of Spec.hs file. `import Test.QuickCheck`
         4.  call the quickCheck function on your property inside the main of Spec.hs file
             ```
@@ -419,7 +419,7 @@
             +++ OK, passed 1000 tests.
             done!
             ```
-        3.  (ORIGINAL without stack install quickcheck-instances): Quick Check Exercise 36.5 on *prop_reverseInvariant*
+        3.  (ORIGINAL without stack install quickcheck-instances): Quick Check Exercise 36.5 on *prop_reverseInvariant* and do: 
            1.  update Lib.hs to avail `prop_reverseInvariant` in module Lib
            2.  add in unit6/lesson36/palindrome-testingWOPackageYaml/test/Spec.hs main `quickCheckWith stdArgs { maxSuccess = 1000}  prop_reverseInvariant `
                 ```
