@@ -209,18 +209,20 @@
     7. A. Ensuring that your project is built with the version of GHC you used to write it is important. Specifying the version of GHC you want to use is done indirectly by choosing your stack resolver version. The stack resolver is set in the **stack.yaml** file: `resolver: lts-7.9`. The lts-7.9 version of the stack resolver uses GHC version 8.0.1. By default, stack uses the most recent stable resolver. Listing of the current resolver versions at www.stackage.org. For info on specific resolver, e.g 7.9 by www.stackage.org/lts-7.9 for the lts-7.9 resolver)
     8. A. Build your project with `stack build`.
     9. A. Run the project  with `exec` as in `stack exec palindrone-checker-exe` using the default 's `<project-name>-exe` The name of the project is taken from .cabal file line #38 `executable palindrone-checker-exe`
-    10A. **QuickFix** For large program with `Data.Text`, add OverloadedStrings pragma to every file. Shortcut:
-        1.  Go to .cabal file and universally apply the `OverloadString` language extension at
+    10. A. **QuickFix** For large program with `Data.Text`, add OverloadedStrings pragma to every file. Shortcut:
+        1.  Go to .cabal file and universally apply the `OverloadString` language extension at after default-language:
         2.  after default-language:  Haskell2010 to **both** your library and executable sections of .cabal:
             ```
             extensions: OverloadedStrings
             ```
-    10. **OTHERWISE** if the [.cabal#line3](https://github.com/1regina/GetProgrammingWithHaskell/blob/master/unit6/lesson35/palindrome-checker/palindrome-checker.cabal#L3) is `-- This file has been generated from package.yaml by hpack version 0.34.4.`, then go straight to **package.yaml**#dependencies and add instead . e.g to add text
-        ```
-        dependencies:
-        - base >= 4.7 && < 5
-        - text
-        ```
+    10. B **OTHERWISE** if the [.cabal#line3](https://github.com/1regina/GetProgrammingWithHaskell/blob/master/unit6/lesson35/palindrome-checker/palindrome-checker.cabal#L3) is `-- This file has been generated from package.yaml by hpack version 0.34.4.`, then
+        1.  **option 1** go straight to **package.yaml**#dependencies and add instead . e.g to add text. (demo-ed: unit6/lesson35/palindrome-checker1)
+            ```
+            dependencies:
+            - base >= 4.7 && < 5
+            - text
+            ```
+        2. **option 2** delete `package.yaml` file and edit the `.cabal` file `build-dependencies` for required sections (demo-ed: unit6/lesson35/palindrome-checker1WOPackageYaml)
     11. then do `stack run`
     12. Exercises.
         1.  Q35.1: (unit6/lesson35/palindrome-checker1) Cant do `extensions: OverloadedStrings` in .cabal nor package.yaml alternative (see pt 10 above) so retain OverloadedStrings pragma in Main.hs and Palindrome.hs. Completed below and `stack run`
@@ -243,8 +245,141 @@
             - base >= 4.7 && < 5
             - text
             ```
-        2. Q35.2 pizza compare from  unit 4, lesson 21
+        2.  Q35.1 Attempt 2: **without package.yaml, just good old .cabal as in book** (unit6/lesson35/palindrome-checker1WOPackageYaml) Add `extensions: OverloadedStrings` in .cabal after deleting package.yaml (alternative to retain OverloadedStrings pragma in Main.hs (via .cabal file executable section) and Palindrome.hs (or Lib.hs depending what is imported in Main.hs) via .cabal file library section). Completed below and `stack run`
+            ```
+            Remove `OverloadString` language extension in Palindrome.hs in src with
+            -- {-# LANGUAGE OverloadedStrings #-}
+            module Palindrome where......
+            =================
+            Edit: import Palindrom instead of Lib.hs in app/Main.hs with since Palindrome is made a exposed module per cabal file and being import explicitly in Main.hs
+            -- {-# LANGUAGE OverloadedStrings #-}
+            module Main where
+
+            import Palindrome (isPalindrome)
+            import Data.Text as T
+
+            ====================
+            Add: `- text` in library and executable sections of .cabal file
+            dependencies:
+            - base >= 4.7 && < 5
+            - text
+            ====================
+            after default-language:  Haskell2010 to **both** your library and executable sections of .cabal. add
+            `OverloadString` language extension
+            ```
+        3. Q35.2 pizza compare from  unit 4, lesson 21
            1. Added unit6/lesson35/pizza-compare/src/Compare.hs
            2. Edited unit6/lesson35/pizza-compare/app/Main.hs. See new contents
            3. `stack run`
 
+30. Ch36.0 Property Testing with Quickcheck
+    1.  Fresh project to build out functionality in unit6/lesson36/palindrome-testing/src/Lib.hs with `stack new palindrome-testing`
+    2.  Overwrite Lib.hs with
+        ```
+        module Lib
+            ( isPalindrome  -- but if only a few fns in this module, then export entire module by `module Lib where`
+            ) where
+
+        isPalindrome :: String -> Bool
+        isPalindrome text = text == reverse text
+        ```
+    3. `stack test` command to automatically run crude unit tests you’ll write. Loading GHCI ~ manual testing of code
+    4. Traditional Approach:
+       1. unit testing = automating manual tests
+       2. property testing = automating unit tests
+    5. Test Driven Development = reverse (Traditional Approach) by writing tests first.
+    6. Behavioural approach ~ Ruby's RSpec , Haskell's Hspec (a testing library)
+    7. Manual Testing and calling GHCI from stack
+       1. set up and build project
+            ```
+            $ cd palindrome-testing
+            $ stack setup
+            ...
+            $ stack build
+            ...
+            ```
+       2. Because stack is creating a safe, reproducible, isolated environment for your project, you don’t want to run ghci from the command line to interact with your project. This is because each project has its own libraries and even possibly its own version of GHC installed just for it. To safely interact with your project, you need to run `stack ghci`. For this section, rather than use the GHCi> prompt as you have throughout the book, you’ll use the actual prompt you get from stack ghci:
+            ```
+            $ stack ghci
+            *Main Lib>
+            ```
+       3.  Because you’ve built your project and are running stack GHCi, the Main and Lib modules are loaded as indicated by the prompt. Next do code testing
+            ```
+            *Main Lib> isPalindrome "racecar"
+            True
+            *Main Lib> isPalindrome "racecar!" ---> this shd be palindrome
+            False
+            ```
+       4. To rectify "racecar!" , fix isPalindrome function in Lib.hs
+            ```
+            isPalindrome :: String -> Bool
+            isPalindrome text = cleanText == reverse cleanText
+                    where cleanText = filter (not . (== '!')) text
+            ```
+        1. To test edits, do `quit ghci` then restart with `stack ghci`
+        2. If changes have been made only to code files and no configuration changes have been made, you can also type `:r` into GHCi to **reload your code without exiting**:
+            ```
+            *Main Lib Paths_palindrome_testing> :r
+            Ok, three modules loaded.
+            *Main Lib Paths_palindrome_testing> isPalindrome "racecar!"
+            True
+            ```
+        3. unit6/lesson36/palindrome-testing/test/Spec.hs. Create a unit testing framework by define an assert IO action that takes a Bool (in this case, a test of a function) and prints either a passing message or a fail message.
+           1. Fill out Spec.hs main
+           2. import Lib module
+            ```
+            import Lib
+
+            assert :: Bool -> String -> String -> IO ()
+            assert test passStatement failStatement = if test
+                                                    then putStrLn passStatement
+                                                    else putStrLn failStatement
+
+            main :: IO ()
+            main = do
+                putStrLn "Running tests..."
+                assert (isPalindrome "racecar") "passed 'racecar'" "FAIL: 'racecar'"
+                assert (isPalindrome "racecar!") "passed 'racecar!'" "FAIL: 'racecar!'"
+                assert ((not . isPalindrome) "cat") "passed 'cat'" "FAIL: 'cat'"  -- rem the contrary case
+                putStrLn "done!"
+            ```
+        4. exit GHCI by `:q`
+        5. run the test by `stack test` in the project directory
+        6.  **Property Testing** To isPalindrome other punctuation, the *isPunctuation* function in *Data.Char* is the correct solution. But there are endless punctuations to think of for testing. So a powerful solution is *property testing* and this automates much of the hassle of creating individual unit tests.
+            1.  Refactor the *isPalindrome* function inside Lib module in Lib.hs into a *preprocess* function so the real testing interest is *preprocess*
+            2.  To test that the output, given the input, is punctuation invariant, ie don’t care about whether the input string has punctuation.
+            3.  write a function to express this property by import Data.Char (isPunctuation) and put this function in your Spec.hs file.
+            4. Import *Data.Char (isPunctuation)* and put the property function into test/Spec.hs ![Alt text](unit6/lesson36/propertyFunction.png?raw=true "Test a property in a function") <p align="center"> Test a property in a function </p>
+            5. See property testing 1: functions in src/Lib.hs after `import Data.Char (isPunctuation)`
+                ```
+                prop_punctuationInvariant text = preprocess text ==
+                                                preprocess noPuncText
+                    where noPuncText = filter (not. isPunctuation) text
+
+                ```
+            6. Property testing 2: function in src/Lib.hs
+                ```
+                prop_reverseInvariant text = isPalindrome text == isPalindrome (reverse text)
+                ```
+            7. But step 5 and 6 do not do the property testing.
+        7.  Enter **QuickCheck** for property testing how: you supply properties that your code is supposed to uphold, and then QuickCheck automatically generates values and tests them on the functions, making sure the properties are upheld.
+            1.  3 things to do: ![Alt text](unit6/lesson36/quickCheckToDo.png?raw=true "QuickCheck steps") <p align="center"> QuickCheck steps </p>
+            2.  add QuickCheck to your build-depends in the .cabal file under the test-suite
+            ```
+            test-suite palindrome-testing-test
+            .....
+            build-depends:
+                base >=4.7 && <5
+                , palindrome-testing
+                , QuickCheck
+            ......
+            ```
+            1.  import Test.QuickCheck at the top of Spec.hs file. `import Test.QuickCheck`
+            2.  call the quickCheck function on your property inside the main of Spec.hs file
+                ```
+                main :: IO ( )
+                main = do
+                    quickCheck prop_punctuationInvariant
+                    putStrln "done!"
+                ```
+            3. Remember to ensure `Lib` module in Lib.hs are exporting the requisite function otherwise just avail all. See unit6/lesson36/palindrome-testingQC/src/Lib.hs top section
