@@ -364,7 +364,7 @@
         7. But step 5 and 6 do not do the property testing.
     9.  Enter **QuickCheck** for property testing how: you supply properties that your code is supposed to uphold, and then QuickCheck automatically generates values and tests them on the functions, making sure the properties are upheld.
         1. 3 things to do: ![Alt text](unit6/lesson36/quickCheckToDo.png?raw=true "QuickCheck steps") <p align="center"> QuickCheck steps </p>
-        2. add QuickCheck
+        2. First: add QuickCheck
            1. Case where package.yaml deleted: add QuickCheck to your build-depends in the .cabal file under the test-suite
                 ```
                 test-suite palindrome-testing-test
@@ -381,8 +381,8 @@
                 - base >= 4.7 && < 5
                 - QuickCheck  >= 2.7
                 ```
-        3.  import Test.QuickCheck at the top of Spec.hs file. `import Test.QuickCheck`
-        4.  call the quickCheck function on your property inside the main of Spec.hs file
+        3.  Second: import Test.QuickCheck at the top of Spec.hs file. `import Test.QuickCheck`
+        4.  Third: call the quickCheck function on your property inside the main of Spec.hs file
             ```
             main :: IO ( )
             main = do
