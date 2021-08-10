@@ -375,7 +375,7 @@
                     , QuickCheck
                 ......
                 ```
-           2. Case where package.yaml is used: [add dependencies. Specify version](https://github.com/1Regina/GetProgrammingWithHaskell/blob/8db5f8a8d7e08be5f959b0bcdd45c21d807b1189/unit6/lesson36/palindrome-testingQC/package.yaml#L24) [Version not required for broad based dependences] (https://github.com/1Regina/GetProgrammingWithHaskell/blob/81ab0315ba7e1648e4d0fac4cb0709d5bc1b68c6/unit6/lesson35/palindrome-checker1/package.yaml#L24)
+           2. Case where package.yaml is used: [add dependencies. Specify version](https://github.com/1Regina/GetProgrammingWithHaskell/blob/8db5f8a8d7e08be5f959b0bcdd45c21d807b1189/unit6/lesson36/palindrome-testingQC/package.yaml#L24) but version not required for broad based dependences e.g [text](https://github.com/1Regina/GetProgrammingWithHaskell/blob/81ab0315ba7e1648e4d0fac4cb0709d5bc1b68c6/unit6/lesson35/palindrome-checker1/package.yaml#L24)
                 ```
                 dependencies:
                 - base >= 4.7 && < 5
