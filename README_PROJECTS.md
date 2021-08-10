@@ -316,15 +316,15 @@
             isPalindrome text = cleanText == reverse cleanText
                     where cleanText = filter (not . (== '!')) text
             ```
-        1. To test edits, do `quit ghci` then restart with `stack ghci`
-        2. If changes have been made only to code files and no configuration changes have been made, you can also type `:r` into GHCi to **reload your code without exiting**:
+       5. To test edits, do `quit ghci` then restart with `stack ghci`
+       6. If changes have been made only to code files and no configuration changes have been made, you can also type `:r` into GHCi to **reload your code without exiting**:
             ```
             *Main Lib Paths_palindrome_testing> :r
             Ok, three modules loaded.
             *Main Lib Paths_palindrome_testing> isPalindrome "racecar!"
             True
             ```
-        3. unit6/lesson36/palindrome-testing/test/Spec.hs. Create a unit testing framework by define an assert IO action that takes a Bool (in this case, a test of a function) and prints either a passing message or a fail message.
+       7. **Assertion** unit6/lesson36/palindrome-testing/test/Spec.hs. Create a unit testing framework by define an assert IO action that takes a Bool (in this case, a test of a function) and prints either a passing message or a fail message.
            1. Fill out Spec.hs main
            2. import Lib module
             ```
@@ -345,41 +345,142 @@
             ```
         4. exit GHCI by `:q`
         5. run the test by `stack test` in the project directory
-        6.  **Property Testing** To isPalindrome other punctuation, the *isPunctuation* function in *Data.Char* is the correct solution. But there are endless punctuations to think of for testing. So a powerful solution is *property testing* and this automates much of the hassle of creating individual unit tests.
-            1.  Refactor the *isPalindrome* function inside Lib module in Lib.hs into a *preprocess* function so the real testing interest is *preprocess*
-            2.  To test that the output, given the input, is punctuation invariant, ie don’t care about whether the input string has punctuation.
-            3.  write a function to express this property by import Data.Char (isPunctuation) and put this function in your Spec.hs file.
-            4. Import *Data.Char (isPunctuation)* and put the property function into test/Spec.hs ![Alt text](unit6/lesson36/propertyFunction.png?raw=true "Test a property in a function") <p align="center"> Test a property in a function </p>
-            5. See property testing 1: functions in src/Lib.hs after `import Data.Char (isPunctuation)`
-                ```
-                prop_punctuationInvariant text = preprocess text ==
-                                                preprocess noPuncText
-                    where noPuncText = filter (not. isPunctuation) text
+    8.  **Property Testing** To isPalindrome other punctuation, the *isPunctuation* function in *Data.Char* is the correct solution. But there are endless punctuations to think of for testing. So a powerful solution is *property testing* and this automates much of the hassle of creating individual unit tests.
+        1.  Refactor the *isPalindrome* function inside Lib module in Lib.hs into a *preprocess* function so the real testing interest is *preprocess*
+        2.  To test that the output, given the input, is punctuation invariant, ie don’t care about whether the input string has punctuation.
+        3.  write a function to express this property by import Data.Char (isPunctuation) and put this function in your Spec.hs file.
+        4. Import *Data.Char (isPunctuation)* and put the property function into test/Spec.hs ![Alt text](unit6/lesson36/propertyFunction.png?raw=true "Test a property in a function") <p align="center"> Test a property in a function </p>
+        5. See property testing 1: functions in src/Lib.hs after `import Data.Char (isPunctuation)`
+            ```
+            prop_punctuationInvariant text = preprocess text ==
+                                            preprocess noPuncText
+                where noPuncText = filter (not. isPunctuation) text
 
-                ```
-            6. Property testing 2: function in src/Lib.hs
-                ```
-                prop_reverseInvariant text = isPalindrome text == isPalindrome (reverse text)
-                ```
-            7. But step 5 and 6 do not do the property testing.
-        7.  Enter **QuickCheck** for property testing how: you supply properties that your code is supposed to uphold, and then QuickCheck automatically generates values and tests them on the functions, making sure the properties are upheld.
-            1.  3 things to do: ![Alt text](unit6/lesson36/quickCheckToDo.png?raw=true "QuickCheck steps") <p align="center"> QuickCheck steps </p>
-            2.  add QuickCheck to your build-depends in the .cabal file under the test-suite
             ```
-            test-suite palindrome-testing-test
-            .....
-            build-depends:
-                base >=4.7 && <5
-                , palindrome-testing
-                , QuickCheck
-            ......
+        6. Property testing 2: function in src/Lib.hs
             ```
-            1.  import Test.QuickCheck at the top of Spec.hs file. `import Test.QuickCheck`
-            2.  call the quickCheck function on your property inside the main of Spec.hs file
+            prop_reverseInvariant text = isPalindrome text == isPalindrome (reverse text)
+            ```
+        7. But step 5 and 6 do not do the property testing.
+    9.  Enter **QuickCheck** for property testing how: you supply properties that your code is supposed to uphold, and then QuickCheck automatically generates values and tests them on the functions, making sure the properties are upheld.
+        1. 3 things to do: ![Alt text](unit6/lesson36/quickCheckToDo.png?raw=true "QuickCheck steps") <p align="center"> QuickCheck steps </p>
+        2. add QuickCheck
+           1. Case where package.yaml deleted: add QuickCheck to your build-depends in the .cabal file under the test-suite
                 ```
+                test-suite palindrome-testing-test
+                .....
+                build-depends:
+                    base >=4.7 && <5
+                    , palindrome-testing
+                    , QuickCheck
+                ......
+                ```
+           2. Case where package.yaml is used: [add dependencies. Specify version](https://github.com/1Regina/GetProgrammingWithHaskell/blob/8db5f8a8d7e08be5f959b0bcdd45c21d807b1189/unit6/lesson36/palindrome-testingQC/package.yaml#L24)
+           ```
+           dependencies:
+          - base >= 4.7 && < 5
+          - QuickCheck  >= 2.7
+           ```
+        3.  import Test.QuickCheck at the top of Spec.hs file. `import Test.QuickCheck`
+        4.  call the quickCheck function on your property inside the main of Spec.hs file
+            ```
+            main :: IO ( )
+            main = do
+                quickCheck prop_punctuationInvariant
+                putStrln "done!"
+            ```
+        5. Remember to ensure `Lib` module in Lib.hs are exporting the requisite function (e.g prop_punctuationInvariant) otherwise just avail all. See unit6/lesson36/palindrome-testingQC/src/Lib.hs top section
+        6. run test by `stack test` due to different punctuation scenarios.
+        7. **continue with unit6/lesson36/palindrome-testingWOPackageYaml (ie good old .cabal) henceforth to avoid duplicate notes documentation** Without `import Data.Char(isPunctuation)` in Lib.hs (ORIGINAL without stack install quickcheck-instances):
+            ```
+            import Data.Char (isPunctuation)
+
+            preprocess :: String -> String
+            preprocess text = filter (not . isPunctuation) text -- filter (not . (`elem` ['!', '.', '[','\\'])) text ()  - slow one punctuation by 1 punctuation
+
+            ```
+        8. (ORIGINAL without stack install quickcheck-instances): run test with `stack test` and results after QuickCheck strategically tried 100 strings on your property, and they all passed!
+            ```
+            +++ OK, passed 100 tests.
+            done!
+
+            ```
+    10. **Expand tests quickCheckWith** (ORIGINAL without stack install quickcheck-instances): try 1,000 using `quickCheckWith`.
+        1.  Go to unit6/lesson36/palindrome-testingWOPackageYaml/test/Spec.hs and edit main and run `stack test` again.
+            ```
+            main :: IO ( )
+            main = do
+                -- quickCheck prop_punctuationInvariant -- test property with only 100 tests
+                quickCheckWith stdArgs { maxSuccess = 1000}  prop_punctuationInvariant -- test property with 1000 tests
+                putStrLn "done!"
+            ```
+        2.  result from `quickCheckWith` 1000 test
+            ```
+            +++ OK, passed 1000 tests.
+            done!
+            ```
+        3.  (ORIGINAL without stack install quickcheck-instances): Quick Check Exercise 36.5 on *prop_reverseInvariant*
+           1.  update Lib.hs to avail `prop_reverseInvariant` in module Lib
+           2.  add in unit6/lesson36/palindrome-testingWOPackageYaml/test/Spec.hs main `quickCheckWith stdArgs { maxSuccess = 1000}  prop_reverseInvariant `
+                ```
+                -- (in src/Lib.hs)
+                module Lib
+                    ( isPalindrome
+                    , preprocess
+                    , prop_punctuationInvariant
+                    , prop_reverseInvariant   -- add property to test
+                    ) where
+
+                import Data.Char (isPunctuation)....
+                ======================
+                -- (in test/Spec.hs main)
                 main :: IO ( )
                 main = do
-                    quickCheck prop_punctuationInvariant
-                    putStrln "done!"
+                    -- quickCheck prop_punctuationInvariant -- test property with only 100 tests
+                    quickCheckWith stdArgs { maxSuccess = 1000}  prop_punctuationInvariant -- test property with 1000 tests
+                    quickCheckWith stdArgs { maxSuccess = 1000}  prop_reverseInvariant
+                    quickCheck prop_reverseInvariant -- QuickCheck exercise 36.5
+                    putStrLn "done!"
                 ```
-            3. Remember to ensure `Lib` module in Lib.hs are exporting the requisite function otherwise just avail all. See unit6/lesson36/palindrome-testingQC/src/Lib.hs top section
+           3. results displayed
+                ```
+                +++ OK, passed 1000 tests.
+                +++ OK, passed 1000 tests.
+                +++ OK, passed 100 tests.
+                done!
+                ```
+    11. **Expand test types**  All types that QuickCheck can automatically test must be an instance of the type class Arbitrary. but that's only a few base types. E.g `Data.Text` by default isn’t an instance of Arbitrary and won’t work with QuickCheck.
+           1.  **Remedy to expand types covered by QuickCheck:** `stack install quickcheck-instances` to installs a new package to the project. Now can handle Data.Text beyond String type.
+           2.  Next is refactor
+               1. Refactor src/Lib.hs replacing String with T.Text and  filter, reverse with T.filter and T.reverse
+               2. Refactor test/Spec.hs
+                    ```
+                        -- after stack install quickcheck-instances ie can handle Data.Text
+                        import Test.QuickCheck.Instances
+                        import Data.Char(isPunctuation)
+                        import Data.Text as T
+                    ```
+               3. Add `text` to `build-depends` in the **library** section of your project’s .cabal file.
+                    ```
+                    library
+                        ...
+                        hs-source-dirs:
+                            src
+                        build-depends:
+                            base >=4.7 && <5
+                            , text  ---> ADD THIS!
+                        default-languag....
+                    ```
+               4.  add both `text` and `quickcheck-instances` to your ****test suite build-depends** in the .cabal file
+               5.  run test for **text** type `stack test`
+                    ```
+                        +++ OK, passed 1000 tests.
+                        +++ OK, passed 1000 tests.
+                        +++ OK, passed 100 tests.
+                        done!
+                    ```
+    12.   another benefit of property testing. Just refactor and do `stack test`
+    13.   Summary Things done/learnt:
+          1. manually testing your code by using stack ghci to ensure code build as expected.
+          2. stack test command to build and run a series of simple unit tests
+          3. generalized your unit testing by creating property tests with QuickCheck.
