@@ -224,20 +224,20 @@
        7.  A. Ensuring that your project is built with the version of GHC you used to write it is important. Specifying the version of GHC you want to use is done indirectly by choosing your stack resolver version. The stack resolver is set in the **stack.yaml** file: `resolver: lts-7.9`. The lts-7.9 version of the stack resolver uses GHC version 8.0.1. By default, stack uses the most recent stable resolver. Listing of the current resolver versions at www.stackage.org. For info on specific resolver, e.g 7.9 by www.stackage.org/lts-7.9 for the lts-7.9 resolver
        8. A. Build your project with `stack build`.
        9. A. Run the project  with `exec` as in `stack exec palindrone-checker-exe` using the default 's `<project-name>-exe` The name of the project is taken from .cabal file line #38 `executable palindrone-checker-exe`
-       10.  A. **QuickFix** For large program with `Data.Text`, add OverloadedStrings pragma to every file. Shortcut:
-           1.  Go to .cabal file and universally apply the `OverloadString` language extension at after default-language:
+       10. A. **QuickFix** For large program with `Data.Text`, add OverloadedStrings pragma to every file. Shortcut:
+           1.  Solution 1: Go to .cabal file and universally apply the `OverloadString` language extension at after default-language:
            2.  after default-language:  Haskell2010 to **both** your library and executable sections of .cabal:
                ```
                extensions: OverloadedStrings
                ```
-       11.  B **OTHERWISE** if the [.cabal#line3](https://github.com/1regina/GetProgrammingWithHaskell/blob/master/unit6/lesson35/palindrome-checker/palindrome-checker.cabal#L3) is `-- This file has been generated from package.yaml by hpack version 0.34.4.`, then
-           3.  **option 1** go straight to **package.yaml**#dependencies and add instead . e.g to add text. (demo-ed: unit6/lesson35/palindrome-checker1)
+       11. B **OTHERWISE** if the [.cabal#line3](https://github.com/1regina/GetProgrammingWithHaskell/blob/master/unit6/lesson35/palindrome-checker/palindrome-checker.cabal#L3) is `-- This file has been generated from package.yaml by hpack version 0.34.4.`, then
+           3.  Solution 1: **option 1** go straight to **package.yaml**#dependencies and add instead . e.g to add text. (demo-ed: unit6/lesson35/palindrome-checker1)
                ```
                dependencies:
                - base >= 4.7 && < 5
                - text
                ```
-           4. **option 2** delete `package.yaml` file and edit the `.cabal` file `build-dependencies` for required sections (demo-ed: unit6/lesson35/palindrome-checker1WOPackageYaml)
+           4. Solution 2: **option 2** delete `package.yaml` file and edit the `.cabal` file `build-dependencies` for required sections (demo-ed: unit6/lesson35/palindrome-checker1WOPackageYaml)
     3.  then do `stack run`
     4.  Difference between palindrome-checker vs palindrome-checker1 is src directory. Both have package.yaml files
 
