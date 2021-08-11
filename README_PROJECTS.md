@@ -160,7 +160,7 @@
               2.  src
               3.  test
            10.  Difference
-           
+
             |  Library module               |Executable module                   |
             | -------------                 | -------------                      |
             | src                           | app                                |
@@ -226,6 +226,7 @@
         2. **option 2** delete `package.yaml` file and edit the `.cabal` file `build-dependencies` for required sections (demo-ed: unit6/lesson35/palindrome-checker1WOPackageYaml)
     6.  then do `stack run`
     7.  Difference between palindrome-checker vs palindrome-checker1 is src directory. Both have package.yaml files
+
         | palindrome-checker                                                               | palindrome-checker1                                                                     |
         | -------------                                                                    | -------------                                                                           |
         | src directory only has Lib.hs                                                    | src directory has Lib.hs and Palindrome.hs                                              |
@@ -280,6 +281,7 @@
            3. `stack run`
 
 30. Ch36.0 Property Testing with Quickcheck (unit6/lesson36/palindrome-testingQC has package.yaml. unit6/lesson36/palindrome-testingWOPackageYaml_String package.yaml is deleted.) (unit6/lesson36/palindrome-testingWOPackageYaml_String vs unit6/lesson36/palindrome-testingWOPackageYaml_Text: support String vs Text). Devt process 1. unit6/lesson36/palindrome-testingQC 2. unit6/lesson36/palindrome-testingWOPackageYaml_String, 3. unit6/lesson36/palindrome-testingWOPackageYaml_Text
+
     | stack                         | palindrome-testingQC   (has package.yaml)   | palindrome-testingWOPackageYaml_String              | palindrome-testingWOPackageYaml_Text (has Data.Text for Text) |
     | -------------                 | -------------                               | -------------                                       |  -------------                                                |
     | stack ghci                    | isPalindrome "ta at" ok                     | isPalindrome "ta at" ok                             | (i) import Data.Text as T (ii) isPalindrome (T.pack "ta at")  |
