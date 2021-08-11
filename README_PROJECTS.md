@@ -1,5 +1,5 @@
 28. Ch34.0 ORGANIZING HASKELL CODE WITH MODULES
-    1. You  have  a  type  for  books  and  a  type  for  magazines.  Each  has  thesame field names, but they represent different things. Both types are written using record syntax, which creates a problem. Record syntax automatically creates accessor functions title and price. Unfortunately, this causes an error because you’re attempting to define two functions of the same name.
+    1. You  have  a  type  for  books  and  a  type  for  magazines.  Each  has  the same field names, but they represent different things. Both types are written using record syntax, which creates a problem. Record syntax automatically creates accessor functions title and price. Unfortunately, this causes an error because you’re attempting to define two functions of the same name.
         ```
         data Book = Book
                 { title :: String
@@ -67,7 +67,7 @@
           1.  Need preprocessing for your strings to strip out whitespace, remove punctuation, and ignore case and  pull out your palindrome code into a separate file for two reasons bcos
               1.  First, it makes your Main cleaner
               2.  Second, you can then more easily reuse your palindrome code in other programs.
-        2. The module’s name will be Palindrome, so your code should be in a file named **Palindrome.hs**. Your Palindrome module will have a **function, also named isPalindrome**, which will be the function used by the Main module. See unit6/lesson34/3Palindrome.hs or  ![Alt text](unit6/lesson34/robustPalindrome.png?raw=true "Robust Palindrome") <p align="center"> Robust Palindrome </p>
+        2. The module’s name will be Palindrome, so your code should be in a file named **Palindrome.hs**. Your Palindrome module will have a **function, also named isPalindrome**, which will be the function used by the Main module. See unit6/lesson34/Palindrome.hs or  ![Alt text](unit6/lesson34/robustPalindrome.png?raw=true "Robust Palindrome") <p align="center"> Robust Palindrome </p>
            1. `module Palindrome where` would export all the functions defined in Palindrome.hs.
            2. `module Palindrome(isPalindrome) where` **only** export `isPalindrome` function. Hence, depending on which function you want, list all the required functions you want to export in parentheses after the module name. Alernative format is
                 ```
@@ -86,10 +86,10 @@
                     *Palindrome> isPalindrome "A man, a plan, a canal: Panama!"
                     True
                 ```
-    4. Different ways to write import module ways to write :
+    4. Different ways to write import module :
         1. where program is in the module file
-           1.  `module Palindrome (isPalindrome, preprocess) where ` .
-           2. method 2
+           1. method 1: `module Palindrome (isPalindrome, preprocess) where ` .
+           2. method 2: in more structured format
                 ```
                 module Palindrome(
                     isPalindrome
@@ -122,7 +122,7 @@
                 ghc Main.hs
                 ./Main
                 ```
-    5. Note `import qualified Palindrome` vs `import Palindrome ()` in unit6/lesson34/Main.hs
+    5. Note `import qualified Palindrome` vs `import Palindrome ()` in unit6/lesson34/Main.hs. [Difference](https://stackoverflow.com/questions/11274864/what-does-qualified-mean-in-import-qualified-data-list-statement#:~:text=If%20you%20do%20a%20qualified%20import%2C%20you%20have%20to%20prefix%20the%20name%20with%20the%20module%20it%27s%20imported%20from.)
     6. With Main.hs, we learn how to organize programs into separate files and compile them into a single program. You also learned how to export specific functions from your modules while hiding the rest.
     7. Refactor String as Text for program in chapter exercises in unit6/lesson34/l34_exercises
 29. Ch35.0 Building Projects with Stack
@@ -134,32 +134,33 @@
     2. For every new project, do
        1. make sure that stack is up-to-date with `stack update`
        2. stack new example with `stack new palindrome-checker`.  This command causes stack to create a new project from a default template via a new directory named palindrome-checker with the following files and directories
-          1. LICENSE
-          2. src
-          3. Setup.hs
-          4. stack.yaml
-          5. app
-          6. test
-          7. palindrone-checker.cabal
-        8. Other templates are available in https://github.com/commercialhaskell/stack-templates is a source for many
-        9. **cabal** palindrome-checker.**cabal**, your project configuration file contains all the metadata related to your project e.g project name, version, description, *libaries* files location, haskell language
-           1.  stack separates the code for your libraries vs the code for running your program into separate directories.
-           3.  2 impt lines - `hs-source-dirs` (in **both** library and executable sections) and `exposed-modules`.
-           4.  `hs-source-dirs` value tells you which subdirectory of your project your library files live in. Default is `src`
-           5.  `exposed-modules` value tells you which libraries you’re using. `Lib` module default location is in `src/Lib.hs`. To add more values to `exposed-modules`, do
-                ```
-                exposed-modules:    Lib,
-                                    Palindrome,
-                                    Utils
-                ```
-           6. Small project , all the library functions can go into `src/Lib.hs`.
-           7. Like the library section, the executable section also tells which file your `main` is located with the main-is value.
-           8. Code for running program (executable): `app` directory (specified by `hs-source-dirs`) [where the program’s `Main` module lives via a Main.hs file inside]
-           9. Gist: stack also automatically creates three directories for you:
+          1. Overview:
+             1. LICENSE
+             2. src
+             3. Setup.hs
+             4. stack.yaml
+             5. app
+             6. test
+             7. palindrone-checker.cabal
+          2. Other templates are available in https://github.com/commercialhaskell/stack-templates is a source for many
+          3. **cabal** palindrome-checker.**cabal**, your project configuration file contains all the metadata related to your project e.g project name, version, description, *libaries* files location, haskell language
+              1.  stack separates the code for your libraries vs the code for running your program into separate directories.
+              2.  2 impt lines - `hs-source-dirs` (in **both** library and executable sections) and `exposed-modules`.
+              3.  `hs-source-dirs` value tells you which subdirectory of your project your library files live in. Default is `src`
+              4.  `exposed-modules` value tells you which libraries you’re using. `Lib` module default location is in `src/Lib.hs`. To add more values to `exposed-modules`, do
+                   ```
+                   exposed-modules:    Lib,
+                                       Palindrome,
+                                       Utils
+                   ```
+          4. Small project , all the library functions can go into `src/Lib.hs`.
+          5. Like the library section, the executable section also tells which file your `main` is located with the main-is value.
+          6. Code for running program (executable): `app` directory (specified by `hs-source-dirs`) [where the program’s `Main` module lives via a Main.hs file inside]
+          7. Gist: stack also automatically creates three directories for you:
               1.  app
               2.  src
-              3.  test
-           10.  Difference
+              3.  test (more in unit6/lesson36)
+          8. Difference
 
             |  Library module               |Executable module                   |
             | -------------                 | -------------                      |
@@ -167,73 +168,75 @@
             | src/Lib.hs.                   | app/Main.hs                        |
             | Lib.hs has the functions      | min& import Lib module from Lib.hs |
 
-        10. Main module (generated by stack)
-            ```
-            module Main where
+          9. Main module (generated by stack)
+                ```
+                module Main where
 
-            import Lib      --> from src/Lib.hs
+                import Lib      --> from src/Lib.hs
 
-            main :: IO ()
-            main = someFunc  -->> comes from Lib module in src/Lib.hs
-            ```
-        11. Lib module (generated by stack)
-            ```
-            module Lib
-                ( someFunc
-                ) where
+                main :: IO ()
+                main = someFunc  -->> comes from Lib module in src/Lib.hs
+                ```
+          10. Lib module (generated by stack)
 
-            someFunc :: IO ()
-            someFunc = putStrLn "someFunc"
-            ```
-        12. Your `Main` module logic should be minimal, relying primarily on library functions defined in the `Lib` module.
-    3.  Overwrite `Lib.hs` stack with functions bcos simple project. Default original:
-        ```
-        module Lib
-            ( someFunc
-            ) where
+                ```
+                module Lib
+                    ( someFunc
+                    ) where
 
-        someFunc :: IO ()
-        someFunc = putStrLn "someFunc"
-        ```
-    4. Overwrite `Main.hs` which is essential to building your executable, it goes in the app directory (this is declared in your project’s .cabal file!). Rem `import Lib` **This time you won’t use a qualified import.** Default original:
-        ```
-        module Main where
-        import Lib -- ** impt
-        main :: IO ()
-        main = someFunc
-        ```
-    5. A. Add edit your **.cabal** file to tell stack about any modules you’re depending on e.g. `Data.Text` into the `build-depends:` ![Alt text](unit6/lesson35/cabalEdits.png?raw=true "Add packages to dependencies") <p align="center"> Additions to build dependencies </p>
-    6A. With everything together to build project, ensures that stack is using the correct version of GHC, run setup **in project directory** with:
-        ```
-        stack setup
-        ```
-    1. A. Ensuring that your project is built with the version of GHC you used to write it is important. Specifying the version of GHC you want to use is done indirectly by choosing your stack resolver version. The stack resolver is set in the **stack.yaml** file: `resolver: lts-7.9`. The lts-7.9 version of the stack resolver uses GHC version 8.0.1. By default, stack uses the most recent stable resolver. Listing of the current resolver versions at www.stackage.org. For info on specific resolver, e.g 7.9 by www.stackage.org/lts-7.9 for the lts-7.9 resolver)
-    2. A. Build your project with `stack build`.
-    3. A. Run the project  with `exec` as in `stack exec palindrone-checker-exe` using the default 's `<project-name>-exe` The name of the project is taken from .cabal file line #38 `executable palindrone-checker-exe`
-    4.  A. **QuickFix** For large program with `Data.Text`, add OverloadedStrings pragma to every file. Shortcut:
-        1.  Go to .cabal file and universally apply the `OverloadString` language extension at after default-language:
-        2.  after default-language:  Haskell2010 to **both** your library and executable sections of .cabal:
-            ```
-            extensions: OverloadedStrings
-            ```
-    5.  B **OTHERWISE** if the [.cabal#line3](https://github.com/1regina/GetProgrammingWithHaskell/blob/master/unit6/lesson35/palindrome-checker/palindrome-checker.cabal#L3) is `-- This file has been generated from package.yaml by hpack version 0.34.4.`, then
-        1.  **option 1** go straight to **package.yaml**#dependencies and add instead . e.g to add text. (demo-ed: unit6/lesson35/palindrome-checker1)
-            ```
-            dependencies:
-            - base >= 4.7 && < 5
-            - text
-            ```
-        2. **option 2** delete `package.yaml` file and edit the `.cabal` file `build-dependencies` for required sections (demo-ed: unit6/lesson35/palindrome-checker1WOPackageYaml)
-    6.  then do `stack run`
-    7.  Difference between palindrome-checker vs palindrome-checker1 is src directory. Both have package.yaml files
+                someFunc :: IO ()
+                someFunc = putStrLn "someFunc"
+                ```
+          11. Your `Main` module logic should be minimal, relying primarily on library functions defined in the `Lib` module.
+
+       3.  Overwrite `Lib.hs` stack with functions bcos simple project. Default original:
+           ```
+           module Lib
+               ( someFunc
+               ) where
+
+           someFunc :: IO ()
+           someFunc = putStrLn "someFunc"
+           ```
+       4.  Overwrite `Main.hs` which is essential to building your executable, it goes in the app directory (this is declared in your project’s .cabal file!). Rem `import Lib` **This time you won’t use a qualified import.** Default original:
+           ```
+           module Main where
+           import Lib -- ** impt
+           main :: IO ()
+           main = someFunc
+           ```
+       5.  A. Add edits to your **.cabal** file to tell stack about any modules you’re depending on e.g. `Data.Text` into the `build-depends:` ![Alt text](unit6/lesson35/cabalEdits.png?raw=true "Add packages to dependencies") <p align="center"> Additions to build dependencies </p>
+       6.  A. With everything together to build project, ensures that stack is using the correct version of GHC, run setup **in project directory** with:
+           ```
+           stack setup
+           ```
+       7.  A. Ensuring that your project is built with the version of GHC you used to write it is important. Specifying the version of GHC you want to use is done indirectly by choosing your stack resolver version. The stack resolver is set in the **stack.yaml** file: `resolver: lts-7.9`. The lts-7.9 version of the stack resolver uses GHC version 8.0.1. By default, stack uses the most recent stable resolver. Listing of the current resolver versions at www.stackage.org. For info on specific resolver, e.g 7.9 by www.stackage.org/lts-7.9 for the lts-7.9 resolver)
+       8. A. Build your project with `stack build`.
+       9. A. Run the project  with `exec` as in `stack exec palindrone-checker-exe` using the default 's `<project-name>-exe` The name of the project is taken from .cabal file line #38 `executable palindrone-checker-exe`
+       10.  A. **QuickFix** For large program with `Data.Text`, add OverloadedStrings pragma to every file. Shortcut:
+           1.  Go to .cabal file and universally apply the `OverloadString` language extension at after default-language:
+           2.  after default-language:  Haskell2010 to **both** your library and executable sections of .cabal:
+               ```
+               extensions: OverloadedStrings
+               ```
+       11.  B **OTHERWISE** if the [.cabal#line3](https://github.com/1regina/GetProgrammingWithHaskell/blob/master/unit6/lesson35/palindrome-checker/palindrome-checker.cabal#L3) is `-- This file has been generated from package.yaml by hpack version 0.34.4.`, then
+           1.  **option 1** go straight to **package.yaml**#dependencies and add instead . e.g to add text. (demo-ed: unit6/lesson35/palindrome-checker1)
+               ```
+               dependencies:
+               - base >= 4.7 && < 5
+               - text
+               ```
+           2. **option 2** delete `package.yaml` file and edit the `.cabal` file `build-dependencies` for required sections (demo-ed: unit6/lesson35/palindrome-checker1WOPackageYaml)
+    3.  then do `stack run`
+    4.  Difference between palindrome-checker vs palindrome-checker1 is src directory. Both have package.yaml files
 
         | palindrome-checker                                                               | palindrome-checker1                                                                     |
         | -------------                                                                    | -------------                                                                           |
         | src directory only has Lib.hs                                                    | src directory has Lib.hs and Palindrome.hs                                              |
         | src/Lib.hs has all the preprocessing (stripWhiteSpace, stripPunctuation etc) fns | src/Palindrome.hs has all the preprocessing (stripWhiteSpace, stripPunctuation etc) fns |
-        | app/Main.hs import Lib module of src/Lib.hs  | app/Main.hs import Palindrome module of src/Palindrome.hs |
-    8.  Exercises.
-        1.  Q35.1: (unit6/lesson35/palindrome-checker1) Cant do `extensions: OverloadedStrings` in .cabal nor package.yaml alternative (see pt 10 above) so retain OverloadedStrings pragma in Main.hs and Palindrome.hs. Completed below and `stack run`
+        | app/Main.hs import Lib module of src/Lib.hs                                      | app/Main.hs import Palindrome module of src/Palindrome.hs                               |
+    5.  Exercises.
+        1.  Q35.1: (unit6/lesson35/palindrome-checker1) Cant do `extensions: OverloadedStrings` in .cabal nor package.yaml alternative (see pt 10 above under QuickFix) so retain OverloadedStrings pragma in Main.hs and Palindrome.hs. Completed below and `stack run`
             ```
             Added Palindrome.hs to src with
             {-# LANGUAGE OverloadedStrings #-}
@@ -247,6 +250,7 @@
             import Data.Text as T
 
             ====================
+
             Add: `- text` in unit6/lesson35/palindrome-checker1/package.yaml in #line22
 
             dependencies:
@@ -273,7 +277,7 @@
             - text
             ====================
             after default-language:  Haskell2010 to **both** your library and executable sections of .cabal. add
-            `OverloadString` language extension
+            `extensions: OverloadedStrings`
             ```
         3. Q35.2 pizza compare from  unit 4, lesson 21
            1. Added unit6/lesson35/pizza-compare/src/Compare.hs
@@ -288,7 +292,7 @@
     | stack run                     | returns Hello World                         | returns Hello World                                 | returns Hello World                                           |
     | stack test                    | only QuickCheck 100 tests                   | quickCheckWith 1000 tests + QuickCheck 100 tests    | quickCheckWith 1000 tests + QuickCheck 100 tests              |
 
-    1.  Fresh project to build out functionality in unit6/lesson36/palindrome-testing/src/Lib.hs with `stack new palindrome-testing`
+    1.  Fresh project to build out functionality in unit6/lesson36/palindrome-testing/src/Lib.hs with `stack new palindrome-testing` *rename palindrome-testing directory to palindrome-testingQC
     2.  Overwrite Lib.hs with
         ```
         module Lib
@@ -325,7 +329,7 @@
             *Main Lib> isPalindrome "racecar!" ---> this shd be palindrome
             False
             ```
-       4. To rectify "racecar!" , fix isPalindrome function in Lib.hs
+       4.  To rectify "racecar!" , fix isPalindrome function in Lib.hs
             ```
             isPalindrome :: String -> Bool
             isPalindrome text = cleanText == reverse cleanText
@@ -339,7 +343,7 @@
             *Main Lib Paths_palindrome_testing> isPalindrome "racecar!"
             True
             ```
-       7. **Assertion** unit6/lesson36/palindrome-testing/test/Spec.hs. Create a unit testing framework by define an assert IO action that takes a Bool (in this case, a test of a function) and prints either a passing message or a fail message.
+       7. **Assertion** unit6/lesson36/palindrome-testingQC/test/Spec.hs. Create a unit testing framework by define an assert IO action that takes a Bool (in this case, a test of a function) and prints either a passing message or a fail message.
            1. Fill out Spec.hs main
            2. import Lib module
             ```
@@ -358,8 +362,8 @@
                 assert ((not . isPalindrome) "cat") "passed 'cat'" "FAIL: 'cat'"  -- rem the contrary case
                 putStrLn "done!"
             ```
-        1. exit GHCI by `:q`
-        2. run the test by `stack test` in the project directory
+       8. exit GHCI by `:q`
+       9. run the test by `stack test` in the project directory
     8.  **Property Testing** To isPalindrome other punctuation, the *isPunctuation* function in *Data.Char* is the correct solution. But there are endless punctuations to think of for testing. So a powerful solution is *property testing* and this automates much of the hassle of creating individual unit tests.
         1.  Refactor the *isPalindrome* function inside Lib module in Lib.hs into a *preprocess* function so the real testing interest is *preprocess*
         2.  To test that the output, given the input, is punctuation invariant, ie don’t care about whether the input string has punctuation.

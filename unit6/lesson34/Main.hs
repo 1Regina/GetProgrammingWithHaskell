@@ -1,7 +1,8 @@
 -- based from unit6/lesson34/2isPalindromeDraft.hs
 -- METHOD A
 module Main where
-import qualified Palindrome -- as Palin  (Alterantive short name)
+import Palindrome
+-- import qualified Palindrome as Palin --  (Alterantive short name)
 
 
 -- isPalindrome :: String -> Bool
