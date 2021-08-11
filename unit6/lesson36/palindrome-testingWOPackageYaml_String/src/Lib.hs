@@ -5,7 +5,7 @@ module Lib
     , prop_reverseInvariant
     ) where
 
-import Data.Char (isPunctuation) -- ORIGINAL
+import Data.Char (isPunctuation) -- Added to use isPunctuation to cover all punctuations
 -- import Data.Text as T -- after stack install quickcheck-instances
 
 

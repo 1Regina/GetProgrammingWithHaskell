@@ -367,9 +367,9 @@
     8.  **Property Testing** To isPalindrome other punctuation, the *isPunctuation* function in *Data.Char* is the correct solution. But there are endless punctuations to think of for testing. So a powerful solution is *property testing* and this automates much of the hassle of creating individual unit tests.
         1.  Refactor the *isPalindrome* function inside Lib module in Lib.hs into a *preprocess* function so the real testing interest is *preprocess*
         2.  To test that the output, given the input, is punctuation invariant, ie don’t care about whether the input string has punctuation.
-        3.  write a function to express this property by import Data.Char (isPunctuation) and put this function in your Spec.hs file.
+        3.  write a function to express this property by import Data.Char (isPunctuation) (to use *isPunctuation* to cover all punctuations scenario testing) and put this function in your Spec.hs file.
         4. Import *Data.Char (isPunctuation)* and put the property function into test/Spec.hs ![Alt text](unit6/lesson36/propertyFunction.png?raw=true "Test a property in a function") <p align="center"> Test a property in a function </p>
-        5. See property testing 1: functions in src/Lib.hs after `import Data.Char (isPunctuation)`
+        5. See property testing 1: functions in src/Lib.hs after `import Data.Char (isPunctuation)` to use isPunctuation to cover all punctuations scenarios
             ```
             prop_punctuationInvariant text = preprocess text ==
                                             preprocess noPuncText
@@ -381,7 +381,7 @@
             prop_reverseInvariant text = isPalindrome text == isPalindrome (reverse text)
             ```
         7. But step 5 and 6 do not do the property testing.
-    9.  Enter **QuickCheck** for property testing how: you supply properties that your code is supposed to uphold, and then QuickCheck automatically generates values and tests them on the functions, making sure the properties are upheld.
+    9.  Enter **QuickCheck** for property testing. How: you supply properties that your code is supposed to uphold, and then QuickCheck automatically generates values and tests them on the functions, making sure the properties are upheld.
         1. 3 things to do: ![Alt text](unit6/lesson36/quickCheckToDo.png?raw=true "QuickCheck steps") <p align="center"> QuickCheck steps </p>
         2. First: add QuickCheck
            1. Case where package.yaml deleted: add QuickCheck to your build-depends in the .cabal file under the test-suite
@@ -410,9 +410,9 @@
             ```
         5. Remember to ensure `Lib` module in Lib.hs are exporting the requisite function (e.g prop_punctuationInvariant) otherwise just avail all. See unit6/lesson36/palindrome-testingQC/src/Lib.hs top section
         6. run test by `stack test` due to different punctuation scenarios.
-        7. **continue with unit6/lesson36/palindrome-testingWOPackageYaml_String (ie good old .cabal) henceforth to avoid duplicate notes documentation** Without `import Data.Char(isPunctuation)` in Lib.hs (ORIGINAL without stack install quickcheck-instances):
+        7. **continue with unit6/lesson36/palindrome-testingWOPackageYaml_String (ie good old .cabal) henceforth to avoid duplicate notes documentation** Add `import Data.Char(isPunctuation)` in Lib.hs (ORIGINAL without stack install quickcheck-instances):
             ```
-            import Data.Char (isPunctuation)
+            import Data.Char (isPunctuation) -- to use isPunctuation to cover all punctuations scenarios test
 
             preprocess :: String -> String
             preprocess text = filter (not . isPunctuation) text -- filter (not . (`elem` ['!', '.', '[','\\'])) text ()  - slow one punctuation by 1 punctuation
@@ -469,15 +469,15 @@
                 done!
                 ```
     11. **Expand test types**  All types that QuickCheck can automatically test must be an instance of the type class Arbitrary. but that's only a few base types. E.g `Data.Text` by default isn’t an instance of Arbitrary and won’t work with QuickCheck. (Use Version unit6/lesson36/palindrome-testingWOPackageYaml_Text henceforth)
-           1.  **Remedy to expand types covered by QuickCheck:** `stack install quickcheck-instances` to installs a new package to the project. Now can handle Data.Text beyond String type.
+           1.  **Remedy to expand types covered by QuickCheck:** `stack install quickcheck-instances` to install a new package to the project. Now can handle Data.Text beyond String type.
            2.  Next is refactor
-               1. Refactor src/Lib.hs replacing String with T.Text and  filter, reverse with T.filter and T.reverse
+               1. Refactor src/Lib.hs replacing String with T.Text and  filter, reverse with T.filter and T.reverse respectively.
                2. Refactor test/Spec.hs
                     ```
                         -- after stack install quickcheck-instances ie can handle Data.Text
-                        import Test.QuickCheck.Instances
+                        import Test.QuickCheck.Instances  -- new!
                         import Data.Char(isPunctuation)
-                        import Data.Text as T
+                        import Data.Text as T             -- new!
                     ```
                3. Add `text` to `build-depends` in the **library** section of your project’s .cabal file.
                     ```

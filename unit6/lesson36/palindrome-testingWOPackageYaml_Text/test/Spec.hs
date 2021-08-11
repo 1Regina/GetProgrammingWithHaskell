@@ -2,9 +2,9 @@ import Lib
 import Test.QuickCheck
 
 -- after stack install quickcheck-instances ie can handle Data.Text
-import Test.QuickCheck.Instances
+import Test.QuickCheck.Instances -- new!
 import Data.Char(isPunctuation)
-import Data.Text as T
+import Data.Text as T            -- new!
 --------------------------------------
 
 --no change on assert
