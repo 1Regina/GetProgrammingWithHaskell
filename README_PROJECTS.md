@@ -525,7 +525,7 @@
             3.  `stack exec palindrome-full-text-exe`
             4.  `stack ghci` then `import Data.Text as T` then `isPalindrome (T.pack "ta at")`
             5.  `stack run`
-            6.  `stack test`
+            6.  `stack test` give results
                     ```
                     +++ OK, passed 1000 tests.
                     +++ OK, passed 1000 tests.
