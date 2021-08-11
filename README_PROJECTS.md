@@ -231,13 +231,13 @@
                extensions: OverloadedStrings
                ```
        11. B **OTHERWISE** if the [.cabal#line3](https://github.com/1regina/GetProgrammingWithHaskell/blob/master/unit6/lesson35/palindrome-checker/palindrome-checker.cabal#L3) is `-- This file has been generated from package.yaml by hpack version 0.34.4.`, then
-           3.  Solution 1: **option 1** go straight to **package.yaml**#dependencies and add instead . e.g to add text. (demo-ed: unit6/lesson35/palindrome-checker1)
+           1.  Solution 1: **option 1** go straight to **package.yaml**#dependencies and add instead . e.g to add text. (demo-ed: unit6/lesson35/palindrome-checker1)
                ```
                dependencies:
                - base >= 4.7 && < 5
                - text
                ```
-           4. Solution 2: **option 2** delete `package.yaml` file and edit the `.cabal` file `build-dependencies` for required sections (demo-ed: unit6/lesson35/palindrome-checker1WOPackageYaml)
+           2. Solution 2: **option 2** delete `package.yaml` file and edit the `.cabal` file `build-dependencies` for required sections (demo-ed: unit6/lesson35/palindrome-checker1WOPackageYaml)
     3.  then do `stack run`
     4.  Difference between palindrome-checker vs palindrome-checker1 is src directory. Both have package.yaml files
 
