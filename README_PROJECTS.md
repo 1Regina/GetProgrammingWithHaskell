@@ -509,8 +509,26 @@
                         +++ OK, passed 100 tests.
                         done!
                     ```
-    12.   another benefit of property testing. Just refactor and do `stack test`
-    13.   Summary Things done/learnt:
+    12. Another benefit of property testing. Just refactor and do `stack test`
+    13. Summary Things done/learnt:
           1. manually testing your code by using stack ghci to ensure code build as expected.
           2. stack test command to build and run a series of simple unit tests
           3. generalized your unit testing by creating property tests with QuickCheck.
+    14. Exercise is a full palindrome like in unit6/lesson34 that handles white spaces, punctuation, capital for Text instead of string. See work done in unit6/lesson36/l36exercise/palindrome-full-text
+        1.  app/Main.hs
+        2.  src/Lib.hs
+        3.  test/Spec.hs
+        4.  `build-depends` of library, executable, test-suite of unit6/lesson36/l36exercise/palindrome-full-text
+        5.  stack commands used
+            1.  `stack setup`
+            2.  `stack build`
+            3.  `stack exec palindrome-full-text-exe`
+            4.  `stack ghci` then `import Data.Text as T` then `isPalindrome (T.pack "ta at")`
+            5.  `stack run`
+            6.  `stack test`
+                    ```
+                    +++ OK, passed 1000 tests.
+                    +++ OK, passed 1000 tests.
+                    +++ OK, passed 100 tests.
+                    done!
+                    ```
