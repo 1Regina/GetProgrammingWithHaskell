@@ -224,7 +224,13 @@
             ```
         2. **option 2** delete `package.yaml` file and edit the `.cabal` file `build-dependencies` for required sections (demo-ed: unit6/lesson35/palindrome-checker1WOPackageYaml)
     11. then do `stack run`
-    12. Exercises.
+    12. Difference between palindrome-checker vs palindrome-checker1 is src directory. Both have package.yaml files
+        | palindrome-checker                                                               | palindrome-checker1                                                                     |
+        | -------------                                                                    | -------------                                                                           |
+        | src directory only has Lib.hs                                                    | src directory has Lib.hs and Palindrome.hs                                              |
+        | src/Lib.hs has all the preprocessing (stripWhiteSpace, stripPunctuation etc) fns | src/Palindrome.hs has all the preprocessing (stripWhiteSpace, stripPunctuation etc) fns |
+        | app/Main.hs import Lib module of src/Lib.hs  | app/Main.hs import Palindrome module of src/Palindrome.hs |
+    13. Exercises.
         1.  Q35.1: (unit6/lesson35/palindrome-checker1) Cant do `extensions: OverloadedStrings` in .cabal nor package.yaml alternative (see pt 10 above) so retain OverloadedStrings pragma in Main.hs and Palindrome.hs. Completed below and `stack run`
             ```
             Added Palindrome.hs to src with
@@ -272,7 +278,13 @@
            2. Edited unit6/lesson35/pizza-compare/app/Main.hs. See new contents
            3. `stack run`
 
-30. Ch36.0 Property Testing with Quickcheck
+30. Ch36.0 Property Testing with Quickcheck (unit6/lesson36/palindrome-testingQC has package.yaml. unit6/lesson36/palindrome-testingWOPackageYaml_String package.yaml is deleted.) (unit6/lesson36/palindrome-testingWOPackageYaml_String vs unit6/lesson36/palindrome-testingWOPackageYaml_Text: support String vs Text). Devt process 1. unit6/lesson36/palindrome-testingQC 2. unit6/lesson36/palindrome-testingWOPackageYaml_String, 3. unit6/lesson36/palindrome-testingWOPackageYaml_Text
+    | stack                         | palindrome-testingQC   (has package.yaml)   | palindrome-testingWOPackageYaml_String              | palindrome-testingWOPackageYaml_Text (has Data.Text for Text) |
+    | -------------                 | -------------                               | -------------                                       |  -------------                                                |
+    | stack ghci                    | isPalindrome "ta at" ok                     | isPalindrome "ta at" ok                             | (i) import Data.Text as T (ii) isPalindrome (T.pack "ta at")  |
+    | stack run                     | returns Hello World                         | returns Hello World                                 | returns Hello World                                           |
+    | stack test                    | only QuickCheck 100 tests                   | quickCheckWith 1000 tests + QuickCheck 100 tests    | quickCheckWith 1000 tests + QuickCheck 100 tests              |
+
     1.  Fresh project to build out functionality in unit6/lesson36/palindrome-testing/src/Lib.hs with `stack new palindrome-testing`
     2.  Overwrite Lib.hs with
         ```
@@ -343,8 +355,8 @@
                 assert ((not . isPalindrome) "cat") "passed 'cat'" "FAIL: 'cat'"  -- rem the contrary case
                 putStrLn "done!"
             ```
-        8. exit GHCI by `:q`
-        9. run the test by `stack test` in the project directory
+        1. exit GHCI by `:q`
+        2. run the test by `stack test` in the project directory
     8.  **Property Testing** To isPalindrome other punctuation, the *isPunctuation* function in *Data.Char* is the correct solution. But there are endless punctuations to think of for testing. So a powerful solution is *property testing* and this automates much of the hassle of creating individual unit tests.
         1.  Refactor the *isPalindrome* function inside Lib module in Lib.hs into a *preprocess* function so the real testing interest is *preprocess*
         2.  To test that the output, given the input, is punctuation invariant, ie don’t care about whether the input string has punctuation.
@@ -391,7 +403,7 @@
             ```
         5. Remember to ensure `Lib` module in Lib.hs are exporting the requisite function (e.g prop_punctuationInvariant) otherwise just avail all. See unit6/lesson36/palindrome-testingQC/src/Lib.hs top section
         6. run test by `stack test` due to different punctuation scenarios.
-        7. **continue with unit6/lesson36/palindrome-testingWOPackageYaml (ie good old .cabal) henceforth to avoid duplicate notes documentation** Without `import Data.Char(isPunctuation)` in Lib.hs (ORIGINAL without stack install quickcheck-instances):
+        7. **continue with unit6/lesson36/palindrome-testingWOPackageYaml_String (ie good old .cabal) henceforth to avoid duplicate notes documentation** Without `import Data.Char(isPunctuation)` in Lib.hs (ORIGINAL without stack install quickcheck-instances):
             ```
             import Data.Char (isPunctuation)
 
@@ -406,7 +418,7 @@
 
             ```
     10. **Expand tests with quickCheckWith** (ORIGINAL without stack install quickcheck-instances): try 1,000 using `quickCheckWith`.
-        1.  Go to unit6/lesson36/palindrome-testingWOPackageYaml/test/Spec.hs and edit main and run `stack test` again.
+        1.  Go to unit6/lesson36/palindrome-testingWOPackageYaml_String/test/Spec.hs and edit main and run `stack test` again.
             ```
             main :: IO ( )
             main = do
@@ -421,7 +433,7 @@
             ```
         3.  (ORIGINAL without stack install quickcheck-instances): Quick Check Exercise 36.5 on *prop_reverseInvariant* and do:
             1.  update Lib.hs to avail `prop_reverseInvariant` in module Lib
-            2.  add in unit6/lesson36/palindrome-testingWOPackageYaml/test/Spec.hs main `quickCheckWith stdArgs { maxSuccess = 1000}  prop_reverseInvariant `
+            2.  add in unit6/lesson36/palindrome-testingWOPackageYaml_String/test/Spec.hs main `quickCheckWith stdArgs { maxSuccess = 1000}  prop_reverseInvariant `
                 ```
                 -- (in src/Lib.hs)
                 module Lib
@@ -449,7 +461,7 @@
                 +++ OK, passed 100 tests.
                 done!
                 ```
-    11. **Expand test types**  All types that QuickCheck can automatically test must be an instance of the type class Arbitrary. but that's only a few base types. E.g `Data.Text` by default isn’t an instance of Arbitrary and won’t work with QuickCheck.
+    11. **Expand test types**  All types that QuickCheck can automatically test must be an instance of the type class Arbitrary. but that's only a few base types. E.g `Data.Text` by default isn’t an instance of Arbitrary and won’t work with QuickCheck. (Use Version unit6/lesson36/palindrome-testingWOPackageYaml_Text henceforth)
            1.  **Remedy to expand types covered by QuickCheck:** `stack install quickcheck-instances` to installs a new package to the project. Now can handle Data.Text beyond String type.
            2.  Next is refactor
                1. Refactor src/Lib.hs replacing String with T.Text and  filter, reverse with T.filter and T.reverse
