@@ -383,7 +383,7 @@
         5. See property testing 1: functions in src/Lib.hs after `import Data.Char (isPunctuation)` to use isPunctuation to cover all punctuations scenarios
             ```
             prop_punctuationInvariant text = preprocess text ==
-                                            preprocess noPuncText
+                                            preprocess noPuncText -- OR alternative noPuncText
                 where noPuncText = filter (not. isPunctuation) text
 
             ```

@@ -49,18 +49,18 @@ isPalindrome text = cleanText == T.reverse cleanText
 
 --- not tested in Spec.hs but a way for property testing
 -- 1. punctuation property test
-prop_punctuationInvariant text = preprocessPunc text ==
-                                 preprocessPunc noPuncText
+prop_punctuationInvariant text = preprocessPunc text == noPuncText
+                                -- preprocessPunc noPuncText
     where noPuncText = T.filter (not. isPunctuation) text
 
 -- 2. whiteSpace property test
-prop_spaceInvariant text = preprocessSpace text ==
-                           preprocessSpace noSpaceText
+prop_spaceInvariant text = preprocessSpace text == noSpaceText
+                          -- preprocessSpace noSpaceText
     where noSpaceText = T.filter (not. isSpace) text
 
 -- 3. lowerCase property test
-prop_caseInvariant text = preprocessCase text ==
-                          preprocessCase caseText
+prop_caseInvariant text = preprocessCase text == caseText
+                         -- preprocessCase caseText
     where caseText = T.toLower text
 
 --Quick check 36.4 Write a property prop_reverseInvariant that demonstrates the obvious fact that the results of isPalindrome should be the same whether or not you reverse the input.
