@@ -3,7 +3,7 @@ import Test.QuickCheck
 
 -- after stack install quickcheck-instances ie can handle Data.Text
 import Test.QuickCheck.Instances -- new!
-import Data.Char(isPunctuation)
+-- import Data.Char(toLower,isSpace,isPunctuation) -- expanded for more properties
 import Data.Text as T            -- new!
 --------------------------------------
 
@@ -30,6 +30,8 @@ main :: IO ( )
 main = do
     -- quickCheck prop_punctuationInvariant -- test property with only 100 tests
     quickCheckWith stdArgs { maxSuccess = 1000}  prop_punctuationInvariant -- test property with 1000 tests
+    quickCheckWith stdArgs { maxSuccess = 1000}  prop_spaceInvariant
+    quickCheckWith stdArgs { maxSuccess = 1000}  prop_caseInvariant
     quickCheckWith stdArgs { maxSuccess = 1000}  prop_reverseInvariant
     quickCheck prop_reverseInvariant -- QuickCheck exercise 36.5: Add a quickCheck test for the prop_reverseInvariant defined in the preceding exercise
     putStrLn "done!"

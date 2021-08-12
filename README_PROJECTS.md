@@ -523,10 +523,12 @@
             1.  `stack setup`
             2.  `stack build`
             3.  `stack exec palindrome-full-text-exe`
-            4.  `stack ghci` then `import Data.Text as T` then `isPalindrome (T.pack "ta at")`
+            4.  `stack ghci` then `import Data.Text as T` then `isPalindrome (T.pack "ta AT")`
             5.  `stack run`
-            6.  `stack test` give results
+            6.  results of `stack test` for punctuation, space, case, reverse + QC reverse (100)
                     ```
+                    +++ OK, passed 1000 tests.
+                    +++ OK, passed 1000 tests.
                     +++ OK, passed 1000 tests.
                     +++ OK, passed 1000 tests.
                     +++ OK, passed 100 tests.
