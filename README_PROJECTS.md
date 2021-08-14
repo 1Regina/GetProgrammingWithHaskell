@@ -534,3 +534,213 @@
                     +++ OK, passed 100 tests.
                     done!
                     ```
+31. Ch38.0 Errors in Haskell and the Either Type
+    1.  Compiled fine til runtime
+        1. `head` : if a Haskell program compiles, it likely runs as expected. But `head` violates this rule by making it easy to write code that compiles but then causes an error at runtime.
+        2. set a compiler flag to warn of any potential problems with the code using the `-Wall` flag.
+        3. in stack by adding `-Wall` to the *ghc-options value in the executable section* of the **.cabal** file. ![Alt text](unit7/lesson38/wallWarning.png?raw=true "Warnings at compile time") <p align="center"> Warnings at compile time </p>
+        4. After you change your file, you need to **restart GHCi** (which will automatically rebuild your project). But building brings no complaints from the compiler. No hint of danger until runtime.
+            ```
+            *Main> myTake 2 [1,2,3]
+            [1,2]
+            *Main> myTake 4 [1,2,3]
+            [1,2,3,*** Exception: Prelude.head: empty list
+            ```
+        5. The similar myTake below will alert an error, saying it doesn't have a pattern for the empty list.
+            ```
+            myTakePM :: Int -> [a] -> [a]
+            myTakePM 0 _ = []
+            myTakePM n (x:xs) = x : myTakePM (n-1) xs
+            ```
+        6. **NOTE** If you don’t want to miss warnings on large projects, you can compile with `-error`, which causes an error anytime a warning is found.
+        7. Every function must take an argument and return a result. Partial functions don’t violate this rule, but they have one significant failing. They aren’t defined on all inputs. The head function is undefined on the empty list. Nearly all errors in software are the result of partial functions. Your program receives input you don’t expect without a way to deal with it. Solution: Use the `error` function to throw an error but throwing errors easily intro bugs that compiler can't detect.
+            ```
+            myHead :: [a] -> a
+            myHead [] = error "empty list"
+            myHead (x:_) = x
+            ```
+        8. In practice, avoid `head` (and also `tail`) with pattern matching so the compiler can warn you of errors.
+        9. Ideal: Transform partial functions to work on all values.
+    2. `Maybe` for errors:
+       1.  `Maybe` is a reasonable way to transform any partial function into a complete function. The below overcome the need for error function.
+            ```
+            maybeHead :: [a] -> Maybe a
+            maybeHead [] = Nothing
+            maybeHead (x:_) = Just x
+            ```
+        2.  `Maybe` is an instance of **Monad** (and therefore *Functor* and *Applicative*), which allows you to perform computation on values in a *Maybe context*. See unit7/lesson38/1compile.hs and [recap](https://stackoverflow.com/questions/6280585/need-to-know-what-and-do-in-haskell)
+            1.  **Functor** type class allows you to use <$> to apply a function to a Maybe value.
+                ```
+                *Main> (+2) <$> maybeHead [1]
+                Just 3
+                *Main> (+2) <$> maybeHead []
+                Nothing
+                ```
+            2. in a list structure: **Applicative** type class provides the <*> operator, so you can chain together functions in a context, most commonly used for multi-argument functions. Here’s how to use <$> with <*> to cons a result from maybeHead with a Just []. Note the **(:)** for *cons*
+                ```
+                *Main> (:) <$> maybeHead [1,2,3] <*> Just []
+                Just [1]
+                --remember
+                *Main> (:) 1 []
+                [1]
+
+                *Main> (:) <$> maybeHead [] <*> Just []
+                Nothing
+                ```
+            3. a safer function that deals with errors-causing inputs. myTakeSafer function works just fine with error-causing inputs.* tail* is also a partial function.
+               ```
+                myTakeSafer :: Int -> Maybe [a] -> Maybe [a]
+                myTakeSafer 0 _ = Just []
+                myTakeSafer n (Just xs) = (:) <$> maybeHead xs
+                                            <*> myTakeSafer (n-1) (Just (tail xs))
+               ```
+    3. `Either` benefits
+       1. `Maybe` has benefits like
+          1. type `Int -> Maybe Bool` handles edge cases in example prime numbers ![Alt text](unit7/lesson38/isPrime.png?raw=true "Int -> Maybe Bool") <p align="center"> Maybe for edge cases </p>
+       2. give expresive errors while remaining safe.
+       3. 2 data constructors : *Left* and *Right*.  Left constructor as the case of having an error, and the Right constructor for when things go as planned
+            ```
+            data Either a b = Left a | Right b
+
+
+            -- in essence
+            data Either a b = Fail a | Correct b
+            ```
+       4. Difference **Either vs Maybe**
+          1.  Left allows you to have more information than `Nothing`.
+          2.  Either takes two type parameters.
+       5. a type for sending error messages and a type for your actual data.
+       6. Example below: Left constructor returns a String, whereas the Right constructor returns the value from the first item in your list. eitherHead :: [a] -> **Either** String a
+            ```
+                eitherHead :: [a] -> Either String a
+                eitherHead [] = Left "There is no head because the list is empty"
+                eitherHead (x:xs) = Right x
+
+                intExample :: [Int]
+                intExample = [1,2,3]
+                intExampleEmpty :: [Int]
+                intExampleEmpty = []
+
+                charExample :: [Char]
+                charExample = "cat"
+                charExampleEmpty :: [Char]
+                charExampleEmpty = ""
+
+                *Main> eitherHead intExample
+                Right 1
+                *Main> eitherHead intExampleEmpty
+                Left "There is no head because the list is empty"
+                *Main> eitherHead charExample
+                Right 'c'
+                *Main> eitherHead charExampleEmpty
+                Left "There is no head because the list is empty"
+            ```
+       7. Either type is also a member of Monad (and thus Functor and Applicative as well) and can be applied with <$>
+            ```
+                *Main> (+ 1) <$> (eitherHead intExample)
+                Right 2
+                *Main> (+ 1) <$> (eitherHead intExampleEmpty)
+                Left "There is no head because the list is empty"
+            ```
+       8.  Either's superiority *Either type combines the safety of Maybe with the clarity that error messages provide.*
+       9.  Use <$> and <*> to add the first and second numbers in intExample by using eitherHead
+            ```
+            (<*>) :: Applicative f => f (a -> b) -> f a -> f b
+            (<$>) :: Functor f => (a -> b) -> f a -> f b
+            sum2e :: Either String Int
+            sum2e = (+) <$> (eitherHead intExample) <*> (eitherHead (tail intExample))
+            ```
+       10. take advantage of the fact that Either lets you use any type you want to, allowing you to create your own error type. **`Either` can take more than 1 `Left`s.** Here using *String* for the *Left* constructor.
+            ```
+                primes :: [Int]
+                primes = [2,3,5,7]
+
+                maxN :: Int
+                maxN = 10
+
+                isPrime :: Int -> Either String Bool
+                isPrime n
+                    | n < 2 = Left "Numbers less than 2 are not candidates for primes"
+                    | n > maxN = Left "Value exceeds limits of prime checker"
+                    | otherwise = Right (n `elem` primes)
+            ```
+       11. Create a class for errors so the Left can be other (self-created) type class
+           1.  Create a type for error
+                ```
+                    data PrimeError = TooLarge | InvalidValue
+                ```
+           2. Make PrimeError an instance of Show so as to print errors.
+                ```
+                    instance Show PrimeError where
+                    show TooLarge     = "Value exceed max bound"
+                    show InvalidValue = "Value is not a valid candidate for prime checking"
+                ```
+           3. Refactor the isPrime function to show the errors so it looks neater now:
+                ```
+                    isPrime1 :: Int -> Either PrimeError Bool
+                    isPrime1 n
+                        | n < 2 = Left InvalidValue
+                        | n > maxN = Left TooLarge
+                        | otherwise = Right (n `elem` primes)
+
+                    *Main> isPrime1 0
+                    Left Value is not a valid candidate for prime checking
+                    *Main> isPrime1 99
+                    Left Value exceed max bound
+                ```
+           4. Create a displayResult function that will convert your Either response into a String. **`Either` can also have more than 1 `Right`**. Right can be first. But the Left type and Right type must align with the left and right constructor respectively.
+                ```
+                    displayResult :: Either PrimeError Bool -> String
+                    displayResult (Right True) = "It's prime"
+                    displayResult (Right False) = "It's composite"
+                    displayResult (Left primeError) = show primeError --- rem data PrimeError = TooLarge | InvalidValue
+                ```
+           5. Create a IO
+                ```
+                        main :: IO ()
+                        main = do
+                            print "Enter a number to test for primality:"
+                            n <- read <$> getLine
+                            let result = isPrime1 n
+                            print (displayResult result)
+                ```
+    4. Neither your type checker nor GHC’s warnings let you know `head` on empty list is a problem. This is ultimately caused by `head` being a partial function, a function that doesn’t return a result for all possible inputs. This can be solved by using a `Maybe` type. Although `Maybe` types do make your code safer, they can make errors hard to understand -- bcos it gives only `Nothing` for error. Finally, you saw that the `Either` type provides the best of both worlds, allowing you to safely handle errors as well as providing detailed information about them.
+    5. Execises
+       1. Either can accept other types beyond strings. Note alignment of left and right type in return types to Either. See unit7/lesson38/l38_1exercises.hs
+            ```
+                import Data.Char (isDigit)
+                allDigits :: String -> Bool
+                allDigits val = all (== True) (map isDigit val)
+
+                addStrInts :: String -> String -> Either Int String
+                addStrInts val1 val2
+                    | allDigits val1 && allDigits val2 = Left (read val1 + read val2)
+                    | not (allDigits val1 || allDigits val2) = Right "both args invalid"
+                    | not (allDigits val1) = Right "first arg invalid"
+                    | otherwise = Right "second arg invalid"
+            ```
+       2. Safe partial functions
+          1. Safe Succ
+            ```
+                safeSucc :: (Enum a, Bounded a, Eq a) => a -> Maybe a
+                safeSucc n
+                    | n == maxBound = Nothing
+                    | otherwise = Just (succ n)
+            ```
+          2. Safe Tail
+            ```
+                safeTail :: [a] -> [a]
+                safeTail (x :xs) = xs
+                safeTail [] = []
+            ```
+          3. Safe Last x
+            ```
+                safeLast' :: Int -> [a] -> Either a String
+                safeLast' 0 _ = Right "List exceeds safe bound"
+                safeLast' _ (x:[]) = Left x
+                safeLast' n (x:xs) = safeLast' (n - 1) xs
+            ```
+
+
+
+
