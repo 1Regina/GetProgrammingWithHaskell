@@ -247,7 +247,7 @@
         | src/Lib.hs has all the preprocessing (stripWhiteSpace, stripPunctuation etc) fns | src/Palindrome.hs has all the preprocessing (stripWhiteSpace, stripPunctuation etc) fns |
         | app/Main.hs import Lib module of src/Lib.hs                                      | app/Main.hs import Palindrome module of src/Palindrome.hs                               |
     5.  Exercises.
-        1.  Q35.1: (unit6/lesson35/palindrome-checker1) Cant do `extensions: OverloadedStrings` in .cabal nor package.yaml alternative (see pt 10 above under QuickFix) so retain OverloadedStrings pragma in Main.hs and Palindrome.hs. Completed below and `stack run`
+        1.  Q35.1: (unit6/lesson35/palindrome-checker1) Cant do `extensions: OverloadedStrings` in .cabal nor package.yaml alternative (see pt 10 above under QuickFix) so retain OverloadedStrings pragma in Main.hs and Palindrome.hs. Completed below and `stack run`. *Update 15 Aug 2021: see project in unit7/lesson39/http-lesson [adding extension in package.yaml](https://github.com/snoyberg/haskellers/blob/master/package.yaml)* and suggest run http-lesson project.
             ```
             Added Palindrome.hs to src with
             {-# LANGUAGE OverloadedStrings #-}
@@ -740,6 +740,108 @@
                 safeLast' _ (x:[]) = Left x
                 safeLast' n (x:xs) = safeLast' (n - 1) xs
             ```
+
+32. Ch 39.0 Making HTTP requests in Haskell
+    1.  Steps for project
+        1.  $ stack update
+        2.  $ stack new http-lesson
+        3.  $ cd http-lesson
+        4.  $ stack setup
+        5.  $ stack build
+    2. Process
+       1. getting results from the /datasets endpoint to get essential metadata to pass to the /data endpoint to request your data.
+       2. After you’ve made the request, write the body of the request to a JSON file.
+       3. First, to get your token, go to www.ncdc.noaa.gov/cdo-web/token and fill in the  form  with  your  email  address.
+       4. add imports (ByteStrings. and Char8) add the Network.HTTP.Simple library, which you’ll use for your HTTP requests.
+        ```
+            module Main where
+
+            import qualified Data.ByteString as B
+            import qualified Data.ByteString.Char8 as BC
+            import qualified Data.ByteString.Lazy as L
+            import qualified Data.ByteString.Lazy.Char8 as LC
+            import Network.HTTP.Simple
+        ```
+       5. update your http-lesson.cabal file to support these imports.
+          1. add `bytestring` and `http-conduit` to your build-depends section.
+          2. Because you’re working with `ByteStrings` and `Char8`, it’s also helpful to include the `OverloadedStrings` extension
+          3. Changes in dependenices
+             1. .cabal  ![Alt text](unit7/lesson39/dependenciesAdd.png?raw=true "Add dependencies") <p align="center"> Add dependencies </p>
+             2. Alternative Or package.yaml
+                ```
+                default-extensions:
+                - OverloadedStrings
+
+                dependencies:
+                - base >= 4.7 && < 5
+
+                executables:
+                    dependencies:
+                    - http-lesson
+                    - bytestring
+                    - http-conduit
+                ```
+          4. stack will handle downloading all of your dependencies for http-conduit, and don’t need to explicitly use the stack install
+       6. in Main.hs add a single API request, which will allow you to list all the data sets in the NOAA Climate Data API
+          1. HTTP.Simple makes it easy for you to make simple HTTP requests.
+          2. use httpLBS (the LBS stands for lazy ByteString) function to submit your request. httpLBS is able to cleverly take advantage of OverloadedStrings to make sure the correct type is passed in.
+       7. To fetch data from site
+            ```
+            GHCi> import Network.HTTP.Simple
+            GHCi> response = httpLBS "http://news.ycombinator.com"
+            GHCi> response -- ALOT OF OUTPUT
+            ```
+       8. HTTP codes 200 OK—The request was successful.301 Moved Permanently—The resource being requested has moved.404 Not Found—The resource is missing.
+       9. Network.HTTP.Simple contains the function getResponseStatusCode that gives you the status of your response. `getResponseStatusCode :: Response a -> Int`
+          1. Method A: With *Functor <$>* allows you to take a pure function and put it in a context.
+                ```
+                    GHCi> getResponseStatusCode <$> response
+                    200
+                    -- because
+                    GHCi> :t getResponseStatusCode <$> responsegetResponseStatusCode <$> response:: Control.Monad.IO.Class.MonadIO f => f Int
+                ```
+          2. Method B: Alternative assign response by using <- rather than = like do-notation to allow you to treat a value in a context as though it were a pure value
+                ```
+                    GHCi> response <- httpLBS "http://news.ycombinator.com"
+                    GHCi> getResponseStatusCode response
+                    200
+                ```
+          3. Quick check 39.2 There’s also a getResponseHeader function. Ans : Replace `getResponseStatusCode` with `getResponseHeader` for Method A and B
+       10. Your request to the API requires you to
+           1. Add your token to the header.
+           2. Specify the host and path for your request.
+           3. Make sure you’re using the GET method for your request.
+           4. Make sure your request works for an SSL connection.
+       11. These 4 steaps can be done with `$` operator. `$` operator automatically wraps parentheses around your code. E.g to build HTTPS request for the API
+            ```
+            buildRequest :: BC.ByteString -> BC.ByteString -> BC.ByteString -> BC.ByteString -> Request
+
+            buildRequest token host method path  = setRequestMethod method
+                                  $ setRequestHost host
+                                  $ setRequestHeader "token" [token] -- REM TO UPDATE TOKEN
+                                  $ setRequestPath path
+                                  $ setRequestSecure True
+                                  $ setRequestPort 443
+                                  $ defaultRequest
+            ```
+       12. Each setValue function takes the argument for the parameter it’s going to set and existing request data. You start with an initial request, defaultRequest, which is provided by the Network.HTTP.Simple module. You then create a new copy of the request data with the modified parameter, finally return-ing the modified request as a result.
+            ```
+                setRequestMethod :: Data.ByteString.Internal.ByteString -> Request -> Request
+                setRequestHeader :: http-types-0.12.3:Network.HTTP.Types.Header.HeaderName -> [Data.ByteString.Internal.ByteString] -> Request -> Request
+            ```
+       13. Putting it together
+           1.  pass your request into httpLBS.
+           2.  get the status
+           3.  if 200: you’ll write the data to a file by using the getResponseBody function.
+           4.  otherwise : alert the user that there was an error in your request.
+           5.  write file using raw lazy ByteStrings with L.writeFile
+           6.  Never write it using the Char8 interface, as it can corrupt your data.
+       14. a basic application that can fetch data from the REST API and write it to a file. See
+           1.  buildRequest / buildReuqestNoSSL
+           2.  request      / requestNoSSL
+           3.  main
+
+
 
 
 
