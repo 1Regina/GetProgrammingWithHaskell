@@ -20,7 +20,8 @@ lookupQuote (x:xs) = quote : (lookupQuote xs)
 main :: IO ()
 main = do
     putStrLn "Input a number 1 to 5. Repeat after result is shown"
-    userInput <- getContents
+    userInput <- getContents -- program continues to run so long as 1<input>5
+    -- userInput <- getLine -- program runs only 1 time
     mapM_ putStrLn (lookupQuote  (lines userInput))
 
 
@@ -28,3 +29,7 @@ main = do
 -- 1.  ghc --make l22_2exercises.hs
 -- 2.  ./l22_2exercises
 -- 3.  <ctdl-d> to end and get results of computation
+
+-- alternative
+-- 1. ghci l22_2exercises.hs
+-- 2. main
