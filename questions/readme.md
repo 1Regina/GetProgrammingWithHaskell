@@ -2,6 +2,6 @@
    1.  ghc --make sum
    2.  ./sum
 2. unit4/lesson22/l22_1exercises.hs cant compile
-   1. getContents is for everything into 1 string. 
+   1. getContents is for everything into 1 string regardless of how many time u hit enter
    2. better to use getLine if there are several IO steps
 3. unit6/lesson34/l34_exercises/glitchArt can compile with `ghc Main.hs` but when `./Main  ` i get error `Main: Prelude.head: empty list`...previously taken from unit4/lesson25
