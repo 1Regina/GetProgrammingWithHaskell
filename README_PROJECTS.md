@@ -945,8 +945,8 @@
        4.  another new operator here, (.=). This operator is used to create a key/value pair matching the value of your data with the field name for the JSON object.
     10.  Lesson 39 output: to model the entire response with a NOAAResponse data type. NOAAResponse is made up of two types: Metadata and Results. Metadata itself contains another type, Resultset. Then you have NOAAResults, which contains values. The JSON from the NOAA has a nested structure.
         1.   Because Result contains an id value, you need to define a custom implementation of your instances - resultID. Because the data uses id instead of resultId, **you need to make your own instance of FromJSON. You’re not concerned about ToJSON, because you’ll be reading only from the data.** ![Alt text](unit7/lesson40/fromJSONinstance.png?raw=true " FromJSON") <p align="center"> FromJSON </p>
-        2.   Metadata
-             1. first part of your Metadata is Resultset. Define your type, add deriving (Generic), and make it an instance of your type class
+        2. Metadata
+            1. first part of your Metadata is Resultset. Define your type, add deriving (Generic), and make it an instance of your type class
                 ```
                     data Resultset = Resultset
                             { offset :: Int
@@ -956,7 +956,7 @@
 
                 instance FromJSON Resultset
                 ```
-             2. Metadata data type itself has only the Resultset value
+            2. Metadata data type itself has only the Resultset value
                 ```
                     newtype Metadata = Metadata
                                 {
@@ -1005,7 +1005,6 @@
                                 , "datacoverage" .= datacoverage
                                 , "id"        .= resultId
                                 ]
-
                 instance ToJSON Resultset
                 instance ToJSON Metadata
                 instance ToJSON NOAAResponse
@@ -1015,7 +1014,6 @@
                 intListExample :: IntList
                 intListExample = Cons 1 $
                                  Cons 2 EmptyList
-                                 
                 data IntList = EmptyList | Cons Int IntList deriving (Show, Generic)
                 instance ToJSON IntList
                 instance FromJSON IntList
