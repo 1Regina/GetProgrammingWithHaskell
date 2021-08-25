@@ -791,22 +791,24 @@
             GHCi> response = httpLBS "http://news.ycombinator.com"
             GHCi> response -- ALOT OF OUTPUT
             ```
-       8. HTTP codes 200 OK—The request was successful.301 Moved Permanently—The resource being requested has moved.404 Not Found—The resource is missing.
-       9. Network.HTTP.Simple contains the function getResponseStatusCode that gives you the status of your response. `getResponseStatusCode :: Response a -> Int`
-          1. Method A: With *Functor <$>* allows you to take a pure function and put it in a context.
+       8. HTTP codes 200 OK—The request was successful.
+          1. 301 Moved Permanently—The resource being requested has moved.
+          2. 404 Not Found—The resource is missing.
+       9.  Network.HTTP.Simple contains the function getResponseStatusCode that gives you the status of your response. `getResponseStatusCode :: Response a -> Int`
+          3. Method A: With *Functor <$>* allows you to take a pure function and put it in a context.
                 ```
                     GHCi> getResponseStatusCode <$> response
                     200
                     -- because
                     GHCi> :t getResponseStatusCode <$> responsegetResponseStatusCode <$> response:: Control.Monad.IO.Class.MonadIO f => f Int
                 ```
-          2. Method B: Alternative assign response by using <- rather than = like do-notation to allow you to treat a value in a context as though it were a pure value
+          4. Method B: Alternative assign response by using <- rather than = like do-notation to allow you to treat a value in a context as though it were a pure value
                 ```
                     GHCi> response <- httpLBS "http://news.ycombinator.com"
                     GHCi> getResponseStatusCode response
                     200
                 ```
-          3. Quick check 39.2 There’s also a getResponseHeader function. Ans : Replace `getResponseStatusCode` with `getResponseHeader` for Method A and B
+          5. Quick check 39.2 There’s also a getResponseHeader function. Ans : Replace `getResponseStatusCode` with `getResponseHeader` for Method A and B
        10. Your request to the API requires you to
            1. Add your token to the header.
            2. Specify the host and path for your request.
@@ -836,13 +838,185 @@
            4.  otherwise : alert the user that there was an error in your request.
            5.  write file using raw lazy ByteStrings with L.writeFile
            6.  Never write it using the Char8 interface, as it can corrupt your data.
-       14. a basic application that can fetch data from the REST API and write it to a file. See
+       14. a basic application that can fetch data from the REST API and write it to a data.json file. See in unit7/lesson39/http-lesson/app/Main.hs
            1.  buildRequest / buildReuqestNoSSL
            2.  request      / requestNoSSL
            3.  main
+33. Ch40.0 Working with JSON data by using AESON
+    1.  JSON data example ![Alt text](unit7/lesson40/json.png?raw=true "JSON data") <p align="center"> JSON data </p>
+    2. Process of transforming objects into and out of JSON is known as serialization anddeserialization, respectively.
+        ```
+        data User = User
+            { userId :: Int
+            , userName :: T.Text
+            , email :: T.Text
+            }
+        ```
+    3. The key challenge of working with JSON in Haskell is that JSON supports only a few simple types: objects, strings, numbers (technically just floats), Booleans, and lists.
+       1. Aeson allows you to translate back and forth between Haskell’s powerful data types and JSON.
+       2. Aeson relies on two key functions for translating back and forth between Haskell data types and JSON: encode and decode.  To use these two functions, you need to make your data an instance of two type classes: ToJSON (encode) and FromJSON (decode). Two ways to do this:
+          1. automatically deriving the type classes with the help of a language extension.
+          2. implement these classes yourself.
+    4. Stack project `json-lesson` with all codes in `Main` module with:
+       1. the popular Aeson library for working with JSON.
+       2. form of Data.Text, because this is the preferred method in Haskell for representing text.
+       3. import lazy ByteStrings and the Char8 helper for these.
+       4. JSON will be represented as ByteStrings by default until you transform it
+       5. See unit7/lesson40/json-lesson/app/Main.hs for imports
+       6. delete package.yaml and add libraries to cabal (NOPE). (change package.yaml INSTEAD at default-extensions & executables-dependencies)
+    5. Aim of Aeson is to convert back and forth between Haskell data types and raw JSON. Aeson two key functions
+       1. `decode` function takes JSON data and transforms it into a target type. `Maybe` is a good way to handle errors in Haskell since concerned with are parsing the JSON data correctly
+            ```
+            decode :: FromJSON a => ByteString -> Maybe a
+            ```
+       2. `Either` is often a better type because it can tell you what went wrong. Aeson also offers an `eitherDecode` function that will give you more informative error messages by using the Left constructor (remember that Left is the constructor used for errors)
+            ```
+            eitherDecode :: FromJSON a => ByteString -> Either String a
+            ```
+       3. To use `eitherDecode`, I must first make a type an instance of FromJSON to enable conversion from raw JSON into a Maybe / Eitherinstance of your type. You’ll explore ways of making data an instance of FromJSON.
+       4. `encode` function takes a type that’s an instance of `ToJSON` and returns a JSON object represented as a ByteString. `ToJSON` is the counterpart to FromJSON. If a type is an instance of both `FromJSON` and `ToJSON`, it can trivially be converted to and from JSON.
+            ```
+            encode :: ToJSON a => a -> ByteString
+            ```
+        1. Aeson uses two type classes: **FromJSON** and **ToJSON**. The FromJSON type class allows you to parse JSON and turn it into a Haskell data type, and ToJSON allows you to turn Haskell data types into JSON.
+    6. **DeriveGeneric** -- a language extension that makes it possible to easily derive instances of FromJSON and ToJSON simply add Generic to your *deriving* statement. See unit7/lesson40/json-lesson/app/Main.hs
+       1. make the Book type both an instance of FromJSON and ToJSON. ![Alt text](unit7/lesson40/deriveGeneric.png?raw=true "Making a FromJSON and ToJSON instance") <p align="center"> Making a FromJSON and ToJSON instance </p> and see the results:
+        ```
+            1. stack ghci
+            2. *Main Lib Paths_json_lesson> myBook
+            Book {title = "Learn Haskell", author = "Will Kurt", year = 2017}
+            *Main Lib Paths_json_lesson> myBookJSON
+            "{\"year\":2017,\"author\":\"Will Kurt\",\"title\":\"Learn Haskell\"}"
 
+        ```
+       2. From a string of JSON with littyle type info to a Haskell type. ![Alt text](unit7/lesson40/deriveGeneric1.png?raw=true " FromJSON to Haskell Type") <p align="center"> Making a FromJSON to Haskell Type </p>
+          ```
+          *Main Lib Paths_json_lesson> bookFromJSON
+          Just (Book {title = "A Short History of Decay", author = "Emil Ciroan", year = 1949})
+          ```
+    7. Better parse error message with either. Run `eitherDecode wrongJSON :: Either String Book`
+         ```
+         GHCi> bookFromWrongJSON
+         Nothing
+         GHCi> eitherDecode wrongJSON :: Either String Book
+         Left "Error in $: The key \"author\" was not found"
+         ```
+    8.  Working with JSON from others. See Section 4 in unit7/lesson40/json-lesson/app/Main.hs
+        1.  Define Error Message. Note to use errorCode instead of error
+            ```
+                data ErrorMessage = ErrorMessage
+                                    { message :: T.Text
+                                    , errorCode :: Int
+                                    } deriving Show
 
+                sampleError :: BC.ByteString
+                sampleError = "{\"message\":\"oops!\",\"error\": 123}"
 
+                exampleMessage :: Maybe T.Text
+                exampleMessage = Just "Opps"
+                exampleError :: Maybe Int
+                exampleError = Just 123
+            ```
+        2. to make your ErrorMessage type an instance of FromJSON, you need to define one function: **parseJSON**. make ErrorMessage in the context of Maybe
+            ```
+                instance FromJSON ErrorMessage where
+                    parseJSON (Object v) =                -- (Object v) is the JSON object being parsed
+                        ErrorMessage <$> v .: "message"   -- ErrorMessage <$> value <*> value
+                                    <*> v .: "error"
+            ```
+        3. combine <$> and <*> to safely make this ErrorMessage in the context of a Maybe
+            ```
+                *Main> ErrorMessage <$> exampleMessage <*> exampleError
+                Just (ErrorMessage {message = "Opps", errorCode = 123})
+            ```
+        4. **(.:)** This operator takes an Object (your JSON object) and some text and returns a value parsed into a context. `(.:) :: FromJSON a => Object -> Text -> Parser a` . so `v .: "message"` results in a value in a Parser context.  We need a context for your parse so that it can fail if there’s trouble parsing
+        5. Now ErrorMessage type is an instance of FromJSON, you can finally parse the incoming JSON ErrorMessages.
+    9. Working toJSON. See Section 4 in unit7/lesson40/json-lesson/app/Main.hs ![Alt text](unit7/lesson40/toJSONinstance.png?raw=true " ToJSON") <p align="center"> ToJSON </p>
+       1. takes your data constructor and pattern matches on its two arguments, message and errorCode:
+            ```
+                instance ToJSON ErrorMessage where
+                toJSON (ErrorMessage message errorCode) =
+                    object [ "message" .= message
+                            , "error" .= errorCode
+                        ]
+            ```
+       2. the method takes your data constructor and pattern matches on its two arguments, message and errorCode: `toJSON (ErrorMessage message errorCode)`
+       3.  then use the object function to create your JSON object, passing the values of your data type into the correct fields for the JSON object:
+       4.  another new operator here, (.=). This operator is used to create a key/value pair matching the value of your data with the field name for the JSON object.
+   10.  Lesson 39 output: to model the entire response with a NOAAResponse data type. NOAAResponse is made up of two types: Metadata and Results. Metadata itself contains another type, Resultset. Then you have NOAAResults, which contains values. The JSON from the NOAA has a nested structure.
+        1.   Because Result contains an id value, you need to define a custom implementation of your instances - resultID. Because the data uses id instead of resultId, **you need to make your own instance of FromJSON. You’re not concerned about ToJSON, because you’ll be reading only from the data.** ![Alt text](unit7/lesson40/fromJSONinstance.png?raw=true " FromJSON") <p align="center"> FromJSON </p>
+        2.   Metadata
+             1. first part of your Metadata is Resultset. Define your type, add deriving (Generic), and make it an instance of your type class
+                ```
+                    data Resultset = Resultset
+                            { offset :: Int
+                            , count :: Int
+                            , limit :: Int
+                            } deriving (Show,Generic)
 
+                instance FromJSON Resultset
+                ```
+             2. Metadata data type itself has only the Resultset value
+                ```
+                    newtype Metadata = Metadata
+                                {
+                                  resultset :: Resultset
+                                } deriving (Show,Generic)
 
+                    instance FromJSON Metadata
+                ```
+        3. put together these other types into your NOAAResponse.
+            ```
+                data NOAAResponse = NOAAResponse
+                    { metadata :: Metadata
+                    , results :: [NOAAResult]
+                    } deriving (Show,Generic)
 
+                instance FromJSON NOAAResponse
+            ```
+        4. print out all the types in the  file with a `printResults` IO action. Include a error case message. use forM_from the Control.Monad module (remember to import Control.Monad) to loop through your results and print them. The `forM_` function works just like the `mapM_` function, only it reverses the order of the data and the function used to map over the data
+            ```
+                printResults :: Maybe [NOAAResult] -> IO ()
+                printResults Nothing = print "error loading data"
+                printResults (Just results) =  do
+                            forM_ results (print . name)
+                            -- print DataName -- something wrong
+
+                main :: IO ()
+                main = do
+                    jsonData <- B.readFile "data.json"-- "../lesson39/http-lesson/data.json"
+                    let noaaResponse = decode jsonData :: Maybe NOAAResponse
+                    let noaaResults = results <$> noaaResponse
+                    printResults noaaResults
+            ```
+    11. Summary:
+        1.  the popular Aeson library, which makes it possible to convert back and forth between Haskell data types and JSON
+        2.   conversion between data types and JSON is achieved with two type classes: FromJSON and ToJSON.
+        3.   best case, you can use the DeriveGeneric language extension to derive these classes automatically then do `deriving (Show, Generic)` and add `instance FromJSON or ToJson NameOfDataType`
+        4.   worst case, where you have to help Aeson translate your data types, is still easy.
+    12. Q40.1    Make    your    NOAAResponse type an instance of ToJSON. See unit7/lesson40/MainFromJSON.hs
+        ```
+            instance ToJSON NOAAResponse where
+                toJSON (NOAAResponse uid mindate maxdate name datacoverage resultId) =
+                    object  [ "uid"      .= uid
+                            , "mindate"  .= mindate
+                            , "maxdate"  .= maxdate
+                            , "name"     .= name
+                            , "datacoverage" .= datacoverage
+                            , "id"        .= resultId
+                            ]
+
+            instance ToJSON Resultset
+            instance ToJSON Metadata
+            instance ToJSON NOAAResponse
+        ```
+    13. Q40.2    Make    a    Sum type called IntList and use DerivingGeneric to make it an instance of ToJSON. Don’t use the existing List type, but rather write it from scratch. Here’s an example of an IntList:
+        ```
+            intListExample :: IntList
+            intListExample = Cons 1 $
+                            Cons 2 EmptyList
+
+            data IntList = EmptyList | Cons Int IntList deriving (Show, Generic)
+            instance ToJSON IntList
+            instance FromJSON IntList
+        ```
