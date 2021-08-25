@@ -989,12 +989,12 @@
                     let noaaResults = results <$> noaaResponse
                     printResults noaaResults
             ```
-    11. Summary:
+   11. Summary:
         1.  the popular Aeson library, which makes it possible to convert back and forth between Haskell data types and JSON
         2.   conversion between data types and JSON is achieved with two type classes: FromJSON and ToJSON.
         3.   best case, you can use the DeriveGeneric language extension to derive these classes automatically then do `deriving (Show, Generic)` and add `instance FromJSON or ToJson NameOfDataType`
         4.   worst case, where you have to help Aeson translate your data types, is still easy.
-    12. Q40.1 Make    your    NOAAResponse type an instance of ToJSON. See unit7/lesson40/MainFromJSON.hs
+   12. Q40.1 Make    your    NOAAResponse type an instance of ToJSON. See unit7/lesson40/MainFromJSON.hs
             ```
                 instance ToJSON NOAAResponse where
                     toJSON (NOAAResponse uid mindate maxdate name datacoverage resultId) =
@@ -1003,18 +1003,17 @@
                                 , "maxdate"  .= maxdate
                                 , "name"     .= name
                                 , "datacoverage" .= datacoverage
-                                , "id"        .= resultId ]
-
+                                , "id"        .= resultId
+                                ]
                 instance ToJSON Resultset
                 instance ToJSON Metadata
                 instance ToJSON NOAAResponse
             ```
-    13. Q40.2 Make    a    Sum type called IntList and use DerivingGeneric to make it an instance of ToJSON. Don’t use the existing List type, but rather write it from scratch. Here’s an example of an IntList:
+   13. Q40.2 Make a Sum type called IntList and use DerivingGeneric to make it an instance of ToJSON. Don’t use the existing List type, but rather write it from scratch. Here’s an example of an IntList:
             ```
                 intListExample :: IntList
                 intListExample = Cons 1 $
-                                Cons 2 EmptyList
-                                
+                                 Cons 2 EmptyList
                 data IntList = EmptyList | Cons Int IntList deriving (Show, Generic)
                 instance ToJSON IntList
                 instance FromJSON IntList
