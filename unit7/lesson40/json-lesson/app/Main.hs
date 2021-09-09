@@ -113,7 +113,8 @@ data NOAAResult = NOAAResult
         , mindate :: T.Text
         , maxdate :: T.Text
         , name :: T.Text
-        , datacoverage :: Int
+        , datacoverage :: Float
+   --     , datacoverage :: Int (api has changed)
         , resultId :: T.Text
         } deriving Show
 
@@ -155,11 +156,24 @@ printResults :: Maybe [NOAAResult] -> IO ()
 printResults Nothing = print "error loading data"
 printResults (Just results) =  do
             forM_ results (print . name)
-            --print name
+            -- print name
+
+printResults' :: Either String [NOAAResult] -> IO ()
+printResults' (Left error) = print error
+printResults' (Right results) = forM_ results (print . name)
+
+-- book error
+-- main :: IO ()
+-- main = do
+--     jsonData <- B.readFile "data.json"-- "../lesson39/http-lesson/data.json"
+--     let noaaResponse = decode jsonData :: Maybe NOAAResponse -- change this
+--     let noaaResults = results <$> noaaResponse
+--     printResults noaaResults
 
 main :: IO ()
 main = do
-    jsonData <- B.readFile "data.json"-- "../lesson39/http-lesson/data.json"
-    let noaaResponse = decode jsonData :: Maybe NOAAResponse
-    let noaaResults = results <$> noaaResponse
-    printResults noaaResults
+  jsonData <- B.readFile "data.json"
+  let noaaResponse = eitherDecode jsonData :: Either String NOAAResponse
+--  let noaaResponse = decode jsonData :: Maybe NOAAResponse
+  let noaaResults = results <$> noaaResponse
+  printResults' noaaResults

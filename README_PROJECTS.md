@@ -1020,3 +1020,156 @@
                 instance ToJSON IntList
                 instance FromJSON IntList
             ```
+34. Ch41.0 USING DATABASES IN HASKELL
+    1.  Database tasks via the `sqlite-simple` library
+        1.  Create - Add new data to the database
+        2.  Read - Querying the database for into
+        3.  Update - Modifying existing data
+        4.  Delete - Removing data from the database
+    2. Build new project 'db-lesson' on three tables: tools, users, and checkedout with changes .cabal (see book) or in package.yaml (my way)
+       1. package.yaml
+            ```
+                default-extensions:
+                - OverloadedStrings
+
+                executables:
+                    db-lesson-exe:
+                        dependencies:
+                        - db-lesson
+                        - time
+                        - sqlite-simple
+            ```
+       2. Main.hs  ![Alt text](unit7/lesson41/imports.png?raw=true "Main.hs imports") <p align="center">imports for Main.hs</p>
+            ```
+                module Main where
+
+                import Control.Applicative
+                import Database.SQLite.Simple
+                import Database.SQLite.Simple.FromRow
+                import Data.Time
+
+                main :: IO ()
+                main = print "db-lesson"
+            ```
+
+       3.  `OverloadedStrings` extension, because many of your strings will be inter-preted as SQL queries by the SQLite Simple library
+       4.  Install SQLite from www.sqlite.org.
+       5.  Create a db with unit7/lesson41/db-lesson/build_db.sql in the root directory of `db-lesson` project and in the root directory run sqlite3 with **`sqlite3 tools.db < build_db.sql`**
+       6.  Activate interactive sqlite with `sqlite3 tools.db`
+       7.  With sqlite prompt, test to see the db creation is ok with
+           1. `select * from tools;`
+           2. `select * from users;`
+       8. Haskell db from now on...
+       9. Put Tool into Main.hs
+            ```
+                data Tool = Tool
+                    { toolId :: Int
+                    , name :: String
+                    , description :: String
+                    , lastReturned :: Day
+                    , timesBorrowed :: Int
+                    }
+            ```
+       10. To test some functions from (Date.Time) module imports dependencies in the project/root directory, do
+           1.  `stack ghci` to get into interactive ghci
+           2.  Get current day into `Day` type that is used in `Tool` data type in Main.hs by transforming it into a Day type by using **utctDay**
+                ```
+                        *Main Lib Paths_db_lesson> getCurrentTime
+                        2021-09-08 13:19:55.854874 UTC
+                        *Main Lib Paths_db_lesson> utctDay <$> getCurrentTime
+                        2021-09-08
+                ```
+       11. Put User into Main.hs
+            ```
+                data User = User
+                    { userId :: Int
+                    , userName :: String
+                    }
+            ```
+       12. Add show instance by `instance Show ...`
+           1.  User
+                ```
+                    instance Show User where
+                        show user = mconcat [ show $ userId user
+                                            , ".)  "
+                                            , userName user]
+                ```
+           2.  Tool
+                ```
+                    instance Show Tool where
+                        show tool = mconcat [ show $ toolId tool
+                                            , ".) "
+                                            , name tool
+                                            , "\n description: "
+                                            , description tool
+                                            , "\n last returned: "
+                                            , show $ lastReturned tool
+                                            , "\n times borrowed: "
+                                            , show $ timesBorrowed tool
+                                            , "\n"]
+                ```
+       13. Then `stack run` in terminal to load module, and run per Data type with `User 1 "regina"`
+       14. Quick check 41.1    Why    is    mconcat preferred for combining your strings over ++?
+            ```
+            Becos mconcat makes your code easier to refactor with text type. Although you used String in this lesson, you often would prefer touse  the  Text  type.  mconcat  works  on  all  major  string  types:  String, Text,  and  ByteString.  This  makesrefactoring code to change types as easy as changing type signatures.
+            ```
+    3. Creating data in Haskell: To insert data into your database, you need to connect to the database, create a SQL string, and then execute the SQL
+       1. establish a connection to database.
+       2. **execute** to insert users into database via a function that takes a userName and inserts it into your database.
+       3.  a query string that contain a (?), which allows you to safely pass values into your string.
+       4.  addUser code. **Only** constructor is used to create single-element tuples. ![Alt text](unit7/lesson41/dbConnectionAction.png?raw=true "Action connected to database") <p align="center">Action connected to database</p>
+       5. `withConn` to abract out connecting action to db.
+            ```
+                withConn :: String -> (Connection -> IO()) -> IO()
+                withConn dbName action = do
+                        conn <- open dbName
+                        action conn
+                        close conn
+
+            ```
+       6. a checkout function. Notice that (userId,toolId) is a plain tuple with no Only data constructor needed.
+            ```
+                checkout :: Int -> Int -> IO ()
+                checkout userId toolId = withConn "tools.db" $
+                                        \conn -> do
+                                                execute conn
+                                                "INSERT INTO checkout (user_id, tool_id) VALUES (?, ?)"
+                                                (user_id, tool_id)
+
+            ```
+       7. The challenge when working with SQL data in Haskell is that you need an easy way to make instances of Haskell data types from raw data. To achieve this, the sqlite-simplelibrary includes a type class called `FromRow`.
+          1. The `fromRow` method returns a `RowParser` of type a, where a is the same type as whatever type you’re making an instance of `FromRow`. `FromRow` is used by functions to query your data by easily transform queries into lists of your data types
+          2.  a function from `SQLite.Simple` called `field`. The `field` function is used internally by SQLite.Simple to consume the data from a rowin db and transform it into the values used by your type constructors. With unit7/lesson41/db-lesson/app/Main.hs, you can make queries against your database and translate them directly into lists of users and tools.
+          3. `query` and `query_` to query data. The underscore version takes one less argument. The query function assumes that you’re passing in a query string and parameter for that query. The query_ function with an underscore is for queries that take queries with no parameters as arguments.
+                ```
+                    query :: (FromRow r, ToRow q) => Connection -> Query -> q -> IO [r]
+                    query_ :: FromRow r => Connection -> Query -> IO [r]
+
+                ```
+          4. notice that Query is its own type. You’ve been treating your queries as strings, but this is all thanks to the Overloaded-Strings extension, which is automatically translating for you.
+          5. Quick check 41.3     Why do you need two functions, query and query_? *Answer* Primarily because of the way Haskell handles types, Haskell doesn’t support variable arguments. An alternative to making two functions is to use a Sum type that represents both sets ofarguments and use pattern matching.
+          6. printToolQuery function that takes a query and prints out the tools returned by that query
+    4. Updating existing data.
+       1. When a tool is checked back in, you want to do two updates. First, you want to increment its existing timesBorrowed by 1; second, you want to update the lastReturned date to the current date.
+          1. `selectTool` function takes a `connect` and a `toolId` to look up the tool. `firstOrNothing` function looks at the list of results returned by your query. If the list is empty, it returns Nothing; if you have results (presumably just one, because the ID is unique), it returns the first one.
+          2. `updateTool` function takes an existing tool and returns a new tool with an updated lastReturned date and timesBorrowed count, using record syntax (lesson 11).
+          3. `updateToolTable`, takes a `toolId`, fetches the current date, and then performs the necessary steps to update the tool in the table
+
+    5. Delete data with `execute`.
+       1. `checkin` action takes a `toolID` and deletes the row from the checkedout table.
+       2. Or check and update the database with `checkinAndUpdate`.
+    6. An interface with `promptAndAddUser`, `promptAndCheckout` and `promptAndCheckin` and `performCommand` with the >> operator (which performs an action, throws away the result, and performs the next) to call main. This allows your command-line interface to repeatedly prompt the user for more input until the user quits your program
+       1. Quick check 41.4     Why can’t you use >>= instead of >>?
+       2. Answer: When you use >>=, you’re passing an argument in a context; the >> operator is used when you want to chain together actions and disregard their output
+    7. A minimal main to do `performCommand command`.
+    8. `performCommand` calls `main`, and `main` executes the `performCommand` action, leading to code that’s recursive normally **BUT** Haskell will notice that each function calls the other last, and is able to optimize this safely.
+       1.  build your program `stack build` and run with `stack exec db-lesson-exe`
+       2.  possible commands when prompted
+           1.  users
+           2.  tools
+           3.  checkout
+           4.  in
+           5.  out
+           6.  checkin
+           7.  addtool (failing) q1 **ERROR**
+       3.  `quit` to terminate
