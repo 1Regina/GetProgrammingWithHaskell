@@ -14,6 +14,6 @@
 
 6. <solved> `cd unit7/lesson41/db-lesson` then `stack exec db-lesson-exe` but error in IO program **error** checkin command collapse after I enter the id of the tool. https://github.com/Rhywun/get-programming-with-haskell/blob/master/Unit07/Lesson41/db-lesson/app/Main.hs has this dontBuffer function
 
-7. `cd unit7/lesson41/db-lesson` then `stack exec db-lesson-exe` all functions ok except chapt exercise q1. 
+7. `cd unit7/lesson41/db-lesson` then `stack exec db-lesson-exe` all functions ok except chapt exercise q1. `addTool`
 
 7. capstone https://github.com/mijicd/get-programming-with-haskell

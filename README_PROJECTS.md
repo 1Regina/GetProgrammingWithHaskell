@@ -1173,3 +1173,212 @@
            6.  checkin
            7.  addtool (failing) q1 **ERROR**
        3.  `quit` to terminate
+35. Ch42.0 Efficient, stateful arrays
+    1.  Bubble sort: List are inefficient and lazy evaluation cause major performance.`:set +s` to time function in GHCI
+        1.  Lists take time (See unit7/lesson42/1uarray.hs)
+            ```
+                aLargeList :: [Int]
+                aLargeList = [1 .. 10000000]
+
+                GHCi> :set +s
+                GHCi> [1 .. 10000000] !! 9999999
+            ```
+        2. `UArray` lookup operator `!` is faster
+           ```
+                aLargeArray :: UArray Int Int
+                aLargeArray = array (0,9999999) []
+
+                GHCi> aLargeArray ! 9999999
+                0
+                (0.00 secs, 456,024 bytes)
+           ```
+        3. The U in UArray stands for unboxed. Unboxed arrays don’t use lazy evaluation (they use strict evaluation). Lazy evaluation, although powerful, is another frequent cause of inefficiency. Lazy evaluation = no computation until required which includes generating the list in the first place. The catch with using **unboxed arrays** is that they *work only with primitive types*: **Int, Char, Bool, and Double**. Haskell does offer a more general Array type that will work with any data the same way that List does, but Array is a lazy data structure.
+    2.  To use the UArray type, you’ll **import Data.Array.Unboxed** to the top of your module. Additionally, if using stack, you need to **add array to the list of build-depends**.
+        1.  `UArrays` take two type parameters;
+            1.  the first is for the type of the index -  members of `Enum` and `Bounded` ie `Char` or `Int`, but not `Double` (not an instance of `Enum`), and not `Integer` (not an instance of `Bounded`). `Bool` type index is ok.
+            2.  and the second is for the type of the value.
+        2.  Create a `UArray` with `array` function which takes 2 arguments:
+            1.  The first is a pair of values in a tuple representing your lower and upper bounds for your indices.
+            2.  The second argument is a list of (index, value) pairs
+        3. If you’re missing an index in your pairs, Haskell will provide a default value. **For Int types, this is 0; and for Bools, it’s False.**
+           1. Sample: zero-indexed array of Bools.
+                ```
+                    zeroIndexArray :: UArray Int Bool
+                    zeroIndexArray = array (0,9) [(3,True)]
+
+                    -- so all unset values are false
+                    -  look up values in your UArray by using the ! operator
+
+                    GHCi> zeroIndexArray ! 5
+                    False
+                    GHCi> zeroIndexArray ! 3
+                    True
+                ```
+           2. Sample: 1-indexed array with all the Bools set to True. You’ll use your zip function combined with cycle to generate a list of value pairs that are all True
+                ```
+                    oneIndexArray :: UArray Int Bool
+                    oneIndexArray = array (1,10) $ zip [1 .. 10] $ cycle [True]
+                ```
+           3. Quick check 1: Create an array of five elements indexed at 0 and the 2, and three elements are set to True
+                ```
+                    qcArray :: UArray Int Bool
+                    qcArray = array (0,4) $ zip [0 .. 2] $ cycle [True]
+                    qcArray' :: UArray Int Bool
+                    qcArray' = array (0,4) [(1,True),(2,True)]
+                ```
+           4. look up values in your UArray by using the **! operator** if you try to access an element outside your index bounds, you’ll get an error
+        4. 42.1.3 UArray can be updated like any functional data structure.
+           1. Case Example to add five beans to bucket 1 and six beans to bucket 3 (with bucket 0 being your first bucket) by using the (//) operator. The first argument to (//) is UArray, second argument is a new list of pairs. The result is a new UArray with the updated values.
+                ```
+                    updatedBiB :: UArray Int Int
+                    updatedBiB = beansInBuckets // [(1,5),(3,6)]
+                               = array (0,3) [(0,0),(1,5),(2,0),(3,6)]
+
+                ```
+            2. Now to add two beans to every bucket. Use the `accum` function which takes first: a binary function, second: a UArray, and third: a list of values to apply the function to.
+                ```
+                    accum (+) updatedBiB $ zip [0 .. 3] $ cycle [2] = array (0,3) [(0,2),(1,7),(2,2),(3,8)]
+                ```
+            3. Doubling the number of beans in each bucket.
+                ```
+                    accum (*) updatedBiB $ zip [0..3] $ cycle [2] =  array (0,3) [(0,0),(1,10),(2,0),(3,12)]
+                ```
+    3.  Summary from above examples: With UArray, you can get efficient lookups as well as a more efficient data structure. When you used `UArray`, you were able to replicate an artificial sense of mutable state. But when you’re using state specifically for efficiency reasons, this is a terrible solution. Haskell can remove statefulnsss from code to get safer, more predictable code with roughly the same performance. But Haskell can also mutate state --  using a special type of `UArray` called an `STUArray`. The `STUArray` uses a more general type called `ST`. `ST` allows for stateful, nonlazy programming. Focus here is `STUArray`. For stateful, nonlazy programming (See unit7/lesson42/2stateful.hs)
+        1.  use `STUArray` by adding the following imports:
+            ```
+                import Data.Array.ST
+                import Control.Monad
+                import Control.Monad.ST
+                -- import Data.Array.Unboxed -- to use UArray also
+            ```
+        2. `STUArray `is an instance of `Monad` to perform arbitrary computation within a context. 4 other contexts learnt so far:
+           1. `Maybe` types model the context of missing values.
+           2. `List` types can be used to represent the context of nondeterministic computing.
+           3. `IO` types allow you to separate stateful, error-prone I/O code from your pure functions.
+           4. `Either` types provide a more detailed way to handle errors over `Maybe` type
+        3. use do-notation to treat types in the **`STUArray` context**, just as if they were regular data.
+        4. Key power `STUArray` offers is the ability to change values in a `UArray`.  `STUArray` exists to allow you to perform stateful programming only when that statefulness is indistinguishable from pure code for the users of your functions.
+           1. By being able to change values in place, you can save tremendously on *memory usage*,
+           2. and by not having to re-create a new copy of your data structure with each change, you can also *save on time*.
+           3. STUArray is a context that allows for stateful mutations.![Alt text](unit7/lesson42/stuArrayContext.png?raw=true "STUArray context") <p align="center">STUArray is a context that allows for stateful mutations</p>
+    4. **listToArray**: use `STUArray` by writing a function, called `listToSTUArray`, that takes a list of Ints and transforms that into an `STUArray`.
+        1. first draft is iitializing an empty array of a fixed size ... *in a monad* .
+        2. `STUArray` type uses the `newArray` function, which takes a pair representing the bounds of the array as well as a value for initializing the array.
+        3. (See unit7/lesson42/2stateful.hs).  ![Alt text](unit7/lesson42/doNotation.png?raw=true "listToSTUArray Step 1 - put in context") <p align="center">First sketch to listToSTUArray function - put in context</p>
+        4.  add your loop, which you’ll run through your list, and update your `stArray` value.  use `forM_ `from C`ontrol.Monad`. The **`forM_`** action takes your data and a function to apply to the data as arguments. This has the nice property of replicating a *for in* loop in languages such as Python. Validate by using a list of indices and (!!) to look up values in your list.
+              ```
+                  listToSTUArray :: [Int] -> ST s (STUArray s Int Int)
+                  listToSTUArray vals = do
+                      let end =  length vals - 1
+                      myArray <- newArray (0,end) 0
+                      forM_ [0 .. end] $ \i -> do
+                          let val = vals !! i
+                          writeArray myArray i val
+                      return myArray
+              ```
+        5.  While it is more efficient to zip indices with list values, for a more stateful language *feel*, write the values from the list to your `stArray` value. For this, use the `writeArray` function, which takes an `STUArray`, an index, and your value. `writeArray` function performs a stateful mutation of your underlying array and doesn’t create a copy of it.![Alt text](unit7/lesson42/copyListTostuArray.png?raw=true "listToSTUArray Step 2 - rewrite data in array") <p align="center">Second step to listToSTUArray function - rewrite data in array</p>
+        6.  Problem, unlike IO context when we load the module in GHCI, we cant read the output.
+              ```
+                  *Main> listToSTUArray [1,2,3]
+                  <<ST action>>
+              ```
+        7.  Solution to read values out of a context when you’re using `STUArray`.  Although `STUArray` is similar to IO, you’re dealing with a much safer context. In `listToSTUArray` code, because statefulness is contained in a context, you’re forced to make sure your stateful code obeys encapsulation. Encapsulation means that objects properly hide all of their implementation details from the user. Because `STUArray` is enforcing encapsulation, you’re not constrained by the same limitations of IO. You can take values out of `STUArray` by using a function named `runSTUArray`.
+              ```
+                  runSTUArray :: ST s (STUArray s i e) -> UArray i
+                  listToUArray :: [Int] -> UArray Int Int
+                  listToUArray vals = runSTUArray $ listToSTUArray vals
+                  -- >>> listToUArray [1,2,3]
+                  -- array (0,2) [(0,1),(1,2),(2,3)]
+              ```
+
+        8. visualized in figure 42.2 ![Alt text](unit7/lesson42/takeSTUArrayvalues.png?raw=true "listToSTUArray Step 3 - take values out of context") <p align="center">Third step to listToSTUArray function - take values out of context</p>
+        9. Step 4: Common Haskell without intermediary function (listToSTUArray)
+              ```
+                  listToUArrayGold :: [Int] -> UArray Int Int
+                  listToUArrayGold vals = runSTUArray $ do
+                      let end =  length vals - 1
+                      myArray <- newArray (0,end) 0
+                      forM_ [0 .. end] $ \i -> do
+                          let val = vals !! i
+                          writeArray myArray i val
+                      return myArray
+                  -- >>> listToUArrayGold [1,2,3]
+                  -- array (0,2) [(0,1),(1,2),(2,3)]
+              ```
+    5. Extra. Just as with `STUArray`, the primary purpose of **all ST types** is to allow you to implement perfectly encapsulated, stateful computation. The `ST type` generalizes the behavior you see in `STUArray`. The `STUArray` type relies primarily on three actions: `newArray`, `readArray`, and `writeArray`. For the ST type, these are replaced with the more general functions: `newSTRef`, `readSTRef`, and `writeSTRef`. Likewise, instead of `runSTUArray`,  you  use  `runST`.  Here’s  a  simple  example  of  a  `swapST`  function  that  statefully swaps the values of two variables in a 2-tuple:
+         ```
+             swapST :: (Int,Int) -> (Int,Int)
+             swapST (x,y) = runST $ do
+                 x' <- newSTRef x
+                 y' <- newSTRef y
+                 writeSTRef x' y
+                 writeSTRef y' x
+                 xfinal <- readSTRef x'
+                 yfinal <- readSTRef y'
+                 return (xfinal,yfinal)
+         ```
+    6. Bubble sort at unit7/lesson42/3bubbleSort.hs.
+       1. An imperative algorithm implemented in Haskell.
+            ```
+                myData :: UArray Int Int
+                myData = listArray (0,5) [7,6,4,8,10,2]
+                bubbleSort :: UArray Int Int -> UArray Int Int
+                bubbleSort myArray = runSTUArray $ do
+                    stArray <- thaw myArray
+                    let end = (snd . bounds) myArray
+                    forM_ [1 .. end] $ \i -> do
+                        forM_ [0 .. (end - i)] $ \j -> do
+                            val <- readArray stArray j
+                            nextVal <- readArray stArray (j + 1)
+                            let outOfOrder = val > nextVal
+                            when outOfOrder $ do
+                                writeArray stArray j nextVal
+                                writeArray stArray (j + 1) val
+                    return stArray
+
+                -- >>> bubbleSort myData
+                -- array (0,5) [(0,2),(1,4),(2,6),(3,7),(4,8),(5,10)]
+            ```
+       2. Implement bubble sort: ![Alt text](unit7/lesson42/bubbleSort.png?raw=true "Bubble Sort Implementation") <p align="center">Bubble Sort Implementation</p>
+    7. Exercises in unit7/lesson42/l42exercises.hs
+       1. Q1: One of the most important operations in the implementation of a genetic algo-rithm is combining two arrays of Booleans through an operation called crossover. Cross-over takes as input a pair of equal-sized arrays. Then a cutoff point is chosen, and the top and bottom are swapped. The final value is this new pair of arrays. Here’s an illustration using lists and an example (using 1 for True and 0 for False): ([1,1,1,1,1],[0,0,0,0,0]). If you perform crossover at index 3, your result should be [1,1,1,0,0]. Implement crossover where the result is a UArray but the crossover itself is performed using STUArrays.
+            ```
+                crossOver :: (UArray Int Int, UArray Int Int) -> Int -> UArray Int Int
+                crossOver (array1,array2) crossOverPt  = runSTUArray $ do
+                    stArray1 <- thaw array1
+                    let end = (snd . bounds) array1
+                    forM_ [crossOverPt .. end] $ \i -> do
+                        writeArray stArray1 i $ array2 ! i
+                    return stArray1
+
+                array1 :: UArray Int Int
+                array1 = array (0,4) $ zip [0 .. 4] $ cycle [1]
+                -- >>> array1
+                -- array (0,4) [(0,1),(1,1),(2,1),(3,1),(4,1)]
+
+                array2 :: UArray Int Int
+                array2 = array (0,4) $ zip [0 .. 4] $ cycle [0]
+                -- >>> array2
+                -- array (0,4) [(0,0),(1,0),(2,0),(3,0),(4,0)]
+
+                *Main> crossOver (array1, array2) 3
+                array (0,4) [(0,1),(1,1),(2,1),(3,0),(4,0)]
+            ```
+       2. Q2: Write a function that takes a `UArray Int Int` as an input. The input will have a mixture of zeros and other values. The function, `replaceZeros`, should return the array with all of the zeros replaced with the value –1.
+            ```
+                rawArray :: UArray Int Int
+                rawArray = array (0,5) [(0,0),(1,3),(2,0),(3,9),(4,4),(5,0)]
+
+                replaceZeroes :: UArray Int Int -> UArray Int Int
+                replaceZeroes array = runSTUArray $ do
+                    stArray <- thaw array
+                    let end = (snd . bounds) array
+                    forM_ [0 .. end] $ \i -> do
+                        val <- readArray stArray i
+                        when (val == 0) $ do
+                            writeArray stArray i (-1)
+                    return stArray
+
+                *Main> replaceZeroes rawArray
+                array (0,5) [(0,-1),(1,3),(2,-1),(3,9),(4,4),(5,-1)]
+            ```
