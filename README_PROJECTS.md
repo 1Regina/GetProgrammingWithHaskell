@@ -231,7 +231,7 @@
                extensions: OverloadedStrings
                ```
        11. B **OTHERWISE** if the [.cabal#line3](https://github.com/1regina/GetProgrammingWithHaskell/blob/master/unit6/lesson35/palindrome-checker/palindrome-checker.cabal#L3) is `-- This file has been generated from package.yaml by hpack version 0.34.4.`, then
-           1.  Solution 1: **option 1** go straight to **package.yaml**#dependencies and add instead . e.g to add text. (demo-ed: unit6/lesson35/palindrome-checker1)
+           1.  Solution 1: **option 1** go straight to **package.yaml**#dependencies and add instead then do `stack build` after [listing dependencies](https://docs.haskellstack.org/en/stable/GUIDE/#:~:text=between%20different%20runs.-,Adding%20dependencies,-Let%27s%20say%20we) . e.g to add text. (demo-ed: unit6/lesson35/palindrome-checker1)
                ```
                dependencies:
                - base >= 4.7 && < 5
